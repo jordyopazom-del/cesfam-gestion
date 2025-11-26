@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { saveAgendaOpening, getAgendaOpenings, AgendaOpeningRequest } from '@/lib/db';
 
 function generateId() {
@@ -10,7 +10,7 @@ export async function GET() {
     return NextResponse.json(requests);
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const newRequest: AgendaOpeningRequest = {

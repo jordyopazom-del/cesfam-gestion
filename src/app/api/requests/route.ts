@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { getRequests, saveRequest, BlockingRequest } from '@/lib/db';
 
 // Polyfill for uuid since I didn't install it, or I can just use crypto.randomUUID
@@ -11,7 +11,7 @@ export async function GET() {
     return NextResponse.json(requests);
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const newRequest: BlockingRequest = {
