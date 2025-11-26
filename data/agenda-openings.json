@@ -1,0 +1,99 @@
+[
+  {
+    "id": "bee89976-41d4-4a04-ada5-dc78619b989b",
+    "coordinator": "Coordinador Convenios",
+    "profession": "PSICOLOGA/O",
+    "professionalName": "CAMILA FLOREZ",
+    "performance": 45,
+    "startTime": "",
+    "endTime": "13:00",
+    "selectedDays": [
+      "2025-11-03T03:00:00.000Z",
+      "2025-11-04T03:00:00.000Z",
+      "2025-11-05T03:00:00.000Z",
+      "2025-11-06T03:00:00.000Z",
+      "2025-11-13T03:00:00.000Z",
+      "2025-11-11T03:00:00.000Z"
+    ],
+    "createdAt": "2025-11-26T01:17:54.280Z",
+    "status": "Realizado"
+  },
+  {
+    "id": "c1b2e186-ce74-4a7b-b139-e2ec941f3ea9",
+    "coordinator": "Coordinador Convenios",
+    "location": "CESFAM",
+    "profession": "ODONTOLOGO",
+    "professionalName": "ARMANDO BRAVO",
+    "performance": 30,
+    "startTime": "08:00",
+    "endTime": "13:00",
+    "selectedDays": [
+      "2025-11-26T03:00:00.000Z",
+      "2025-11-27T03:00:00.000Z",
+      "2025-11-20T03:00:00.000Z"
+    ],
+    "status": "Realizado",
+    "createdAt": "2025-11-26T01:31:15.912Z"
+  },
+  {
+    "id": "4572b48a-131b-4c89-a8b7-cb820693e171",
+    "coordinator": "Coordinador Convenios",
+    "location": "Nontuela",
+    "profession": "ENFERMERA/O",
+    "professionalName": "KAREN AGUERO",
+    "performance": 60,
+    "startTime": "08:00",
+    "endTime": "17:00",
+    "selectedDays": [
+      "2025-11-03T03:00:00.000Z",
+      "2025-11-11T03:00:00.000Z",
+      "2025-11-19T03:00:00.000Z",
+      "2025-11-26T03:00:00.000Z",
+      "2025-11-27T03:00:00.000Z"
+    ],
+    "status": "Realizado",
+    "createdAt": "2025-11-26T01:32:05.080Z"
+  },
+  {
+    "id": "22d2721b-f9e6-423f-84b6-2c88b940ec8a",
+    "coordinator": "Coordinador Convenios",
+    "location": "CESFAM",
+    "profession": "ENFERMERA/O",
+    "professionalName": "ANA TORRES",
+    "performance": 60,
+    "startTime": "08:00",
+    "endTime": "17:00",
+    "selectedDays": [
+      "2025-11-03T03:00:00.000Z",
+      "2025-11-04T03:00:00.000Z",
+      "2025-11-11T03:00:00.000Z",
+      "2025-11-12T03:00:00.000Z",
+      "2025-11-19T03:00:00.000Z",
+      "2025-11-20T03:00:00.000Z"
+    ],
+    "status": "Realizado",
+    "createdAt": "2025-11-26T01:38:12.544Z"
+  },
+  {
+    "id": "47ff2dc7-ed50-4399-8b1f-21acecf07d02",
+    "coordinator": "Coordinador Convenios",
+    "location": "Maihue",
+    "profession": "PSICOLOGA/O",
+    "professionalName": "KAREN ANGULO",
+    "performance": 45,
+    "startTime": "08:00",
+    "endTime": "17:00",
+    "selectedDays": [
+      "2025-11-26T03:00:00.000Z",
+      "2025-11-27T03:00:00.000Z",
+      "2025-11-28T03:00:00.000Z",
+      "2025-12-01T03:00:00.000Z",
+      "2025-12-02T03:00:00.000Z",
+      "2025-12-10T03:00:00.000Z",
+      "2025-12-16T03:00:00.000Z",
+      "2025-12-23T03:00:00.000Z"
+    ],
+    "status": "Realizado",
+    "createdAt": "2025-11-26T14:10:49.512Z"
+  }
+]

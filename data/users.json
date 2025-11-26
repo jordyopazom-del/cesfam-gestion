@@ -1,0 +1,98 @@
+[
+  {
+    "email": "direccioncesfam@munifutrono.cl",
+    "name": "DIRECTORA CESFAM FUTRONO",
+    "role": "Director",
+    "password": "newpassword123",
+    "mustChangePassword": false,
+    "resetRequested": false
+  },
+  {
+    "email": "calvarado@munifutrono.cl",
+    "name": "Claudio Alvarado",
+    "role": "Admin",
+    "password": "Loki4040",
+    "mustChangePassword": false,
+    "resetRequested": false
+  },
+  {
+    "email": "some.cesfam@munifutrono.cl",
+    "name": "SOME CESFAM",
+    "role": "Admin",
+    "password": "Some2025",
+    "mustChangePassword": false,
+    "resetRequested": false
+  },
+  {
+    "email": "coordinaciontecnica@munifutrono.cl",
+    "name": "Coordinación Técnica",
+    "role": "Coordinator",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  },
+  {
+    "email": "coordinacions2@munifutrono.cl",
+    "name": "Coordinación S2",
+    "role": "Coordinator",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  },
+  {
+    "email": "coordinacions1@munifutrono.cl",
+    "name": "Coordinación S1",
+    "role": "Coordinator",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  },
+  {
+    "email": "coordinacionsaludrural@munifutrono.cl",
+    "name": "Coordinación Salud Rural",
+    "role": "Coordinator",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  },
+  {
+    "email": "coordinacioncecosf@munifutrono.cl",
+    "name": "Coordinación CECOSF",
+    "role": "Coordinator",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  },
+  {
+    "email": "convenioscesfam@munifutrono.cl",
+    "name": "Convenios CESFAM",
+    "role": "Admin",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  },
+  {
+    "email": "gestiondemandafutrono@munifutrono.cl",
+    "name": "Gestión Demanda Futrono",
+    "role": "Admin",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  },
+  {
+    "email": "kkoandres@gmail.com",
+    "name": "Andrés",
+    "role": "Coordinator",
+    "password": "Loki4040",
+    "mustChangePassword": false,
+    "resetRequested": false
+  },
+  {
+    "email": "proyectogoread@munifutrono.cl",
+    "name": "Proyecto GORE AD",
+    "role": "Coordinator",
+    "password": "cesfam2026",
+    "mustChangePassword": true,
+    "resetRequested": false
+  }
+]

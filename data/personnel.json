@@ -1,0 +1,402 @@
+[
+  {
+    "profession": "ODONTOLOGO",
+    "name": "MATIAS PERALTA"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "SEBASTIAN CARDENAS"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "HUGO OLAVE"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "ARMANDO BRAVO"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "NICOLE CAZAUX"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "COSNTANZA ARRIAGADA"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "SEBASTIAN ELGUETA"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "VALERIA CASTRO"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "FRANCISCA PORTOLES"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "LUCAS CASTILLO"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "KARINA FLANDEZ"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "JUAN PABLO MILLA"
+  },
+  {
+    "profession": "ODONTOLOGO",
+    "name": "CATALINA GALLARDO"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "JUAN CASTELLANOS"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "AIMEE RODRIGUEZ"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "JOAQUIN RODRIGUEZ"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "ROBERTO MARTINEZ"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "JOSEFA LOPEZ"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "CATALINA PARDO"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "FABIAN SEPULVEDA"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "RAYEN GONZALEZ GORE"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "EMILIO FIGUEROA"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "CONSTANZA CANELO"
+  },
+  {
+    "profession": "MEDICO",
+    "name": "MEDICO CECOSF NUEVO"
+  },
+  {
+    "profession": "TRABAJADORA/O SOCIAL",
+    "name": "CLAUDIA HUAIQUE"
+  },
+  {
+    "profession": "TRABAJADORA/O SOCIAL",
+    "name": "RICARDO CEBALLOS"
+  },
+  {
+    "profession": "TRABAJADORA/O SOCIAL",
+    "name": "PAMELA ROMERO"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "ALEJANDRA GODOY"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "CAMILA GODOY"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "GERARDO ARCE"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "YONATHAN MANSILLA"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "ANA TORRES"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "ALEJANDRA SILVA"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "ROCIO ZAMBRANO"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "KARLA LERMANDA"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "DANIELA ULLOA"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "KAREN AGUERO"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "MARIA ELENA HIDALGO"
+  },
+  {
+    "profession": "ENFERMERA/O",
+    "name": "LORETO FERNANDEZ"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "MACARENA CACERES"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "DANIELA SAN MARTIN"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "KARLA VALENZUELA"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "JUAN YAVAR"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "CLAUDIO PEREZ"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "MAURICIO CERNA"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "JORDY OPAZO"
+  },
+  {
+    "profession": "KINESIOLOGA/O",
+    "name": "KATHERINE VARGAS"
+  },
+  {
+    "profession": "MATRONA/ÓN",
+    "name": "KARINA TIZNADO"
+  },
+  {
+    "profession": "MATRONA/ÓN",
+    "name": "CARLA BOUTAUD"
+  },
+  {
+    "profession": "MATRONA/ÓN",
+    "name": "KARINA RIOS"
+  },
+  {
+    "profession": "MATRONA/ÓN",
+    "name": "STEPHANIE VAN WICJK"
+  },
+  {
+    "profession": "MATRONA/ÓN",
+    "name": "PAMELA GONZALEZ"
+  },
+  {
+    "profession": "MATRONA/ÓN",
+    "name": "FABIAN SANDOVAL"
+  },
+  {
+    "profession": "MATRONA/ÓN",
+    "name": "MARIA JOSE LEIVA"
+  },
+  {
+    "profession": "PSICOLOGA/O",
+    "name": "KAREN ANGULO"
+  },
+  {
+    "profession": "PSICOLOGA/O",
+    "name": "MARLY MARTINEZ"
+  },
+  {
+    "profession": "PSICOLOGA/O",
+    "name": "CAMILA FLOREZ"
+  },
+  {
+    "profession": "PSICOLOGA/O",
+    "name": "VALERIA SOLIS"
+  },
+  {
+    "profession": "PSICOLOGA/O",
+    "name": "ROSARIO MANNS"
+  },
+  {
+    "profession": "NUTRICIONISTA",
+    "name": "MACARENA MELLA"
+  },
+  {
+    "profession": "NUTRICIONISTA",
+    "name": "DANIELA ICETA"
+  },
+  {
+    "profession": "NUTRICIONISTA",
+    "name": "GLORIA HUAIQUIPAN"
+  },
+  {
+    "profession": "NUTRICIONISTA",
+    "name": "NATALIA CONCHA"
+  },
+  {
+    "profession": "NUTRICIONISTA",
+    "name": "ARACELYS MARCHANTT"
+  },
+  {
+    "profession": "NUTRICIONISTA",
+    "name": "EMILIA ANTILLANCA"
+  },
+  {
+    "profession": "EDUCADORA/O PÁRVULOS",
+    "name": "JEANNETTE FARFAN"
+  },
+  {
+    "profession": "FONOAUDIÓLOGA/O",
+    "name": "YENIFER JIMENEZ"
+  },
+  {
+    "profession": "TERAPEUTA OCUPACIONAL",
+    "name": "CAMILO VERA"
+  },
+  {
+    "profession": "TERAPEUTA OCUPACIONAL",
+    "name": "SOLEDAD MORALES"
+  },
+  {
+    "profession": "TERAPEUTA OCUPACIONAL",
+    "name": "CLAUDIA LEHUEY"
+  },
+  {
+    "profession": "PROFESOR ED. FISICA",
+    "name": "EDER ANABALON"
+  },
+  {
+    "profession": "PROFESOR ED. FISICA",
+    "name": "LEONARDO VALENZUELA"
+  },
+  {
+    "profession": "TECNÓLOGO MÉDICO",
+    "name": "DANIEL VERA"
+  },
+  {
+    "profession": "QUÍMICO FARMACÉUTICO",
+    "name": "EDUARDO BRAVO"
+  },
+  {
+    "profession": "PODÓLOGA/O",
+    "name": "CLAUDIA CORVALAN"
+  },
+  {
+    "profession": "PODÓLOGA/O",
+    "name": "ROCIO SANDOVAL"
+  },
+  {
+    "profession": "TENS",
+    "name": "YOCELYN SAEZ"
+  },
+  {
+    "profession": "TENS",
+    "name": "BEATRIZ VARGAS"
+  },
+  {
+    "profession": "TENS",
+    "name": "STHEPAHIE WEISER"
+  },
+  {
+    "profession": "TENS",
+    "name": "PAULA MANSILLA"
+  },
+  {
+    "profession": "TENS",
+    "name": "SERGIO ZAMBRANO"
+  },
+  {
+    "profession": "TENS",
+    "name": "PAOLA FIGUEROA"
+  },
+  {
+    "profession": "TENS",
+    "name": "VINKA SEPULVEDA"
+  },
+  {
+    "profession": "TENS",
+    "name": "GLORIA REYES"
+  },
+  {
+    "profession": "TENS",
+    "name": "JOSE MAUREIRA"
+  },
+  {
+    "profession": "TENS",
+    "name": "HERNAN FILCUN"
+  },
+  {
+    "profession": "TENS",
+    "name": "VALESKA TORRES"
+  },
+  {
+    "profession": "TENS",
+    "name": "LUCRECIA MANQUEL"
+  },
+  {
+    "profession": "TENS",
+    "name": "YENNIFER TORRES"
+  },
+  {
+    "profession": "TENS",
+    "name": "MARIANA GALLARDO"
+  },
+  {
+    "profession": "TENS",
+    "name": "ANDREA JAURE"
+  },
+  {
+    "profession": "TENS",
+    "name": "MACARENA SEPULVEDA"
+  },
+  {
+    "profession": "TENS",
+    "name": "GLORIA GONZALEZ"
+  },
+  {
+    "profession": "TENS",
+    "name": "ANTONIETA ESTRADA"
+  },
+  {
+    "profession": "TENS",
+    "name": "CARLA VEGA"
+  },
+  {
+    "profession": "TENS",
+    "name": "MONICA REYES"
+  },
+  {
+    "profession": "TENS",
+    "name": "VANESSA VEGA"
+  },
+  {
+    "profession": "TENS",
+    "name": "JAIME MARTINEZ"
+  },
+  {
+    "profession": "TENS",
+    "name": "DAPNER MAUREIRA"
+  },
+  {
+    "profession": "TENS",
+    "name": "GABRIELA ARAVENA"
+  }
+]
