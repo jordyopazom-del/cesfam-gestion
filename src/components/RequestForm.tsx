@@ -1,15 +1,15 @@
 'use client';
 
-import { useState } from 'react';
-import { PERSONNEL, PROFESSIONS } from '@/data/personnel';
+import { useState, useEffect } from 'react';
 import { BLOCK_TYPES, COORDINATORS, LOCATIONS } from '@/data/constants';
 import { Loader2, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import TimeInput from './TimeInput';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, isWeekend } from 'date-fns';
 import { es } from 'date-fns/locale';
 import clsx from 'clsx';
+import { Official } from '@/app/admin/personnel/actions';
 
-export default function RequestForm({ onSuccess }: { onSuccess: () => void }) {
+export default function RequestForm({ onSuccess, personnel }: { onSuccess: () => void, personnel: Official[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
@@ -27,7 +27,8 @@ export default function RequestForm({ onSuccess }: { onSuccess: () => void }) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDays, setSelectedDays] = useState<Date[]>([]);
 
-    const filteredNames = PERSONNEL.filter(p => p.profession === formData.profession);
+    const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)));
+    const filteredNames = personnel.filter(p => p.profession === formData.profession);
 
     const toggleDay = (day: Date) => {
         if (isWeekend(day)) return; // Disable weekends if needed, or keep enabled
@@ -105,6 +106,12 @@ export default function RequestForm({ onSuccess }: { onSuccess: () => void }) {
         });
     };
 
+    const [todayStr, setTodayStr] = useState('');
+
+    useEffect(() => {
+        setTodayStr(new Date().toLocaleDateString());
+    }, []);
+
     // Calendar Rendering Logic
     const monthStart = startOfMonth(currentMonth);
     const monthEnd = endOfMonth(currentMonth);
@@ -127,7 +134,7 @@ export default function RequestForm({ onSuccess }: { onSuccess: () => void }) {
                         <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Solicitud</label>
                         <input
                             type="text"
-                            value={new Date().toLocaleDateString()}
+                            value={todayStr}
                             disabled
                             className="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                         />
@@ -290,7 +297,7 @@ export default function RequestForm({ onSuccess }: { onSuccess: () => void }) {
 
                 <div className="pt-4">
                     <div className="text-sm text-gray-500 mb-2">
-                        Fecha de creación: {new Date().toLocaleDateString()} (Automático)
+                        Fecha de creación: {todayStr} (Automático)
                     </div>
                     <button
                         type="submit"

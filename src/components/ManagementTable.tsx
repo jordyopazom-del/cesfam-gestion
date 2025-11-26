@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Request } from '@/lib/db';
+import { BlockingRequest } from '@/lib/db';
 import { Search, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 
 export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTrigger: number, isAdmin: boolean }) {
-    const [requests, setRequests] = useState<Request[]>([]);
+    const [requests, setRequests] = useState<BlockingRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('');
 
@@ -29,7 +29,7 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
     }, [refreshTrigger]);
 
 
-    const handleAgendaStatusChange = async (id: string, newStatus: Request['agendaBlockedStatus']) => {
+    const handleAgendaStatusChange = async (id: string, newStatus: BlockingRequest['agendaBlockedStatus']) => {
         // Optimistic update
         setRequests(prev => prev.map(r => r.id === id ? { ...r, agendaBlockedStatus: newStatus } : r));
 

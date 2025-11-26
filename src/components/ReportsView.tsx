@@ -1,21 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Request, AgendaOpeningRequest } from '@/lib/db';
-import { PERSONNEL, PROFESSIONS } from '@/data/personnel';
+import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
 import { Search, Filter, FileText, Download, Calendar } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
+import { Official } from '@/app/admin/personnel/actions';
 
 const MONTHS = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
-export default function ReportsView() {
+export default function ReportsView({ personnel }: { personnel: Official[] }) {
     const [reportType, setReportType] = useState<'blockings' | 'openings' | 'export'>('blockings');
-    const [requests, setRequests] = useState<Request[]>([]);
+    const [requests, setRequests] = useState<BlockingRequest[]>([]);
     const [openings, setOpenings] = useState<AgendaOpeningRequest[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -29,6 +29,8 @@ export default function ReportsView() {
     const [exportStartDate, setExportStartDate] = useState('');
     const [exportEndDate, setExportEndDate] = useState('');
 
+    const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)));
+
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
@@ -37,12 +39,30 @@ export default function ReportsView() {
                     fetch('/api/requests'),
                     fetch('/api/agenda-openings')
                 ]);
+
+                if (!reqRes.ok) throw new Error(`Requests API error: ${reqRes.status}`);
+                if (!openRes.ok) throw new Error(`Openings API error: ${openRes.status}`);
+
                 const reqData = await reqRes.json();
                 const openData = await openRes.json();
-                setRequests(reqData);
-                setOpenings(openData);
+
+                if (Array.isArray(reqData)) {
+                    setRequests(reqData);
+                } else {
+                    console.error('Requests data is not an array:', reqData);
+                    setRequests([]);
+                }
+
+                if (Array.isArray(openData)) {
+                    setOpenings(openData);
+                } else {
+                    console.error('Openings data is not an array:', openData);
+                    setOpenings([]);
+                }
             } catch (error) {
                 console.error('Failed to fetch data', error);
+                setRequests([]);
+                setOpenings([]);
             } finally {
                 setLoading(false);
             }
@@ -100,7 +120,7 @@ export default function ReportsView() {
     const sortedRequests = sortData(filteredRequests);
     const sortedOpenings = sortData(filteredOpenings);
 
-    const filteredProfessionals = PERSONNEL.filter(p => p.profession === selectedProfession);
+    const filteredProfessionals = personnel.filter(p => p.profession === selectedProfession);
 
     // Export Logic
     const handleExport = () => {

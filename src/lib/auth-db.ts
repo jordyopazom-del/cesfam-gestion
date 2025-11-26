@@ -1,8 +1,5 @@
-import fs from 'fs';
-import path from 'path';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const USERS_FILE = path.join(DATA_DIR, 'users.json');
+import { sql } from '@vercel/postgres';
+import { unstable_noStore as noStore } from 'next/cache';
 
 export interface User {
     email: string;
@@ -13,98 +10,93 @@ export interface User {
     role: string;
 }
 
-const INITIAL_USERS = [
-    { email: 'direccioncesfam@munifutrono.cl', name: 'DIRECTORA CESFAM FUTRONO', role: 'Director' },
-    { email: 'calvarado@munifutrono.cl', name: 'Claudio Alvarado', role: 'Admin' },
-    { email: 'some.cesfam@munifutrono.cl', name: 'SOME CESFAM', role: 'Admin' },
-    { email: 'coordinaciontecnica@munifutrono.cl', name: 'Coordinación Técnica', role: 'Coordinator' },
-    { email: 'coordinacions2@munifutrono.cl', name: 'Coordinación S2', role: 'Coordinator' },
-    { email: 'coordinacions1@munifutrono.cl', name: 'Coordinación S1', role: 'Coordinator' },
-    { email: 'coordinacionsaludrural@munifutrono.cl', name: 'Coordinación Salud Rural', role: 'Coordinator' },
-    { email: 'coordinacioncecosf@munifutrono.cl', name: 'Coordinación CECOSF', role: 'Coordinator' },
-    { email: 'convenioscesfam@munifutrono.cl', name: 'Convenios CESFAM', role: 'Admin' },
-    { email: 'gestiondemandafutrono@munifutrono.cl', name: 'Gestión Demanda Futrono', role: 'Admin' },
-    { email: 'kkoandres@gmail.com', name: 'Andrés', role: 'Coordinator' },
-    { email: 'proyectogoread@munifutrono.cl', name: 'Proyecto GORE AD', role: 'Coordinator' },
-];
-
 const DEFAULT_PASSWORD = 'cesfam2026';
 
-function ensureDir() {
-    if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-    }
-}
-
-export function initializeUsers() {
-    ensureDir();
-    if (!fs.existsSync(USERS_FILE)) {
-        const users: User[] = INITIAL_USERS.map(u => ({
-            ...u,
-            password: DEFAULT_PASSWORD,
-            mustChangePassword: true,
-            resetRequested: false
-        }));
-        fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    }
-}
-
-export function getUsers(): User[] {
-    initializeUsers();
+export async function getUsers(): Promise<User[]> {
+    noStore();
     try {
-        const data = fs.readFileSync(USERS_FILE, 'utf-8');
-        return JSON.parse(data);
-    } catch {
+        const { rows } = await sql`SELECT * FROM users`;
+        return rows.map(row => ({
+            email: row.email,
+            password: row.password,
+            mustChangePassword: row.must_change_password,
+            resetRequested: row.reset_requested,
+            name: row.name,
+            role: row.role
+        }));
+    } catch (error) {
+        console.error('Error fetching users:', error);
         return [];
     }
 }
 
-export function getUserByEmail(email: string): User | undefined {
-    const users = getUsers();
-    return users.find(u => u.email.toLowerCase() === email.toLowerCase());
+export async function getUserByEmail(email: string): Promise<User | undefined> {
+    noStore();
+    try {
+        const { rows } = await sql`SELECT * FROM users WHERE email = ${email}`;
+        if (rows.length === 0) return undefined;
+        const row = rows[0];
+        return {
+            email: row.email,
+            password: row.password,
+            mustChangePassword: row.must_change_password,
+            resetRequested: row.reset_requested,
+            name: row.name,
+            role: row.role
+        };
+    } catch (error) {
+        console.error('Error fetching user by email:', error);
+        return undefined;
+    }
 }
 
-export function updateUserPassword(email: string, newPassword: string): boolean {
-    const users = getUsers();
-    const index = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (index === -1) return false;
-
-    users[index].password = newPassword;
-    users[index].mustChangePassword = false;
-
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    return true;
+export async function updateUserPassword(email: string, newPassword: string): Promise<boolean> {
+    noStore();
+    try {
+        await sql`
+            UPDATE users 
+            SET password = ${newPassword}, must_change_password = FALSE 
+            WHERE email = ${email}
+        `;
+        return true;
+    } catch (error) {
+        console.error('Error updating user password:', error);
+        return false;
+    }
 }
 
-export function setPasswordResetRequest(email: string, requested: boolean): boolean {
-    const users = getUsers();
-    const index = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (index === -1) return false;
-
-    users[index].resetRequested = requested;
-
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    return true;
+export async function setPasswordResetRequest(email: string, requested: boolean): Promise<boolean> {
+    noStore();
+    try {
+        await sql`
+            UPDATE users 
+            SET reset_requested = ${requested} 
+            WHERE email = ${email}
+        `;
+        return true;
+    } catch (error) {
+        console.error('Error setting password reset request:', error);
+        return false;
+    }
 }
 
-export function adminResetUserPassword(email: string): boolean {
-    const users = getUsers();
-    const index = users.findIndex(u => u.email.toLowerCase() === email.toLowerCase());
-
-    if (index === -1) return false;
-
-    users[index].password = DEFAULT_PASSWORD;
-    users[index].mustChangePassword = true;
-    users[index].resetRequested = false;
-
-    fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-    return true;
+export async function adminResetUserPassword(email: string): Promise<boolean> {
+    noStore();
+    try {
+        await sql`
+            UPDATE users 
+            SET password = ${DEFAULT_PASSWORD}, must_change_password = TRUE, reset_requested = FALSE 
+            WHERE email = ${email}
+        `;
+        return true;
+    } catch (error) {
+        console.error('Error resetting user password:', error);
+        return false;
+    }
 }
 
-export function verifyCredentials(email: string, password: string): User | null {
-    const user = getUserByEmail(email);
+export async function verifyCredentials(email: string, password: string): Promise<User | null> {
+    const user = await getUserByEmail(email);
     if (user && user.password === password) {
         return user;
     }

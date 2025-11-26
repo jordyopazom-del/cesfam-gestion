@@ -12,7 +12,7 @@ export async function login(prevState: any, formData: FormData) {
         return { error: 'Por favor ingrese correo y contraseña.' };
     }
 
-    const user = verifyCredentials(email, password);
+    const user = await verifyCredentials(email, password);
 
     if (!user) {
         return { error: 'Credenciales inválidas.' };
@@ -53,7 +53,7 @@ export async function changePassword(prevState: any, formData: FormData) {
         return { error: 'La contraseña debe tener al menos 6 caracteres.' };
     }
 
-    const success = updateUserPassword(session.email, newPassword);
+    const success = await updateUserPassword(session.email, newPassword);
 
     if (!success) {
         return { error: 'Error al actualizar la contraseña.' };
@@ -79,7 +79,7 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
     // Import dynamically to avoid circular deps if any (though here it's fine)
     const { setPasswordResetRequest } = await import('@/lib/auth-db');
 
-    const success = setPasswordResetRequest(email, true);
+    const success = await setPasswordResetRequest(email, true);
 
     // Always return success message to avoid user enumeration, or be explicit if preferred.
     // Given the requirements, let's be helpful.
@@ -92,13 +92,13 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
 
 export async function adminResetPassword(email: string) {
     const { adminResetUserPassword } = await import('@/lib/auth-db');
-    const success = adminResetUserPassword(email);
+    const success = await adminResetUserPassword(email);
     return success;
 }
 
 export async function fetchUsers() {
     const { getUsers } = await import('@/lib/auth-db');
-    const users = getUsers();
+    const users = await getUsers();
     // Sanitize users (remove password)
     return users.map(u => ({
         email: u.email,

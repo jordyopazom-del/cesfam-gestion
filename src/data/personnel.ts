@@ -1,4 +1,4 @@
-export const PERSONNEL = [
+export const INITIAL_PERSONNEL = [
   { profession: "ODONTOLOGO", name: "MATIAS PERALTA" },
   { profession: "ODONTOLOGO", name: "SEBASTIAN CARDENAS" },
   { profession: "ODONTOLOGO", name: "HUGO OLAVE" },
@@ -100,5 +100,3 @@ export const PERSONNEL = [
   { profession: "TENS", name: "DAPNER MAUREIRA" },
   { profession: "TENS", name: "GABRIELA ARAVENA" },
 ];
-
-export const PROFESSIONS = Array.from(new Set(PERSONNEL.map(p => p.profession)));

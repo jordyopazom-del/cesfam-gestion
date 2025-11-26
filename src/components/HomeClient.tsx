@@ -11,12 +11,14 @@ import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
 import UserManagement from './UserManagement';
+import { Official } from '@/app/admin/personnel/actions';
 
 interface HomeClientProps {
     isAdmin: boolean;
+    personnel: Official[];
 }
 
-export default function HomeClient({ isAdmin }: HomeClientProps) {
+export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
     const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users'>('form');
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -105,8 +107,8 @@ export default function HomeClient({ isAdmin }: HomeClientProps) {
                 </header>
 
                 <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {activeTab === 'form' && <RequestForm onSuccess={handleSuccess} />}
-                    {activeTab === 'agenda' && <AgendaOpeningForm onSuccess={handleSuccess} />}
+                    {activeTab === 'form' && <RequestForm onSuccess={handleSuccess} personnel={personnel} />}
+                    {activeTab === 'agenda' && <AgendaOpeningForm onSuccess={handleSuccess} personnel={personnel} />}
                     {activeTab === 'table' && (
                         <div className="space-y-4">
                             <div className="flex justify-center">
@@ -139,7 +141,7 @@ export default function HomeClient({ isAdmin }: HomeClientProps) {
                         </div>
                     )}
 
-                    {activeTab === 'reports' && <ReportsView />}
+                    {activeTab === 'reports' && <ReportsView personnel={personnel} />}
                     {activeTab === 'users' && isAdmin && <UserManagement />}
                 </div>
             </div>

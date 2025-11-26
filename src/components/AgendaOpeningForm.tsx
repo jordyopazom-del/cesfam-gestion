@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { PERSONNEL, PROFESSIONS } from '@/data/personnel';
 import { COORDINATORS, LOCATIONS } from '@/data/constants';
 import { Loader2, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import TimeInput from './TimeInput';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, isWeekend } from 'date-fns';
 import { es } from 'date-fns/locale';
 import clsx from 'clsx';
+import { Official } from '@/app/admin/personnel/actions';
 
 const PERFORMANCES = [10, 20, 30, 40, 45, 60];
 
-export default function AgendaOpeningForm({ onSuccess }: { onSuccess: () => void }) {
+export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess: () => void, personnel: Official[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
 
@@ -30,7 +30,8 @@ export default function AgendaOpeningForm({ onSuccess }: { onSuccess: () => void
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDays, setSelectedDays] = useState<Date[]>([]);
 
-    const filteredNames = PERSONNEL.filter(p => p.profession === formData.profession);
+    const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)));
+    const filteredNames = personnel.filter(p => p.profession === formData.profession);
 
     // Calendar Logic
     const daysInMonth = eachDayOfInterval({
