@@ -307,7 +307,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                     onChange={(e) => setSelectedMonth(Number(e.target.value))}
                                     className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
-                                    <option value={-1}>Todos</option>
+                                    <option value={-1}>Seleccionar mes</option>
                                     {MONTHS.map((month, index) => (
                                         <option key={month} value={index}>{month}</option>
                                     ))}
