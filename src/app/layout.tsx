@@ -31,11 +31,6 @@ export default function RootLayout({
         <nav className="bg-blue-600 text-white shadow-md">
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
             <Link href="/" className="text-xl font-bold flex items-center gap-2">
-              <img
-                src="/header-logo.png"
-                alt="Logo"
-                className="w-8 h-8 rounded-full object-cover"
-              />
               CESFAM Gestión
             </Link>
             <div className="flex gap-6">
