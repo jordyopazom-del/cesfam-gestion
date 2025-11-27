@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
-import { Search, Filter, FileText, Download, Calendar } from 'lucide-react';
+import { Filter, FileText, Download, Calendar } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
@@ -13,6 +13,16 @@ const MONTHS = [
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
 ];
 
+const safeFormat = (dateStr: string, formatStr: string) => {
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return 'Fecha inválida';
+        return format(date, formatStr);
+    } catch (e) {
+        return 'Fecha inválida';
+    }
+};
+
 export default function ReportsView({ personnel }: { personnel: Official[] }) {
     const [reportType, setReportType] = useState<'blockings' | 'openings' | 'export'>('blockings');
     const [requests, setRequests] = useState<BlockingRequest[]>([]);
@@ -20,7 +30,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
     const [loading, setLoading] = useState(true);
 
     // Filters for View
-    const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth());
+    const [selectedMonth, setSelectedMonth] = useState<number>(-1);
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [selectedProfession, setSelectedProfession] = useState('');
     const [selectedProfessional, setSelectedProfessional] = useState('');
@@ -85,14 +95,14 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                 itemDate = new Date(item.startDate);
             } else if (item.selectedDays && item.selectedDays.length > 0) {
                 // Sort to find the earliest date
-                const sortedDays = [...item.selectedDays].sort();
+                const sortedDays = [...(item.selectedDays || [])].sort();
                 itemDate = new Date(sortedDays[0]);
             } else {
                 itemDate = new Date(item.createdAt); // Fallback
             }
 
-            // Month Filter (0-11)
-            if (itemDate.getMonth() !== selectedMonth) return false;
+            // Month Filter (0-11, -1 for All)
+            if (selectedMonth !== -1 && itemDate.getMonth() !== selectedMonth) return false;
 
             // Year Filter
             if (itemDate.getFullYear() !== selectedYear) return false;
@@ -139,7 +149,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                 if (item.startDate) {
                     itemDate = new Date(item.startDate);
                 } else if (item.selectedDays && item.selectedDays.length > 0) {
-                    const sortedDays = [...item.selectedDays].sort();
+                    const sortedDays = [...(item.selectedDays || [])].sort();
                     itemDate = new Date(sortedDays[0]);
                 } else {
                     itemDate = new Date(item.createdAt);
@@ -155,7 +165,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
             'Profesión': req.profession,
             'Profesional': req.professionalName,
             'Tipo Bloqueo': req.blockType,
-            'Fechas Bloqueo': req.selectedDays ? req.selectedDays.map((d: string) => format(new Date(d), 'dd/MM/yyyy')).join(', ') : `${req.startDate} - ${req.endDate}`,
+            'Fechas Bloqueo': req.selectedDays ? req.selectedDays.map((d: string) => safeFormat(d, 'dd/MM/yyyy')).join(', ') : `${req.startDate} - ${req.endDate}`,
             'Hora Inicio': req.startTime,
             'Hora Término': req.endTime,
             'Estado Agenda': req.agendaBlockedStatus || 'Pendiente'
@@ -168,7 +178,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
             'Profesión': req.profession,
             'Profesional': req.professionalName,
             'Rendimiento': req.performance,
-            'Fechas Apertura': req.selectedDays.map((d: string) => format(new Date(d), 'dd/MM/yyyy')).join(', '),
+            'Fechas Apertura': req.selectedDays.map((d: string) => safeFormat(d, 'dd/MM/yyyy')).join(', '),
             'Hora Inicio': req.startTime,
             'Hora Término': req.endTime,
             'Estado': req.status === 'Pending' ? 'Pendiente' : req.status
@@ -297,6 +307,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                     onChange={(e) => setSelectedMonth(Number(e.target.value))}
                                     className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 >
+                                    <option value={-1}>Todos</option>
                                     {MONTHS.map((month, index) => (
                                         <option key={month} value={index}>{month}</option>
                                     ))}
@@ -407,7 +418,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         {req.selectedDays
                                                             ? req.selectedDays
                                                                 .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())
-                                                                .map((d: string) => format(new Date(d), 'dd/MM'))
+                                                                .map((d: string) => safeFormat(d, 'dd/MM'))
                                                                 .join(', ')
                                                             : (() => {
                                                                 const [y1, m1, d1] = req.startDate.split('-').map(Number);
@@ -455,10 +466,13 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                 </td>
                                                 <td className="p-4">
                                                     <div className="max-w-[300px] text-xs leading-relaxed">
-                                                        {req.selectedDays
-                                                            .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())
-                                                            .map((d: string) => format(new Date(d), 'dd/MM'))
-                                                            .join(', ')}
+                                                        {req.selectedDays && Array.isArray(req.selectedDays)
+                                                            ? [...req.selectedDays]
+                                                                .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())
+                                                                .map((d: string) => safeFormat(d, 'dd/MM'))
+                                                                .join(', ')
+                                                            : '-'
+                                                        }
                                                     </div>
                                                 </td>
                                                 <td className="p-4 text-center">

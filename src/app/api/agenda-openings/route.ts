@@ -6,7 +6,7 @@ function generateId() {
 }
 
 export async function GET() {
-    const requests = getAgendaOpenings();
+    const requests = await getAgendaOpenings();
     return NextResponse.json(requests);
 }
 
