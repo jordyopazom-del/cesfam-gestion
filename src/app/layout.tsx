@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
-import Image from "next/image";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -32,12 +31,10 @@ export default function RootLayout({
         <nav className="bg-blue-600 text-white shadow-md">
           <div className="container mx-auto px-6 py-4 flex justify-between items-center">
             <Link href="/" className="text-xl font-bold flex items-center gap-2">
-              <Image
+              <img
                 src="/header-logo.png"
                 alt="Logo"
-                width={32}
-                height={32}
-                className="rounded-full"
+                className="w-8 h-8 rounded-full object-cover"
               />
               CESFAM Gestión
             </Link>
