@@ -19,6 +19,7 @@ export const BLOCK_TYPES = [
     "Permiso de capacitación",
     "Encomendada de Capacitación",
     "Reunión extra programática",
+    "Fuero Gremial",
 ];
 
 export const LOCATIONS = [
