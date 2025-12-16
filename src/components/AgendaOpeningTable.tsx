@@ -5,7 +5,6 @@ import { AgendaOpeningRequest } from '@/lib/db';
 import { Search } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refreshTrigger: number, isAdmin: boolean }) {
     const [requests, setRequests] = useState<AgendaOpeningRequest[]>([]);
@@ -18,8 +17,8 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
             const res = await fetch('/api/agenda-openings');
             const data = await res.json();
             setRequests(data);
-        } catch (error) {
-            console.error('Failed to fetch requests', error);
+        } catch {
+            console.error('Failed to fetch requests');
         } finally {
             setLoading(false);
         }
@@ -44,16 +43,17 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                 fetchRequests();
                 alert('Error al actualizar estado');
             }
-        } catch (error) {
+        } catch {
             fetchRequests();
             alert('Error al actualizar estado');
         }
     };
 
     const filteredRequests = requests.filter(r =>
-        r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
-        r.profession.toLowerCase().includes(filter.toLowerCase()) ||
-        r.coordinator.toLowerCase().includes(filter.toLowerCase())
+        (r.status === 'Pending' || !r.status || r.status !== 'Realizado') && // Show only if NOT 'Realizado' (effectively Pending or others if any)
+        (r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
+            r.profession.toLowerCase().includes(filter.toLowerCase()) ||
+            r.coordinator.toLowerCase().includes(filter.toLowerCase()))
     );
 
     // Sort by created date desc
@@ -129,11 +129,20 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                 <td className="p-4 text-center">
                                     {isAdmin ? (
                                         <select
+                                            aria-label="Cambiar estado de solicitud"
                                             value={req.status || 'Pending'}
-                                            onChange={(e) => handleStatusChange(req.id, e.target.value as any)}
+                                            onChange={(e) => {
+                                                const newStatus = e.target.value as AgendaOpeningRequest['status'];
+                                                // Prevent reverting to Pending if already Realizado (though it should be hidden)
+                                                if (req.status === 'Realizado' && newStatus === 'Pending') {
+                                                    return;
+                                                }
+                                                handleStatusChange(req.id, newStatus);
+                                            }}
                                             className="block w-full pl-3 pr-10 py-2 text-xs border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white/50"
+                                            disabled={req.status === 'Realizado'} // Disable if already Realizado to prevent changes
                                         >
-                                            <option value="Pending">Pendiente</option>
+                                            <option value="Pending" disabled={req.status === 'Realizado'}>Pendiente</option>
                                             <option value="Realizado">Realizado</option>
                                         </select>
                                     ) : (

@@ -101,7 +101,7 @@ export async function GET() {
       await client.sql`
             INSERT INTO personnel (name, profession)
             VALUES (${person.name}, ${person.profession})
-            ON CONFLICT (name) DO NOTHING;
+            ON CONFLICT (name) DO UPDATE SET profession = EXCLUDED.profession;
         `;
     }
 
