@@ -129,6 +129,9 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
             <h2 className="text-2xl font-bold mb-6 text-red-600 flex items-center gap-2">
                 📝 Ingreso de Solicitud de Bloqueo
             </h2>
+            <div className="bg-yellow-100 border-2 border-yellow-400 text-yellow-800 p-2 mb-4 rounded text-center font-bold">
+                VERSIÓN 2.0 - OTROS ACTIVADO
+            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
