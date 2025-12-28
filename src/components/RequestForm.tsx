@@ -21,7 +21,6 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
         blockType: '',
         startTime: '08:00',
         endTime: '17:00',
-        otherReason: '',
     });
 
     // Calendar State
@@ -60,7 +59,6 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
         try {
             const payload = {
                 ...formData,
-                blockType: formData.blockType === 'Otros' ? formData.otherReason : formData.blockType,
                 selectedDays: sortedDays.map(d => d.toISOString()),
                 startDate, // For backward compatibility
                 endDate,   // For backward compatibility
@@ -82,7 +80,6 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                     blockType: '',
                     startTime: '08:00',
                     endTime: '17:00',
-                    otherReason: '',
                 });
                 setSelectedDays([]);
                 onSuccess();
@@ -129,9 +126,6 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
             <h2 className="text-2xl font-bold mb-6 text-red-600 flex items-center gap-2">
                 📝 Ingreso de Solicitud de Bloqueo
             </h2>
-            <div className="bg-yellow-100 border-2 border-yellow-400 text-yellow-800 p-2 mb-4 rounded text-center font-bold">
-                VERSIÓN 2.0 - OTROS ACTIVADO
-            </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -209,7 +203,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
 
                     {/* Block Type */}
                     <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Bloqueo (Actualizado)</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Bloqueo</label>
                         <select
                             name="blockType"
                             required
@@ -221,23 +215,6 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                             {BLOCK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
-
-                    {/* Other Reason Field */}
-                    {formData.blockType === 'Otros' && (
-                        <div className="col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Especifique el Motivo (Máx. 30 caracteres)</label>
-                            <input
-                                type="text"
-                                name="otherReason"
-                                required
-                                maxLength={30}
-                                value={formData.otherReason}
-                                onChange={handleChange}
-                                placeholder="Escriba el motivo aquí..."
-                                className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50/30"
-                            />
-                        </div>
-                    )}
 
                     {/* Times */}
                     <div>
