@@ -1,3 +1,4 @@
+```typescript
 import { NextResponse, NextRequest } from 'next/server';
 import { getRequests, saveRequest, BlockingRequest } from '@/lib/db';
 
@@ -26,3 +27,4 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Failed to create request' }, { status: 500 });
     }
 }
+```

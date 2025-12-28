@@ -1,6 +1,5 @@
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 
 const secretKey = 'secret-key-cesfam-2026'; // In production, use env variable
 const key = new TextEncoder().encode(secretKey);

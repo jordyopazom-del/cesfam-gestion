@@ -11,14 +11,14 @@ export default function TimeInput({ label, value, onChange, required }: TimeInpu
     const [hour, setHour] = useState('08');
     const [minute, setMinute] = useState('00');
 
-    // Parse initial value
+    // Parse initial value only when it changes and is different from current local state
     useEffect(() => {
         if (value) {
             const [h, m] = value.split(':');
-            if (h && h !== hour) setHour(h);
-            if (m && m !== minute) setMinute(m);
+            setHour(prev => (h && h !== prev) ? h : prev);
+            setMinute(prev => (m && m !== prev) ? m : prev);
         }
-    }, [value, hour, minute]);
+    }, [value]);
 
     const handleHourChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newHour = e.target.value;
