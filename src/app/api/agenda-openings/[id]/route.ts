@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getAgendaOpenings, updateAgendaOpeningStatus, AgendaOpeningRequest } from '@/lib/db';
+import { getAgendaOpenings, updateAgendaOpeningStatus } from '@/lib/db';
 
 export async function GET() {
-    const requests = getAgendaOpenings();
+    const requests = await getAgendaOpenings();
     return NextResponse.json(requests);
 }
 
@@ -19,7 +19,7 @@ export async function PATCH(
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
         }
 
-        const updatedRequest = updateAgendaOpeningStatus(id, status);
+        const updatedRequest = await updateAgendaOpeningStatus(id, status);
 
         if (!updatedRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });

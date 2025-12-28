@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
             status: 'Pending',
             createdAt: new Date().toISOString(),
         };
-        saveAgendaOpening(newRequest);
+        await saveAgendaOpening(newRequest);
         return NextResponse.json(newRequest);
     } catch (error) {
         console.error('Error creating agenda opening:', error);

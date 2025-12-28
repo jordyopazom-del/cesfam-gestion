@@ -18,7 +18,7 @@ export async function PATCH(
             return NextResponse.json({ error: 'Invalid agenda status' }, { status: 400 });
         }
 
-        const updatedRequest = updateRequestStatus(id, status, agendaBlockedStatus);
+        const updatedRequest = await updateRequestStatus(id, status, agendaBlockedStatus);
 
         if (!updatedRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });

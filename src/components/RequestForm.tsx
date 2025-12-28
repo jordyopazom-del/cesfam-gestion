@@ -21,6 +21,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
         blockType: '',
         startTime: '08:00',
         endTime: '17:00',
+        otherReason: '',
     });
 
     // Calendar State
@@ -59,6 +60,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
         try {
             const payload = {
                 ...formData,
+                blockType: formData.blockType === 'Otros' ? formData.otherReason : formData.blockType,
                 selectedDays: sortedDays.map(d => d.toISOString()),
                 startDate, // For backward compatibility
                 endDate,   // For backward compatibility
@@ -80,6 +82,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                     blockType: '',
                     startTime: '08:00',
                     endTime: '17:00',
+                    otherReason: '',
                 });
                 setSelectedDays([]);
                 onSuccess();
@@ -203,7 +206,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
 
                     {/* Block Type */}
                     <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Bloqueo</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Bloqueo (Actualizado)</label>
                         <select
                             name="blockType"
                             required
@@ -215,6 +218,23 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                             {BLOCK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
+
+                    {/* Other Reason Field */}
+                    {formData.blockType === 'Otros' && (
+                        <div className="col-span-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Especifique el Motivo (Máx. 30 caracteres)</label>
+                            <input
+                                type="text"
+                                name="otherReason"
+                                required
+                                maxLength={30}
+                                value={formData.otherReason}
+                                onChange={handleChange}
+                                placeholder="Escriba el motivo aquí..."
+                                className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-blue-50/30"
+                            />
+                        </div>
+                    )}
 
                     {/* Times */}
                     <div>
