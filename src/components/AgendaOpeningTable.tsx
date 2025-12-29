@@ -10,6 +10,8 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
     const [requests, setRequests] = useState<AgendaOpeningRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     const fetchRequests = async () => {
         setLoading(true);
@@ -49,17 +51,30 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
         }
     };
 
-    const filteredRequests = requests.filter(r =>
-        (r.status === 'Pending' || !r.status || r.status !== 'Realizado') && // Show only if NOT 'Realizado' (effectively Pending or others if any)
-        (r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
+    const filteredRequests = requests.filter(r => {
+        const isProcessed = r.status === 'Realizado';
+        const matchesFilter = r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
             r.profession.toLowerCase().includes(filter.toLowerCase()) ||
-            r.coordinator.toLowerCase().includes(filter.toLowerCase()))
-    );
+            r.coordinator.toLowerCase().includes(filter.toLowerCase());
+
+        return !isProcessed && matchesFilter;
+    });
 
     // Sort by created date desc
     const sortedRequests = [...filteredRequests].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+
+    // Pagination logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = sortedRequests.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(sortedRequests.length / itemsPerPage);
+
+    // Reset to page 1 when filter changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filter]);
 
     if (loading && requests.length === 0) {
         return <div className="text-center p-10 text-gray-500">Cargando solicitudes...</div>;
@@ -96,7 +111,7 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {sortedRequests.map((req) => (
+                        {currentItems.map((req) => (
                             <tr key={req.id} className={clsx(
                                 "transition",
                                 req.status === 'Realizado' ? "bg-green-50 hover:bg-green-100" : "hover:bg-gray-50"
@@ -156,16 +171,58 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                 </td>
                             </tr>
                         ))}
-                        {sortedRequests.length === 0 && (
+                        {currentItems.length === 0 && (
                             <tr>
                                 <td colSpan={8} className="p-8 text-center text-gray-400">
-                                    No se encontraron solicitudes.
+                                    No se encontraron solicitudes pendientes.
                                 </td>
                             </tr>
                         )}
                     </tbody>
                 </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <div className="text-sm text-gray-500">
+                        Mostrando <span className="font-medium">{indexOfFirstItem + 1}</span> a <span className="font-medium">{Math.min(indexOfLastItem, sortedRequests.length)}</span> de <span className="font-medium">{sortedRequests.length}</span> solicitudes
+                    </div>
+                    <div className="flex gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="px-3 py-1 border border-gray-200 rounded-md text-sm disabled:opacity-50 hover:bg-white transition shadow-sm"
+                        >
+                            Anterior
+                        </button>
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                                <button
+                                    key={page}
+                                    type="button"
+                                    onClick={() => setCurrentPage(page)}
+                                    className={clsx(
+                                        "w-8 h-8 rounded-md text-sm font-medium transition",
+                                        currentPage === page ? "bg-blue-600 text-white shadow-md" : "hover:bg-white border border-gray-200"
+                                    )}
+                                >
+                                    {page}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="px-3 py-1 border border-gray-200 rounded-md text-sm disabled:opacity-50 hover:bg-white transition shadow-sm"
+                        >
+                            Siguiente
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

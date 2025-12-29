@@ -194,21 +194,17 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                     {/* Performance */}
                     <div className="col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Rendimiento (Minutos)</label>
-                        <div className="flex gap-4">
+                        <select
+                            name="performance"
+                            required
+                            value={formData.performance}
+                            onChange={(e) => setFormData(prev => ({ ...prev, performance: Number(e.target.value) }))}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        >
                             {PERFORMANCES.map(perf => (
-                                <label key={perf} className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="radio"
-                                        name="performance"
-                                        value={perf}
-                                        checked={Number(formData.performance) === perf}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, performance: Number(e.target.value) }))}
-                                        className="text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <span className="text-gray-700">{perf} min</span>
-                                </label>
+                                <option key={perf} value={perf}>{perf} min</option>
                             ))}
-                        </div>
+                        </select>
                     </div>
 
                     {/* Times */}
