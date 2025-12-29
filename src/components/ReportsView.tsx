@@ -120,10 +120,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
     const filteredRequests = filterData(requests);
     const filteredOpenings = filterData(openings);
 
-    // Sort Logic: Oldest to Newest (by createdAt)
+    // Sort Logic: Newest to Oldest (by createdAt)
     const sortData = (data: any[]) => {
         return [...data].sort((a, b) =>
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
     };
 
