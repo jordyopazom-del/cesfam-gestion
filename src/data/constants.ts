@@ -32,4 +32,6 @@ export const LOCATIONS = [
     "Arquilhue",
     "Curriñe",
     "Maihue",
+    "Clinica Dental Municipal",
+    "Junaeb",
 ];
