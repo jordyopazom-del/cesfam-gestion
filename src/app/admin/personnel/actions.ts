@@ -11,6 +11,9 @@ export interface Official {
 export async function getPersonnel(): Promise<Official[]> {
     noStore();
     try {
+        // Migration: Unify Fonoaudiologia profession
+        await sql`UPDATE personnel SET profession = 'FONOAUDIÓLOGA/O' WHERE profession = 'FONOAUDIOLOGO'`;
+
         const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
         return rows.map(row => ({
             name: row.name,
