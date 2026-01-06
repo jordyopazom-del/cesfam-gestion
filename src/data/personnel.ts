@@ -58,7 +58,7 @@ export const INITIAL_PERSONNEL = [
   { profession: "PSICOLOGA/O", name: "KAREN ANGULO" },
   { profession: "PSICOLOGA/O", name: "MARLY MARTINEZ" },
   { profession: "PSICOLOGA/O", name: "CAMILA FLOREZ" },
-  { profession: "PSICOLOGA/O", name: "VALERIA SOLIS" },
+
   { profession: "PSICOLOGA/O", name: "ROSARIO MANNS" },
   { profession: "PSICOLOGA/O", name: "BARBARA CORTEZ" },
   { profession: "PSICOLOGA/O", name: "ELISABETH REYES" },
