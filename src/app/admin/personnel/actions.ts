@@ -15,6 +15,11 @@ export async function getPersonnel(): Promise<Official[]> {
         await sql`UPDATE personnel SET profession = 'FONOAUDIÓLOGA/O' WHERE profession = 'FONOAUDIOLOGO'`;
         await sql`UPDATE personnel SET profession = 'TRABAJADORA/O SOCIAL' WHERE profession = 'TRABAJADOR SOCIAL' OR profession = 'TRABAJADORA SOCIAL' OR profession = ' TRABAJADORA/O SOCIAL'`;
 
+        // Migration: Add new psychologists
+        await sql`INSERT INTO personnel (name, profession) VALUES ('BARBARA CORTEZ', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('ELISABETH REYES', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('CATALINA ROMERO', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
+
         const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
         return rows.map(row => ({
             name: row.name,
