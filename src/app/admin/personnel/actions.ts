@@ -13,7 +13,11 @@ export async function getPersonnel(): Promise<Official[]> {
     try {
         // Migration: Unify professions
         await sql`UPDATE personnel SET profession = 'FONOAUDIÓLOGA/O' WHERE profession = 'FONOAUDIOLOGO'`;
-        await sql`UPDATE personnel SET profession = 'TRABAJADORA/O SOCIAL' WHERE profession = 'TRABAJADOR SOCIAL' OR profession = 'TRABAJADORA SOCIAL' OR profession = ' TRABAJADORA/O SOCIAL'`;
+        await sql`UPDATE personnel SET profession = 'TRABAJADORA/O SOCIAL' WHERE profession LIKE '%TRABAJADOR%SOCIAL%' OR profession LIKE '%TRABAJADORA/O SOCIAL%'`;
+        await sql`UPDATE personnel SET profession = TRIM(profession)`;
+
+        // Migration: Remove inactive personnel
+        await sql`DELETE FROM personnel WHERE name = 'VALERIA SOLIS' OR name = 'CAROLINA OSES'`;
 
         // Migration: Add new psychologists
         await sql`INSERT INTO personnel (name, profession) VALUES ('BARBARA CORTEZ', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
