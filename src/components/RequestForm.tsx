@@ -127,7 +127,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
     return (
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-100">
             <h2 className="text-2xl font-bold mb-6 text-red-600 flex items-center gap-2">
-                📝 Ingreso de Solicitud de Bloqueo
+                📝 Ingreso de Solicitud de Centro de promoción
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -160,7 +160,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
 
                     {/* Location */}
                     <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Lugar de Bloqueo</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Centro de promoción</label>
                         <select
                             name="location"
                             required
@@ -206,7 +206,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
 
                     {/* Block Type */}
                     <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Bloqueo</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Solicitud</label>
                         <select
                             name="blockType"
                             required

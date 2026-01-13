@@ -147,7 +147,7 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
 
                     {/* Location */}
                     <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Lugar de Apertura</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Centro de promoción</label>
                         <select
                             name="location"
                             required

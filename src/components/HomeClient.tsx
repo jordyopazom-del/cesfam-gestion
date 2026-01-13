@@ -47,7 +47,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                             )}
                         >
                             <PlusCircle size={18} />
-                            Solicitud de Bloqueo
+                            Solicitud de Centro de promoción
                         </button>
                         <button
                             onClick={() => setActiveTab('agenda')}
