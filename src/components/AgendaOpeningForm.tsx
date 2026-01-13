@@ -270,7 +270,8 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                                             "aspect-square flex items-center justify-center rounded-lg text-sm transition relative",
                                             isSelected ? "bg-blue-600 text-white shadow-md scale-105" : "hover:bg-gray-200 text-gray-700",
                                             isToday(day) && !isSelected && "border border-blue-400 text-blue-600 font-bold",
-                                            isWeekend(day) && !isSelected && "text-red-400 bg-red-50/50"
+                                            day.getDay() === 0 && !isSelected && "text-red-400 bg-red-50/50",
+                                            day.getDay() === 6 && !isSelected && "text-blue-400 bg-blue-50/50"
                                         )}
                                     >
                                         {format(day, 'd')}

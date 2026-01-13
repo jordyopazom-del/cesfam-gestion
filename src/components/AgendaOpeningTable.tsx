@@ -117,7 +117,10 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                 req.status === 'Realizado' ? "bg-green-50 hover:bg-green-100" : "hover:bg-gray-50"
                             )}>
                                 <td className="p-4 whitespace-nowrap">
-                                    {new Date(req.createdAt).toLocaleDateString()}
+                                    <div className="text-gray-900">
+                                        {format(new Date(req.createdAt), 'dd/MM/yyyy')}
+                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                    </div>
                                 </td>
                                 <td className="p-4">{req.coordinator}</td>
                                 <td className="p-4">{req.location || '-'}</td>

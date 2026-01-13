@@ -159,7 +159,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         };
 
         const exportRequests = filterByDateRange(requests).map(req => ({
-            'Fecha Solicitud': new Date(req.createdAt).toLocaleDateString(),
+            'Fecha Solicitud': format(new Date(req.createdAt), 'dd/MM/yyyy HH:mm'),
             'Solicitante': req.coordinator,
             'Lugar': req.location || '-',
             'Profesión': req.profession,
@@ -172,7 +172,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         }));
 
         const exportOpenings = filterByDateRange(openings).map(req => ({
-            'Fecha Solicitud': new Date(req.createdAt).toLocaleDateString(),
+            'Fecha Solicitud': format(new Date(req.createdAt), 'dd/MM/yyyy HH:mm'),
             'Solicitante': req.coordinator,
             'Lugar': req.location || '-',
             'Profesión': req.profession,
@@ -400,7 +400,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                         sortedRequests.map((req) => (
                                             <tr key={req.id} className="hover:bg-gray-50 transition">
                                                 <td className="p-4 whitespace-nowrap">
-                                                    {new Date(req.createdAt).toLocaleDateString()}
+                                                    <div className="text-gray-900">
+                                                        {format(new Date(req.createdAt), 'dd/MM/yyyy')}
+                                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                                    </div>
                                                 </td>
                                                 <td className="p-4">{req.coordinator}</td>
                                                 <td className="p-4">{req.location || '-'}</td>
@@ -448,7 +451,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                         sortedOpenings.map((req) => (
                                             <tr key={req.id} className="hover:bg-gray-50 transition">
                                                 <td className="p-4 whitespace-nowrap">
-                                                    {new Date(req.createdAt).toLocaleDateString()}
+                                                    <div className="text-gray-900">
+                                                        {format(new Date(req.createdAt), 'dd/MM/yyyy')}
+                                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                                    </div>
                                                 </td>
                                                 <td className="p-4">{req.coordinator}</td>
                                                 <td className="p-4">{req.location || '-'}</td>

@@ -125,7 +125,10 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                             "hover:bg-gray-50"
                             )}>
                                 <td className="p-4 whitespace-nowrap">
-                                    {new Date(req.createdAt).toLocaleDateString()}
+                                    <div className="text-gray-900">
+                                        {format(new Date(req.createdAt), 'dd/MM/yyyy')}
+                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                    </div>
                                 </td>
                                 <td className="p-4">{req.coordinator}</td>
                                 <td className="p-4">{req.location || '-'}</td>
@@ -159,6 +162,7 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                 <td className="p-4 text-center">
                                     {isAdmin ? (
                                         <select
+                                            aria-label="Estado de la agenda"
                                             value={req.agendaBlockedStatus || ''}
                                             onChange={(e) => handleAgendaStatusChange(req.id, e.target.value as any)}
                                             className="block w-full pl-3 pr-10 py-2 text-xs border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white/50"

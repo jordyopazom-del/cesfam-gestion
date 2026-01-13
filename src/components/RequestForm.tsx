@@ -32,7 +32,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
     const filteredNames = personnel.filter(p => p.profession === formData.profession);
 
     const toggleDay = (day: Date) => {
-        if (isWeekend(day)) return; // Disable weekends if needed, or keep enabled
+        if (day.getDay() === 0) return; // Disable only Sunday (0) if desired, but Saturday (6) is now allowed
 
         const exists = selectedDays.find(d => isSameDay(d, day));
         if (exists) {
@@ -298,7 +298,8 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                                                 "h-10 w-10 rounded-full flex items-center justify-center text-sm transition-all duration-200",
                                                 isSelected ? "bg-blue-600 text-white shadow-md scale-105" : "hover:bg-red-50 text-gray-700",
                                                 isToday(day) && !isSelected && "border-2 border-blue-200 font-bold",
-                                                isWeekendDay && !isSelected && "text-red-400"
+                                                day.getDay() === 0 && !isSelected && "text-red-400 bg-red-50/50",
+                                                day.getDay() === 6 && !isSelected && "text-blue-400 bg-blue-50/50"
                                             )}
                                         >
                                             {format(day, 'd')}
