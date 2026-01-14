@@ -127,7 +127,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
     return (
         <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-100">
             <h2 className="text-2xl font-bold mb-6 text-red-600 flex items-center gap-2">
-                📝 Ingreso de Solicitud de Centro de promoción
+                📝 Ingreso de Solicitud de Bloqueo
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
