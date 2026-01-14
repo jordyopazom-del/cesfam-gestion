@@ -24,6 +24,12 @@ export async function getPersonnel(): Promise<Official[]> {
         await sql`INSERT INTO personnel (name, profession) VALUES ('ELISABETH REYES', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('CATALINA ROMERO', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('ALVARO PEREIRA', 'ORTODONCISTA') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('JACQUELINE RAUQUE', 'TERAPEUTA OCUPACIONAL') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('YOSETT SANDOVAL', 'MATRONA/ÓN') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('JOAQUIN VELASQUEZ', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('VICTORIA SALDIVIA', 'ENFERMERA/O') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('NICOL RIVAS', 'KINESIOLOGA/O') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('KATHERINE ZUÑIGA', 'TRABAJADORA/O SOCIAL') ON CONFLICT (name) DO NOTHING`;
 
         const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
         return rows.map(row => ({

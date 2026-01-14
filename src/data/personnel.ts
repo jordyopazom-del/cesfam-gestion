@@ -107,4 +107,10 @@ export const INITIAL_PERSONNEL = [
   { profession: "TENS", name: "DAPNER MAUREIRA" },
   { profession: "TENS", name: "GABRIELA ARAVENA" },
   { profession: "ORTODONCISTA", name: "ALVARO PEREIRA" },
+  { profession: "TERAPEUTA OCUPACIONAL", name: "JACQUELINE RAUQUE" },
+  { profession: "MATRONA/ÓN", name: "YOSETT SANDOVAL" },
+  { profession: "PSICOLOGA/O", name: "JOAQUIN VELASQUEZ" },
+  { profession: "ENFERMERA/O", name: "VICTORIA SALDIVIA" },
+  { profession: "KINESIOLOGA/O", name: "NICOL RIVAS" },
+  { profession: "TRABAJADORA/O SOCIAL", name: "KATHERINE ZUÑIGA" },
 ];
