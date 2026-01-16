@@ -13,6 +13,7 @@ export const COORDINATORS = [
 export const BLOCK_TYPES = [
     "Otros",
     "Feriado Legal",
+    "Licencia Medica",
     "Permiso Administrativo",
     "Permiso Compensatorio",
     "Permiso sin goce",
