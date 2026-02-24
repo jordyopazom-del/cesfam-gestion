@@ -32,6 +32,7 @@ export async function getPersonnel(): Promise<Official[]> {
         await sql`INSERT INTO personnel (name, profession) VALUES ('KATHERINE ZUÑIGA', 'TRABAJADORA/O SOCIAL') ON CONFLICT (name) DO NOTHING`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('ANDRES FLANDEZ', 'KINESIOLOGA/O') ON CONFLICT (name) DO NOTHING`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('KATHERINE ROMERO', 'MEDICO') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('NICOLL AVILA', 'ODONTOLOGO') ON CONFLICT (name) DO NOTHING`;
 
         const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
         return rows.map(row => ({
