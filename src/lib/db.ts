@@ -28,7 +28,7 @@ export interface AgendaOpeningRequest {
     startTime: string;
     endTime: string;
     selectedDays: string[]; // ISO date strings
-    status: 'Pending' | 'Realizado';
+    status: 'Pending' | 'Realizado' | 'No Corresponde';
     createdAt: string;
 }
 
@@ -127,7 +127,7 @@ export async function getAgendaOpenings(): Promise<AgendaOpeningRequest[]> {
             startTime: row.start_time,
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
-            status: row.status as 'Pending' | 'Realizado',
+            status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
             createdAt: row.created_at.toISOString()
         }));
     } catch (error) {
@@ -174,7 +174,7 @@ export async function updateAgendaOpeningStatus(id: string, status: AgendaOpenin
             startTime: row.start_time,
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
-            status: row.status as 'Pending' | 'Realizado',
+            status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
             createdAt: row.created_at.toISOString()
         };
     } catch (error) {

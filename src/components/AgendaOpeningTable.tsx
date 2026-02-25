@@ -52,7 +52,7 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
     };
 
     const filteredRequests = requests.filter(r => {
-        const isProcessed = r.status === 'Realizado';
+        const isProcessed = r.status === 'Realizado' || r.status === 'No Corresponde';
         const matchesFilter = r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
             r.profession.toLowerCase().includes(filter.toLowerCase()) ||
             r.coordinator.toLowerCase().includes(filter.toLowerCase());
@@ -114,7 +114,8 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                         {currentItems.map((req) => (
                             <tr key={req.id} className={clsx(
                                 "transition",
-                                req.status === 'Realizado' ? "bg-green-50 hover:bg-green-100" : "hover:bg-gray-50"
+                                req.status === 'Realizado' ? "bg-green-50 hover:bg-green-100" :
+                                    req.status === 'No Corresponde' ? "bg-gray-50 hover:bg-gray-100 opacity-60" : "hover:bg-gray-50"
                             )}>
                                 <td className="p-4 whitespace-nowrap">
                                     <div className="text-gray-900">
@@ -151,22 +152,24 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                             value={req.status || 'Pending'}
                                             onChange={(e) => {
                                                 const newStatus = e.target.value as AgendaOpeningRequest['status'];
-                                                // Prevent reverting to Pending if already Realizado (though it should be hidden)
-                                                if (req.status === 'Realizado' && newStatus === 'Pending') {
+                                                // Prevent reverting to Pending if already processed
+                                                if ((req.status === 'Realizado' || req.status === 'No Corresponde') && newStatus === 'Pending') {
                                                     return;
                                                 }
                                                 handleStatusChange(req.id, newStatus);
                                             }}
                                             className="block w-full pl-3 pr-10 py-2 text-xs border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white/50"
-                                            disabled={req.status === 'Realizado'} // Disable if already Realizado to prevent changes
+                                            disabled={req.status === 'Realizado' || req.status === 'No Corresponde'} // Disable if already processed to prevent changes
                                         >
-                                            <option value="Pending" disabled={req.status === 'Realizado'}>Pendiente</option>
+                                            <option value="Pending" disabled={req.status === 'Realizado' || req.status === 'No Corresponde'}>Pendiente</option>
                                             <option value="Realizado">Realizado</option>
+                                            <option value="No Corresponde">No Corresponde</option>
                                         </select>
                                     ) : (
                                         <span className={clsx(
                                             "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                            req.status === 'Realizado' ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                                            req.status === 'Realizado' ? "bg-green-100 text-green-800" :
+                                                req.status === 'No Corresponde' ? "bg-gray-100 text-gray-800" : "bg-yellow-100 text-yellow-800"
                                         )}>
                                             {req.status === 'Pending' ? 'Pendiente' : req.status}
                                         </span>
