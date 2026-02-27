@@ -14,7 +14,9 @@ export async function getPersonnel(): Promise<Official[]> {
         // Migration: Unify professions
         await sql`UPDATE personnel SET profession = 'FONOAUDIÓLOGA/O' WHERE profession = 'FONOAUDIOLOGO'`;
         await sql`UPDATE personnel SET profession = 'TRABAJADORA/O SOCIAL' WHERE profession LIKE '%TRABAJADOR%SOCIAL%' OR profession LIKE '%TRABAJADORA/O SOCIAL%'`;
-        await sql`UPDATE personnel SET profession = TRIM(profession)`;
+        await sql`UPDATE personnel SET profession = 'ODONTOLOGO' WHERE profession ILIKE 'ODONTOLOGA%' OR profession ILIKE 'ODONTÓLOGA%'`;
+        await sql`UPDATE personnel SET name = UPPER(TRIM(name)), profession = UPPER(TRIM(profession))`;
+        await sql`UPDATE personnel SET profession = 'ODONTOLOGO' WHERE name ILIKE 'CATALINA%DIAZ%'`;
 
         // Migration: Remove inactive personnel
         await sql`DELETE FROM personnel WHERE name = 'VALERIA SOLIS' OR name = 'CAROLINA OSES'`;
@@ -33,6 +35,8 @@ export async function getPersonnel(): Promise<Official[]> {
         await sql`INSERT INTO personnel (name, profession) VALUES ('ANDRES FLANDEZ', 'KINESIOLOGA/O') ON CONFLICT (name) DO NOTHING`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('KATHERINE ROMERO', 'MEDICO') ON CONFLICT (name) DO NOTHING`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('NICOLL AVILA', 'ODONTOLOGO') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('CATALINA DIAZ', 'ODONTOLOGO') ON CONFLICT (name) DO UPDATE SET profession = 'ODONTOLOGO'`;
+        await sql`UPDATE personnel SET profession = 'ODONTOLOGO' WHERE name = 'CATALINA DIAZ'`;
 
         const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
         return rows.map(row => ({
