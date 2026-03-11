@@ -14,6 +14,7 @@ const PERFORMANCES = [10, 20, 30, 40, 45, 60];
 export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess: () => void, personnel: Official[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     // Form State
     const [formData, setFormData] = useState({
@@ -62,6 +63,7 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
 
         setIsSubmitting(true);
         setSuccessMessage('');
+        setErrorMessage('');
 
         try {
             const payload = {
@@ -89,12 +91,15 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                 setSelectedDays([]);
                 onSuccess();
                 setTimeout(() => setSuccessMessage(''), 3000);
+            } else if (res.status === 409) {
+                const data = await res.json();
+                setErrorMessage(data.message || 'El profesional ya tiene una apertura de agenda en ese horario.');
             } else {
-                alert('Error al enviar la solicitud');
+                setErrorMessage('Error al enviar la solicitud. Intente nuevamente.');
             }
         } catch (error) {
             console.error(error);
-            alert('Error al enviar la solicitud');
+            setErrorMessage('Error de conexión al enviar la solicitud.');
         } finally {
             setIsSubmitting(false);
         }
@@ -302,6 +307,13 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                     <div className="bg-green-50 text-green-700 p-3 rounded-lg flex items-center gap-2 animate-in fade-in slide-in-from-top-2">
                         <CheckCircle size={20} />
                         {successMessage}
+                    </div>
+                )}
+
+                {errorMessage && (
+                    <div className="bg-red-50 text-red-700 border border-red-200 p-4 rounded-lg flex items-start gap-3">
+                        <span className="text-red-500 mt-0.5 flex-shrink-0">⚠️</span>
+                        <span className="text-sm font-medium">{errorMessage}</span>
                     </div>
                 )}
             </form>

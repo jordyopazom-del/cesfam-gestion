@@ -32,6 +32,123 @@ export interface AgendaOpeningRequest {
     createdAt: string;
 }
 
+// ─────────────────────────────────────────────────────────────
+// VALIDACIONES DE TRASLAPE DE HORARIO
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Verifica si existe una solicitud de bloqueo que se traslape con la nueva.
+ * Dos rangos horarios se traslapan cuando: inicio_nuevo < fin_existente Y fin_nuevo > inicio_existente.
+ * Solo considera solicitudes del mismo profesional que no hayan sido Rechazadas.
+ * Devuelve el primer conflicto encontrado o null si no hay traslapes.
+ */
+export async function checkBlockingOverlap(
+    professionalName: string,
+    selectedDays: string[], // ISO date strings de los días nuevos
+    startTime: string,      // 'HH:mm'
+    endTime: string         // 'HH:mm'
+): Promise<{ day: string; existingStartTime: string; existingEndTime: string } | null> {
+    noStore();
+    try {
+        // Traer todos los bloqueos activos del mismo profesional (no Rechazados)
+        const { rows } = await sql`
+            SELECT selected_days, start_time, end_time
+            FROM requests
+            WHERE professional_name = ${professionalName}
+              AND status != 'Rejected'
+        `;
+
+        for (const row of rows) {
+            const existingDays: string[] = JSON.parse(row.selected_days);
+            const existingStart = row.start_time as string;
+            const existingEnd = row.end_time as string;
+
+            // Encontrar si algún día nuevo coincide con algún día existente
+            for (const newDay of selectedDays) {
+                const newDayDate = new Date(newDay).toDateString();
+                const dayMatch = existingDays.some(
+                    (ed) => new Date(ed).toDateString() === newDayDate
+                );
+
+                if (dayMatch) {
+                    // Verificar traslape de horario: A_inicio < B_fin AND A_fin > B_inicio
+                    const overlap =
+                        startTime < existingEnd && endTime > existingStart;
+
+                    if (overlap) {
+                        return {
+                            day: newDay,
+                            existingStartTime: existingStart,
+                            existingEndTime: existingEnd,
+                        };
+                    }
+                }
+            }
+        }
+
+        return null; // Sin traslapes
+    } catch (error) {
+        console.error('Error al verificar traslape de bloqueos:', error);
+        throw error;
+    }
+}
+
+/**
+ * Verifica si existe una solicitud de apertura de agenda que se traslape con la nueva.
+ * Misma lógica de traslape horario que para bloqueos.
+ * Solo considera solicitudes del mismo profesional que no sean 'No Corresponde'.
+ * Devuelve el primer conflicto encontrado o null si no hay traslapes.
+ */
+export async function checkAgendaOpeningOverlap(
+    professionalName: string,
+    selectedDays: string[], // ISO date strings de los días nuevos
+    startTime: string,      // 'HH:mm'
+    endTime: string         // 'HH:mm'
+): Promise<{ day: string; existingStartTime: string; existingEndTime: string } | null> {
+    noStore();
+    try {
+        // Traer todas las aperturas activas del mismo profesional (no 'No Corresponde')
+        const { rows } = await sql`
+            SELECT selected_days, start_time, end_time
+            FROM agenda_openings
+            WHERE professional_name = ${professionalName}
+              AND status != 'No Corresponde'
+        `;
+
+        for (const row of rows) {
+            const existingDays: string[] = JSON.parse(row.selected_days);
+            const existingStart = row.start_time as string;
+            const existingEnd = row.end_time as string;
+
+            for (const newDay of selectedDays) {
+                const newDayDate = new Date(newDay).toDateString();
+                const dayMatch = existingDays.some(
+                    (ed) => new Date(ed).toDateString() === newDayDate
+                );
+
+                if (dayMatch) {
+                    // Verificar traslape: A_inicio < B_fin AND A_fin > B_inicio
+                    const overlap =
+                        startTime < existingEnd && endTime > existingStart;
+
+                    if (overlap) {
+                        return {
+                            day: newDay,
+                            existingStartTime: existingStart,
+                            existingEndTime: existingEnd,
+                        };
+                    }
+                }
+            }
+        }
+
+        return null; // Sin traslapes
+    } catch (error) {
+        console.error('Error al verificar traslape de aperturas de agenda:', error);
+        throw error;
+    }
+}
+
 export async function getRequests(): Promise<BlockingRequest[]> {
     noStore();
     try {
