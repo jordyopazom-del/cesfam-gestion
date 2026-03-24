@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getPersonnel, addOfficial, deleteOfficial, Official } from './actions';
 import { Trash2, Plus, User, Briefcase } from 'lucide-react';
+import clsx from 'clsx';
 
 export default function PersonnelAdminPage() {
     const router = useRouter();
@@ -32,8 +33,8 @@ export default function PersonnelAdminPage() {
         if (!newOfficial.name || !newOfficial.profession) return;
 
         try {
-            await addOfficial(newOfficial);
-            setNewOfficial({ name: '', profession: '' });
+            await addOfficial({ ...newOfficial, type: (newOfficial.type || 'CLINICO') });
+            setNewOfficial({ name: '', profession: '', type: 'CLINICO' });
             router.refresh();
             await loadPersonnel();
         } catch (error) {
@@ -63,7 +64,7 @@ export default function PersonnelAdminPage() {
     }
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl relative">
+        <div className="container mx-auto p-6 max-w-5xl relative">
             <h1 className="text-3xl font-bold mb-8 text-gray-800">Administración de Funcionarios</h1>
 
             <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
@@ -71,26 +72,40 @@ export default function PersonnelAdminPage() {
                     <Plus className="w-5 h-5" />
                     Agregar Nuevo Funcionario
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="space-y-1">
+                            <label htmlFor="add-name" className="text-xs font-semibold text-gray-500 uppercase ml-1">Nombre Completo</label>
+                            <input
+                                id="add-name"
+                                type="text"
+                                placeholder="Eje: JUAN PEREZ"
+                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={newOfficial.name}
+                                onChange={(e) => setNewOfficial({ ...newOfficial, name: e.target.value.toUpperCase() })}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label htmlFor="add-profession" className="text-xs font-semibold text-gray-500 uppercase ml-1">Profesión / Cargo</label>
+                            <input
+                                id="add-profession"
+                                type="text"
+                                placeholder="Eje: MEDICO"
+                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={newOfficial.profession}
+                                onChange={(e) => setNewOfficial({ ...newOfficial, profession: e.target.value.toUpperCase() })}
+                            />
+                        </div>
                     <div className="relative">
-                        <User className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Nombre Completo"
-                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            value={newOfficial.name}
-                            onChange={(e) => setNewOfficial({ ...newOfficial, name: e.target.value.toUpperCase() })}
-                        />
-                    </div>
-                    <div className="relative">
-                        <Briefcase className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Profesión"
-                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                            value={newOfficial.profession}
-                            onChange={(e) => setNewOfficial({ ...newOfficial, profession: e.target.value.toUpperCase() })}
-                        />
+                        <select
+                            title="Tipo de Funcionario"
+                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            value={newOfficial.type || 'CLINICO'}
+                            onChange={(e) => setNewOfficial({ ...newOfficial, type: e.target.value as any })}
+                        >
+                            <option value="CLINICO">CLÍNICO</option>
+                            <option value="ADMINISTRATIVO">ADMINISTRATIVO</option>
+                            <option value="COORDINADOR">SOLICITANTE</option>
+                        </select>
                     </div>
                     <button
                         onClick={handleAdd}
@@ -117,6 +132,7 @@ export default function PersonnelAdminPage() {
                                 <tr>
                                     <th className="p-4">Nombre</th>
                                     <th className="p-4">Profesión</th>
+                                    <th className="p-4">Tipo</th>
                                     <th className="p-4 text-right">Acciones</th>
                                 </tr>
                             </thead>
@@ -127,6 +143,16 @@ export default function PersonnelAdminPage() {
                                         <td className="p-4 text-gray-600">
                                             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
                                                 {p.profession}
+                                            </span>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={clsx(
+                                                "px-3 py-1 rounded-full text-sm font-medium",
+                                                p.type === 'CLINICO' ? "bg-emerald-50 text-emerald-700" :
+                                                    p.type === 'ADMINISTRATIVO' ? "bg-amber-50 text-amber-700" :
+                                                        "bg-purple-50 text-purple-700"
+                                            )}>
+                                                {p.type}
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">

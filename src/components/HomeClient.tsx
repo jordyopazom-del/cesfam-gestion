@@ -6,13 +6,14 @@ import AgendaOpeningForm from '@/components/AgendaOpeningForm';
 import ManagementTable from '@/components/ManagementTable';
 import AgendaOpeningTable from '@/components/AgendaOpeningTable';
 
-import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound } from 'lucide-react';
 import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
 import UserManagement from './UserManagement';
 import { Official } from '@/app/admin/personnel/actions';
 import { useEffect, useRef } from 'react';
+import PersonnelView from './PersonnelView';
 
 interface HomeClientProps {
     isAdmin: boolean;
@@ -20,21 +21,27 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
-    const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users'>('form');
+    const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos'>('form');
+    const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isActivosDropdownOpen, setIsActivosDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const activosDropdownRef = useRef<HTMLDivElement>(null);
 
     const handleSuccess = () => {
         setRefreshTrigger(prev => prev + 1);
     };
 
-    // Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsDropdownOpen(false);
+            }
+            if (activosDropdownRef.current && !activosDropdownRef.current.contains(event.target as Node)) {
+                setIsActivosDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -98,6 +105,64 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                                 </div>
                             )}
                         </div>
+                        <div className="relative" ref={activosDropdownRef}>
+                            <button
+                                onClick={() => setIsActivosDropdownOpen(!isActivosDropdownOpen)}
+                                className={clsx(
+                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all outline-none",
+                                    activeTab === 'activos' ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                                )}
+                            >
+                                <UsersRound size={18} />
+                                Activos
+                                <ChevronDown size={14} className={clsx("transition-transform", isActivosDropdownOpen && "rotate-180")} />
+                            </button>
+
+                            {isActivosDropdownOpen && (
+                                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('activos');
+                                            setActiveSubTab('CLINICO');
+                                            setIsActivosDropdownOpen(false);
+                                        }}
+                                        className={clsx(
+                                            "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
+                                            (activeTab === 'activos' && activeSubTab === 'CLINICO') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
+                                        )}
+                                    >
+                                        Clínicos
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('activos');
+                                            setActiveSubTab('ADMINISTRATIVO');
+                                            setIsActivosDropdownOpen(false);
+                                        }}
+                                        className={clsx(
+                                            "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
+                                            (activeTab === 'activos' && activeSubTab === 'ADMINISTRATIVO') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
+                                        )}
+                                    >
+                                        Administrativos
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('activos');
+                                            setActiveSubTab('COORDINADOR');
+                                            setIsActivosDropdownOpen(false);
+                                        }}
+                                        className={clsx(
+                                            "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
+                                            (activeTab === 'activos' && activeSubTab === 'COORDINADOR') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
+                                        )}
+                                    >
+                                        Solicitantes
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
                         {isAdmin && (
                             <button
                                 onClick={() => setActiveTab('table')}
@@ -182,6 +247,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} />}
                     {activeTab === 'users' && isAdmin && <UserManagement />}
+                    {activeTab === 'activos' && <PersonnelView subTab={activeSubTab} personnel={personnel} refreshPersonnel={() => setRefreshTrigger(prev => prev + 1)} />}
                 </div>
             </div>
         </main >
