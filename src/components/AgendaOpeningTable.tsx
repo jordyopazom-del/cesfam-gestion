@@ -1,16 +1,18 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import { AgendaOpeningRequest } from '@/lib/db';
-import { Search } from 'lucide-react';
+import { Search, UserCheck, FileText } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
+import { Official, getPersonnel } from '@/app/admin/personnel/actions';
+import ProcessingModal from './ProcessingModal';
 
 export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refreshTrigger: number, isAdmin: boolean }) {
     const [requests, setRequests] = useState<AgendaOpeningRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [personnel, setPersonnel] = useState<Official[]>([]);
+    const [selectedRequest, setSelectedRequest] = useState<AgendaOpeningRequest | null>(null);
     const itemsPerPage = 10;
 
     const fetchRequests = async () => {
@@ -28,9 +30,16 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
 
     useEffect(() => {
         fetchRequests();
+        getPersonnel().then(setPersonnel);
     }, [refreshTrigger]);
 
     const handleStatusChange = async (id: string, newStatus: AgendaOpeningRequest['status']) => {
+        if (newStatus === 'Realizado') {
+            const req = requests.find(r => r.id === id);
+            if (req) setSelectedRequest(req);
+            return;
+        }
+
         // Optimistic update
         setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
 
@@ -97,7 +106,7 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-600">
+                <table className="w-full text-left text-[11px] md:text-xs text-gray-600">
                     <thead className="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider">
                         <tr>
                             <th className="p-4">Fecha Solicitud</th>
@@ -117,28 +126,28 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                 req.status === 'Realizado' ? "bg-green-50 hover:bg-green-100" :
                                     req.status === 'No Corresponde' ? "bg-gray-50 hover:bg-gray-100 opacity-60" : "hover:bg-gray-50"
                             )}>
-                                <td className="p-4 whitespace-nowrap">
-                                    <div className="text-gray-900">
+                                <td className="p-4 whitespace-nowrap align-top">
+                                    <div className="text-gray-900 font-medium">
                                         {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                        <span className="text-gray-400 text-[10px] ml-2">{format(new Date(req.createdAt), 'HH:mm')}</span>
                                     </div>
                                 </td>
-                                <td className="p-4">{req.coordinator}</td>
-                                <td className="p-4">{req.location || '-'}</td>
-                                <td className="p-4">
-                                    <div className="font-medium text-gray-900">{req.professionalName}</div>
-                                    <div className="text-xs text-gray-500">{req.profession}</div>
+                                <td className="p-4 align-top leading-tight">{req.coordinator}</td>
+                                <td className="p-4 align-top">{req.location || '-'}</td>
+                                <td className="p-4 align-top">
+                                    <div className="font-semibold text-gray-900 leading-tight">{req.professionalName}</div>
+                                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{req.profession}</div>
                                 </td>
-                                <td className="p-4">
-                                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                                <td className="p-4 align-top">
+                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold">
                                         {req.performance} min
                                     </span>
                                 </td>
-                                <td className="p-4 whitespace-nowrap">
+                                <td className="p-4 whitespace-nowrap font-medium align-top">
                                     {req.startTime} - {req.endTime}
                                 </td>
-                                <td className="p-4">
-                                    <div className="max-w-[300px] text-xs leading-relaxed">
+                                <td className="p-4 align-top">
+                                    <div className="max-w-[200px] text-[10px] leading-tight text-gray-500 font-medium">
                                         {req.selectedDays
                                             .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
                                             .map(d => format(new Date(d), 'dd/MM'))
@@ -146,40 +155,57 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                     </div>
                                 </td>
                                 <td className="p-4 text-center">
-                                    {isAdmin ? (
-                                        <select
-                                            aria-label="Cambiar estado de solicitud"
-                                            value={req.status || 'Pending'}
-                                            onChange={(e) => {
-                                                const newStatus = e.target.value as AgendaOpeningRequest['status'];
-                                                // Prevent reverting to Pending if already processed
-                                                if ((req.status === 'Realizado' || req.status === 'No Corresponde') && newStatus === 'Pending') {
-                                                    return;
-                                                }
-                                                handleStatusChange(req.id, newStatus);
-                                            }}
-                                            className="block w-full pl-3 pr-10 py-2 text-xs border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white/50"
-                                            disabled={req.status === 'Realizado' || req.status === 'No Corresponde'} // Disable if already processed to prevent changes
-                                        >
-                                            <option value="Pending" disabled={req.status === 'Realizado' || req.status === 'No Corresponde'}>Pendiente</option>
-                                            <option value="Realizado">Realizado</option>
-                                            <option value="No Corresponde">No Corresponde</option>
-                                        </select>
-                                    ) : (
-                                        <span className={clsx(
-                                            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                            req.status === 'Realizado' ? "bg-green-100 text-green-800" :
-                                                req.status === 'No Corresponde' ? "bg-gray-100 text-gray-800" : "bg-yellow-100 text-yellow-800"
-                                        )}>
-                                            {req.status === 'Pending' ? 'Pendiente' : req.status}
-                                        </span>
-                                    )}
+                                    <div className="flex flex-col items-center gap-1">
+                                        {isAdmin ? (
+                                            <select
+                                                aria-label="Cambiar estado de solicitud"
+                                                value={req.status || 'Pending'}
+                                                onChange={(e) => {
+                                                    const newStatus = e.target.value as AgendaOpeningRequest['status'];
+                                                    if ((req.status === 'Realizado' || req.status === 'No Corresponde') && newStatus === 'Pending') {
+                                                        return;
+                                                    }
+                                                    handleStatusChange(req.id, newStatus);
+                                                }}
+                                                className="block w-full px-2 py-1 text-[10px] border-gray-300 focus:outline-none focus:ring-blue-500 rounded-md bg-white/50"
+                                                disabled={req.status === 'Realizado' || req.status === 'No Corresponde'}
+                                            >
+                                                <option value="Pending" disabled={req.status === 'Realizado' || req.status === 'No Corresponde'}>...</option>
+                                                <option value="Realizado">OK</option>
+                                                <option value="No Corresponde">Err</option>
+                                            </select>
+                                        ) : (
+                                            <span className={clsx(
+                                                "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold",
+                                                req.status === 'Realizado' ? "bg-green-100 text-green-800" :
+                                                    req.status === 'No Corresponde' ? "bg-red-100 text-red-800" : "bg-yellow-100 text-yellow-800"
+                                            )}>
+                                                {req.status === 'Pending' ? 'Pendiente' : req.status === 'Realizado' ? 'OK' : 'Err'}
+                                            </span>
+                                        )}
+
+                                        {req.assignedAdmin && (
+                                            <div className="text-[9px] text-blue-600 flex items-center gap-1 font-bold bg-blue-50 px-1 py-0.5 rounded uppercase whitespace-nowrap">
+                                                <UserCheck size={9} /> {req.assignedAdmin}
+                                            </div>
+                                        )}
+                                        {req.pdfUrl && req.pdfUrl !== 'SIN PACIENTES' && (
+                                            <a
+                                                href={req.pdfUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"
+                                            >
+                                                <FileText size={9} /> PDF
+                                            </a>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                         {currentItems.length === 0 && (
                             <tr>
-                                <td colSpan={8} className="p-8 text-center text-gray-400">
+                                <td colSpan={8} className="p-8 text-center text-gray-400 text-xs">
                                     No se encontraron solicitudes pendientes.
                                 </td>
                             </tr>
@@ -228,6 +254,20 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                         </button>
                     </div>
                 </div>
+            )}
+
+            {/* Processing Modal */}
+            {selectedRequest && (
+                <ProcessingModal
+                    request={selectedRequest}
+                    type="Apertura"
+                    personnel={personnel}
+                    onClose={() => setSelectedRequest(null)}
+                    onSuccess={(updated) => {
+                        setRequests(prev => prev.map(r => r.id === updated.id ? updated : r));
+                        setSelectedRequest(null);
+                    }}
+                />
             )}
         </div>
     );

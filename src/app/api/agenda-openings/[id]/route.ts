@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getAgendaOpenings, updateAgendaOpeningStatus } from '@/lib/db';
-
-export async function GET() {
-    const requests = await getAgendaOpenings();
-    return NextResponse.json(requests);
-}
+import { updateAgendaOpeningStatus } from '@/lib/db';
+import { sendEmail, generateRequestEmailHtml } from '@/lib/email-service';
+import { getPersonnel } from '@/app/admin/personnel/actions';
 
 export async function PATCH(
     request: Request,
@@ -13,16 +10,47 @@ export async function PATCH(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { status } = body;
+        const { status, pdfUrl, assignedAdmin } = body;
 
         if (status && !['Pending', 'Realizado', 'No Corresponde'].includes(status)) {
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
         }
 
-        const updatedRequest = await updateAgendaOpeningStatus(id, status);
+        const updatedRequest = await updateAgendaOpeningStatus(id, status, pdfUrl, assignedAdmin);
 
         if (!updatedRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // EMAIL NOTIFICATION
+        // ─────────────────────────────────────────────────────────────
+        if (status === 'Realizado') {
+            try {
+                const personnel = await getPersonnel();
+                const recipients = ['gestiondemandafutrono@munifutrono.cl'];
+
+                // Find Coordinator Email
+                const coordinator = personnel.find(p => p.name === updatedRequest.coordinator);
+                if (coordinator?.email) recipients.push(coordinator.email);
+
+                // Find Admin Email
+                if (updatedRequest.assignedAdmin && updatedRequest.assignedAdmin !== 'N/A') {
+                    const admin = personnel.find(p => p.name === updatedRequest.assignedAdmin);
+                    if (admin?.email) recipients.push(admin.email);
+                }
+
+                if (recipients.length > 0) {
+                    const html = generateRequestEmailHtml(updatedRequest, 'Apertura');
+                    await sendEmail({
+                        to: recipients,
+                        subject: `Gestión Finalizada: Apertura de Agenda - ${updatedRequest.professionalName}`,
+                        html
+                    });
+                }
+            } catch (emailError) {
+                console.error('Error al enviar notificación:', emailError);
+            }
         }
 
         return NextResponse.json(updatedRequest);

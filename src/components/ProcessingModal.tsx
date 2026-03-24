@@ -1,19 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { BlockingRequest } from '@/lib/db';
+import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
 import { Official } from '@/app/admin/personnel/actions';
 import { X, Upload, User, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
 
 interface ProcessingModalProps {
-    request: BlockingRequest;
+    request: BlockingRequest | AgendaOpeningRequest;
+    type: 'Bloqueo' | 'Apertura';
     personnel: Official[];
     onClose: () => void;
-    onSuccess: (updatedRequest: BlockingRequest) => void;
+    onSuccess: (updated: any) => void;
 }
 
-export default function ProcessingModal({ request, personnel, onClose, onSuccess }: ProcessingModalProps) {
+export default function ProcessingModal({ request, type, personnel, onClose, onSuccess }: ProcessingModalProps) {
     const [file, setFile] = useState<File | null>(null);
     const [assignedAdmin, setAssignedAdmin] = useState('');
     const [isNoPatients, setIsNoPatients] = useState(false);
@@ -52,11 +53,14 @@ export default function ProcessingModal({ request, personnel, onClose, onSuccess
             }
 
             // 2. Update Request
-            const updateRes = await fetch(`/api/requests/${request.id}`, {
+            const apiUrl = type === 'Bloqueo' ? `/api/requests/${request.id}` : `/api/agenda-openings/${request.id}`;
+            const statusKey = type === 'Bloqueo' ? 'agendaBlockedStatus' : 'status';
+
+            const updateRes = await fetch(apiUrl, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    agendaBlockedStatus: 'Realizado',
+                    [statusKey]: 'Realizado',
                     pdfUrl,
                     assignedAdmin: adminToSave
                 }),
@@ -77,7 +81,7 @@ export default function ProcessingModal({ request, personnel, onClose, onSuccess
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-300">
                 <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-blue-600 text-white">
-                    <h3 className="text-xl font-bold">Procesar Solicitud de Bloqueo</h3>
+                    <h3 className="text-xl font-bold">Procesar {type}</h3>
                     <button onClick={onClose} aria-label="Cerrar modal" className="hover:bg-white/20 p-1 rounded-full transition">
                         <X size={24} />
                     </button>
@@ -86,7 +90,11 @@ export default function ProcessingModal({ request, personnel, onClose, onSuccess
                 <form onSubmit={handleUpload} className="p-6 space-y-6">
                     <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800">
                         <p><strong>Profesional:</strong> {request.professionalName}</p>
-                        <p><strong>Tipo:</strong> {request.blockType}</p>
+                        {type === 'Bloqueo' ? (
+                            <p><strong>Tipo:</strong> {(request as BlockingRequest).blockType}</p>
+                        ) : (
+                            <p><strong>Rendimiento:</strong> {(request as AgendaOpeningRequest).performance} min</p>
+                        )}
                         <p><strong>Horas:</strong> {request.startTime} - {request.endTime}</p>
                     </div>
 
@@ -118,7 +126,7 @@ export default function ProcessingModal({ request, personnel, onClose, onSuccess
                     {!isNoPatients && (
                         <>
                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                <label className="block text-sm font-semibold text-gray-700">Subir Solicitud de Bloqueo (PDF)</label>
+                                <label className="block text-sm font-semibold text-gray-700">Subir Respaldo (PDF)</label>
                                 <label htmlFor="file-upload" className="sr-only">Subir archivo PDF</label>
                                 <div className={clsx(
                                     "relative border-2 border-dashed rounded-xl p-6 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer",
@@ -182,7 +190,7 @@ export default function ProcessingModal({ request, personnel, onClose, onSuccess
                             disabled={loading || (!isNoPatients && (!file || !assignedAdmin))}
                             className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition disabled:opacity-50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
                         >
-                            {loading ? 'Procesando...' : 'Finalizar Bloqueo'}
+                            {loading ? 'Procesando...' : `Finalizar ${type}`}
                         </button>
                     </div>
                 </form>

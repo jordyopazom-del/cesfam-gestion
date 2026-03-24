@@ -174,7 +174,10 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                 <td className="px-6 py-4">
                                     {editingName === p.name ? (
                                         <input
+                                            id={`edit-name-${p.name}`}
                                             type="text"
+                                            placeholder="Nombre completo"
+                                            title="Editar nombre completo"
                                             className="w-full px-2 py-1 border border-blue-300 rounded focus:ring-1 focus:ring-blue-500 outline-none uppercase"
                                             value={editForm.name}
                                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value.toUpperCase() })}
@@ -191,7 +194,10 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                 <td className="px-6 py-4">
                                     {editingName === p.name ? (
                                         <input
+                                            id={`edit-profession-${p.name}`}
                                             type="text"
+                                            placeholder="Profesión o cargo"
+                                            title="Editar profesión o cargo"
                                             className="w-full px-2 py-1 border border-blue-300 rounded focus:ring-1 focus:ring-blue-500 outline-none uppercase"
                                             value={editForm.profession}
                                             onChange={(e) => setEditForm({ ...editForm, profession: e.target.value.toUpperCase() })}
@@ -206,7 +212,9 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                 <td className="px-6 py-4">
                                     {editingName === p.name ? (
                                         <input
+                                            id={`edit-email-${p.name}`}
                                             type="email"
+                                            placeholder="Correo electrónico"
                                             title="Editar correo electrónico"
                                             className="w-full px-2 py-1 border border-blue-300 rounded focus:ring-1 focus:ring-blue-500 outline-none lowercase"
                                             value={editForm.email}

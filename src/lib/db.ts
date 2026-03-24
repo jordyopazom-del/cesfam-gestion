@@ -32,6 +32,9 @@ export interface AgendaOpeningRequest {
     endTime: string;
     selectedDays: string[]; // ISO date strings
     status: 'Pending' | 'Realizado' | 'No Corresponde';
+    pdfUrl?: string;
+    assignedAdmin?: string;
+    processedAt?: string;
     createdAt: string;
 }
 
@@ -266,6 +269,9 @@ export async function getAgendaOpenings(): Promise<AgendaOpeningRequest[]> {
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
+            pdfUrl: row.pdf_url,
+            assignedAdmin: row.assigned_admin,
+            processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             createdAt: row.created_at.toISOString()
         }));
     } catch (error) {
@@ -280,10 +286,11 @@ export async function saveAgendaOpening(request: AgendaOpeningRequest): Promise<
         await sql`
             INSERT INTO agenda_openings (
                 id, coordinator, location, profession, professional_name, performance,
-                start_time, end_time, selected_days, status, created_at
+                start_time, end_time, selected_days, status, pdf_url, assigned_admin, processed_at, created_at
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.performance},
-                ${request.startTime}, ${request.endTime}, ${JSON.stringify(request.selectedDays)}, ${request.status}, ${request.createdAt}
+                ${request.startTime}, ${request.endTime}, ${JSON.stringify(request.selectedDays)}, ${request.status}, 
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.createdAt}
             )
         `;
         return request;
@@ -293,10 +300,23 @@ export async function saveAgendaOpening(request: AgendaOpeningRequest): Promise<
     }
 }
 
-export async function updateAgendaOpeningStatus(id: string, status: AgendaOpeningRequest['status']): Promise<AgendaOpeningRequest | null> {
+export async function updateAgendaOpeningStatus(
+    id: string, 
+    status?: AgendaOpeningRequest['status'],
+    pdfUrl?: string,
+    assignedAdmin?: string
+): Promise<AgendaOpeningRequest | null> {
     noStore();
     try {
-        await sql`UPDATE agenda_openings SET status = ${status} WHERE id = ${id}`;
+        if (status) {
+            await sql`UPDATE agenda_openings SET status = ${status} WHERE id = ${id}`;
+        }
+        if (pdfUrl) {
+            await sql`UPDATE agenda_openings SET pdf_url = ${pdfUrl} WHERE id = ${id}`;
+        }
+        if (assignedAdmin) {
+            await sql`UPDATE agenda_openings SET assigned_admin = ${assignedAdmin}, processed_at = NOW() WHERE id = ${id}`;
+        }
 
         const { rows } = await sql`SELECT * FROM agenda_openings WHERE id = ${id}`;
         if (rows.length === 0) return null;
@@ -313,6 +333,9 @@ export async function updateAgendaOpeningStatus(id: string, status: AgendaOpenin
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
+            pdfUrl: row.pdf_url,
+            assignedAdmin: row.assigned_admin,
+            processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             createdAt: row.created_at.toISOString()
         };
     } catch (error) {

@@ -265,6 +265,7 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
             {selectedRequest && (
                 <ProcessingModal
                     request={selectedRequest}
+                    type="Bloqueo"
                     personnel={personnel}
                     onClose={() => setSelectedRequest(null)}
                     onSuccess={(updated) => {
