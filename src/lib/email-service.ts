@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Resend no se instancia aquí para evitar errores durante el build si la API KEY no está presente
 
 interface EmailParams {
     to: string[];
@@ -13,6 +13,8 @@ export async function sendEmail({ to, subject, html }: EmailParams) {
         console.warn('RESEND_API_KEY no configurada. El correo no se enviará.');
         return { success: false, error: 'API Key missing' };
     }
+
+    const resend = new Resend(process.env.RESEND_API_KEY);
 
     try {
         const { data, error } = await resend.emails.send({
