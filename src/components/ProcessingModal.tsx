@@ -46,7 +46,10 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                     body: formData,
                 });
 
-                if (!uploadRes.ok) throw new Error('Error al subir el archivo');
+                if (!uploadRes.ok) {
+                    const errorData = await uploadRes.json().catch(() => ({}));
+                    throw new Error(errorData.details || errorData.error || 'Error al subir el archivo');
+                }
                 const uploadData = await uploadRes.json();
                 pdfUrl = uploadData.url;
                 adminToSave = assignedAdmin;
@@ -66,7 +69,10 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                 }),
             });
 
-            if (!updateRes.ok) throw new Error('Error al actualizar la solicitud');
+            if (!updateRes.ok) {
+                const errorData = await updateRes.json().catch(() => ({}));
+                throw new Error(errorData.error || 'Error al actualizar la solicitud');
+            }
             const updatedData = await updateRes.json();
 
             onSuccess(updatedData);
@@ -157,20 +163,22 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
                                 <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
                                     <User size={16} className="text-blue-600" />
-                                    Asignar Administrativo para Llamados
+                                    Asignar Funcionario para Llamados
                                 </label>
                                 <input
                                     type="text"
                                     list="personnel-list"
-                                    aria-label="Nombre del administrativo"
-                                    placeholder="Nombre del administrativo..."
+                                    aria-label="Nombre del funcionario"
+                                    placeholder="Nombre del funcionario (Clínico o Administrativo)..."
                                     value={assignedAdmin}
                                     onChange={(e) => setAssignedAdmin(e.target.value)}
                                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
                                 />
                                 <datalist id="personnel-list">
                                     {personnel.map((p, i) => (
-                                        <option key={i} value={p.name} />
+                                        <option key={i} value={p.name}>
+                                            {p.profession} ({p.type === 'ADMINISTRATIVO' ? 'Admin' : 'Clínico'})
+                                        </option>
                                     ))}
                                 </datalist>
                             </div>
