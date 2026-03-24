@@ -137,10 +137,11 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
 
             <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Request Date (Automatic) */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Solicitud</label>
+                    {/* Fecha y Coordinador en una fila */}
+                    <div>
+                        <label htmlFor="fecha-solicitud" className="block text-sm font-medium text-gray-700 mb-1">Fecha de Solicitud</label>
                         <input
+                            id="fecha-solicitud"
                             type="text"
                             value={todayStr}
                             disabled
@@ -148,10 +149,10 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                         />
                     </div>
 
-                    {/* Coordinator */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Coordinador Solicitante</label>
+                    <div>
+                        <label htmlFor="coordinator" className="block text-sm font-medium text-gray-700 mb-1">Coordinador Solicitante</label>
                         <select
+                            id="coordinator"
                             name="coordinator"
                             required
                             value={formData.coordinator}
@@ -163,10 +164,11 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                         </select>
                     </div>
 
-                    {/* Location */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Centro de promoción</label>
+                    {/* Lugar y Tipo en una fila */}
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Lugar de Bloqueo</label>
                         <select
+                            id="location"
                             name="location"
                             required
                             value={formData.location}
@@ -178,10 +180,26 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                         </select>
                     </div>
 
-                    {/* Profession */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Profesión</label>
+                        <label htmlFor="blockType" className="block text-sm font-medium text-gray-700 mb-1">Tipo de Solicitud</label>
                         <select
+                            id="blockType"
+                            name="blockType"
+                            required
+                            value={formData.blockType}
+                            onChange={handleChange}
+                            className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        >
+                            <option value="">Seleccione Tipo</option>
+                            {BLOCK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Profesión y Nombre Profesional (Ya en una fila por el grid) */}
+                    <div>
+                        <label htmlFor="profession" className="block text-sm font-medium text-gray-700 mb-1">Profesión</label>
+                        <select
+                            id="profession"
                             name="profession"
                             required
                             value={formData.profession}
@@ -193,10 +211,10 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                         </select>
                     </div>
 
-                    {/* Professional Name */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Profesional</label>
+                        <label htmlFor="professionalName" className="block text-sm font-medium text-gray-700 mb-1">Nombre Profesional</label>
                         <select
+                            id="professionalName"
                             name="professionalName"
                             required
                             disabled={!formData.profession}
@@ -206,21 +224,6 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                         >
                             <option value="">Seleccione Nombre</option>
                             {filteredNames.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                        </select>
-                    </div>
-
-                    {/* Block Type */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Solicitud</label>
-                        <select
-                            name="blockType"
-                            required
-                            value={formData.blockType}
-                            onChange={handleChange}
-                            className="w-full p-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                        >
-                            <option value="">Seleccione Tipo</option>
-                            {BLOCK_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
 
@@ -268,6 +271,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                                     type="button"
                                     onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
                                     className="p-2 hover:bg-gray-100 rounded-full transition"
+                                    aria-label="Mes anterior"
                                 >
                                     <ChevronLeft size={20} />
                                 </button>
@@ -278,6 +282,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                                     type="button"
                                     onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
                                     className="p-2 hover:bg-gray-100 rounded-full transition"
+                                    aria-label="Mes siguiente"
                                 >
                                     <ChevronRight size={20} />
                                 </button>
