@@ -6,7 +6,7 @@ import AgendaOpeningForm from '@/components/AgendaOpeningForm';
 import ManagementTable from '@/components/ManagementTable';
 import AgendaOpeningTable from '@/components/AgendaOpeningTable';
 
-import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield, User, Briefcase } from 'lucide-react';
 import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
@@ -131,6 +131,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                                             (activeTab === 'activos' && activeSubTab === 'CLINICO') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
                                         )}
                                     >
+                                        <User size={16} className={clsx((activeTab === 'activos' && activeSubTab === 'CLINICO') ? "text-blue-600" : "text-gray-400")} />
                                         Clínicos
                                     </button>
                                     <button
@@ -144,6 +145,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                                             (activeTab === 'activos' && activeSubTab === 'ADMINISTRATIVO') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
                                         )}
                                     >
+                                        <Briefcase size={16} className={clsx((activeTab === 'activos' && activeSubTab === 'ADMINISTRATIVO') ? "text-blue-600" : "text-gray-400")} />
                                         Administrativos
                                     </button>
                                     <button
@@ -157,6 +159,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                                             (activeTab === 'activos' && activeSubTab === 'COORDINADOR') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
                                         )}
                                     >
+                                        <Shield size={16} className={clsx((activeTab === 'activos' && activeSubTab === 'COORDINADOR') ? "text-blue-600" : "text-gray-400")} />
                                         Solicitantes
                                     </button>
                                 </div>
@@ -235,7 +238,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} />}
                     {activeTab === 'activos' && (
-                        <>
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             {activeSubTab !== 'COORDINADOR' ? (
                                 <PersonnelView 
                                     subTab={activeSubTab} 
@@ -243,18 +246,9 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                                     refreshPersonnel={() => setRefreshTrigger(prev => prev + 1)} 
                                 />
                             ) : (
-                                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden p-6 animate-in fade-in duration-500">
-                                    <div className="mb-8">
-                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                                            <Shield className="text-blue-600" size={28} />
-                                            Gestión de Usuarios y Accesos
-                                        </h2>
-                                        <p className="text-gray-500 mt-1">Administración centralizada de cuentas, roles y seguridad del sistema.</p>
-                                    </div>
-                                    <UserManagement />
-                                </div>
+                                <UserManagement />
                             )}
-                        </>
+                        </div>
                     )}
                 </div>
             </div>

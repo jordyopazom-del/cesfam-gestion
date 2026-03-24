@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X } from 'lucide-react';
+import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Users } from 'lucide-react';
 import clsx from 'clsx';
 
 interface PersonnelViewProps {
@@ -28,7 +28,15 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
         switch (subTab) {
             case 'CLINICO': return 'Personal Clínico';
             case 'ADMINISTRATIVO': return 'Personal Administrativo';
-            default: return 'Personal';
+            default: return 'Gestión de Personal';
+        }
+    };
+
+    const getIcon = () => {
+        switch (subTab) {
+            case 'CLINICO': return <User className="text-emerald-600" size={28} />;
+            case 'ADMINISTRATIVO': return <Briefcase className="text-amber-600" size={28} />;
+            default: return <Users className="text-blue-600" size={28} />;
         }
     };
 
@@ -73,10 +81,15 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
 
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h2 className="text-xl font-bold text-gray-900">{getTitle()}</h2>
-                    <p className="text-sm text-gray-500 mt-1">Gestión de activos clasificados como {subTab.toLowerCase()}</p>
+            <div className="p-8 border-b border-gray-100 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-gray-50 rounded-xl">
+                        {getIcon()}
+                    </div>
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{getTitle()}</h2>
+                        <p className="text-gray-500 mt-0.5">Gestión de activos del área {subTab.toLowerCase()}</p>
+                    </div>
                 </div>
 
                 <div className="flex items-center gap-3 w-full md:w-auto">
@@ -157,100 +170,105 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                 </div>
             )}
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[400px]">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-semibold">
-                            <th className="px-6 py-4">Nombre</th>
-                            <th className="px-6 py-4">Profesión / Función</th>
-                            <th className="px-6 py-4">Correo</th>
-                            <th className="px-6 py-4">Tipo</th>
-                            <th className="px-6 py-4 text-right">Acciones</th>
+                        <tr className="bg-gray-50/50 text-gray-400 text-xs uppercase tracking-widest font-bold border-b border-gray-100">
+                            <th className="px-8 py-5">Identificación / Nombre</th>
+                            <th className="px-8 py-5">Profesión / Función</th>
+                            <th className="px-8 py-5">📧 Contacto</th>
+                            <th className="px-8 py-5">Estado</th>
+                            <th className="px-8 py-5 text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className="divide-y divide-gray-50">
                         {filteredPersonnel.map((p) => (
                             <tr key={p.name} className="hover:bg-gray-50/80 transition-colors group">
-                                <td className="px-6 py-4">
+                                <td className="px-8 py-5">
                                     {editingName === p.name ? (
                                         <input
                                             id={`edit-name-${p.name}`}
                                             type="text"
                                             placeholder="Nombre completo"
                                             title="Editar nombre completo"
-                                            className="w-full px-2 py-1 border border-blue-300 rounded focus:ring-1 focus:ring-blue-500 outline-none uppercase"
+                                            className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase text-sm"
                                             value={editForm.name}
                                             onChange={(e) => setEditForm({ ...editForm, name: e.target.value.toUpperCase() })}
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                                <User size={16} />
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100">
+                                                {p.name.charAt(0)}
                                             </div>
-                                            <span className="font-medium text-gray-900">{p.name}</span>
+                                            <span className="font-semibold text-gray-900">{p.name}</span>
                                         </div>
                                     )}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-8 py-5">
                                     {editingName === p.name ? (
                                         <input
                                             id={`edit-profession-${p.name}`}
                                             type="text"
                                             placeholder="Profesión o cargo"
                                             title="Editar profesión o cargo"
-                                            className="w-full px-2 py-1 border border-blue-300 rounded focus:ring-1 focus:ring-blue-500 outline-none uppercase"
+                                            className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase text-sm"
                                             value={editForm.profession}
                                             onChange={(e) => setEditForm({ ...editForm, profession: e.target.value.toUpperCase() })}
                                         />
                                     ) : (
                                         <div className="flex items-center gap-2 text-gray-600">
-                                            <Briefcase size={14} className="text-gray-400" />
-                                            <span>{p.profession}</span>
+                                            <div className="p-1.5 bg-gray-100 rounded-md">
+                                                <Briefcase size={12} className="text-gray-500" />
+                                            </div>
+                                            <span className="text-sm">{p.profession}</span>
                                         </div>
                                     )}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-8 py-5">
                                     {editingName === p.name ? (
                                         <input
                                             id={`edit-email-${p.name}`}
                                             type="email"
                                             placeholder="Correo electrónico"
                                             title="Editar correo electrónico"
-                                            className="w-full px-2 py-1 border border-blue-300 rounded focus:ring-1 focus:ring-blue-500 outline-none lowercase"
+                                            className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none lowercase text-sm"
                                             value={editForm.email}
                                             onChange={(e) => setEditForm({ ...editForm, email: e.target.value.toLowerCase() })}
                                         />
                                     ) : (
-                                        <span className="text-sm text-gray-500 italic">{p.email || 'No asignado'}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-sm font-medium text-gray-700">{p.email || 'Sin correo'}</span>
+                                            {p.email && <span className="text-[10px] text-gray-400">Verificado</span>}
+                                        </div>
                                     )}
                                 </td>
-                                <td className="px-6 py-4">
+                                <td className="px-8 py-5">
                                     <span className={clsx(
-                                        "px-2.5 py-0.5 rounded-full text-xs font-semibold",
-                                        p.type === 'CLINICO' ? "bg-emerald-50 text-emerald-700" :
-                                            p.type === 'ADMINISTRATIVO' ? "bg-amber-50 text-amber-700" :
-                                                "bg-blue-50 text-blue-700"
+                                        "px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase",
+                                        p.type === 'CLINICO' ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
+                                            p.type === 'ADMINISTRATIVO' ? "bg-amber-50 text-amber-700 border border-amber-100" :
+                                                "bg-blue-50 text-blue-700 border border-blue-100"
                                     )}>
                                         {p.type}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-right">
-                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <td className="px-8 py-5 text-right">
+                                    <div className="flex items-center justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                         {editingName === p.name ? (
                                             <>
-                                                <button onClick={handleUpdate} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Guardar cambios">
+                                                <button onClick={handleUpdate} className="p-2 text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg shadow-sm transition-all" title="Guardar cambios">
                                                     <Check size={18} />
                                                 </button>
-                                                <button onClick={() => setEditingName(null)} className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors" title="Cancelar edición">
+                                                <button onClick={() => setEditingName(null)} className="p-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-all" title="Cancelar edición">
                                                     <X size={18} />
                                                 </button>
                                             </>
                                         ) : (
                                             <>
-                                                <button onClick={() => startEdit(p)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                                                <button onClick={() => startEdit(p)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all" title="Editar">
                                                     <Edit2 size={18} />
                                                 </button>
-                                                <button onClick={() => handleDelete(p.name)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                                                <button onClick={() => handleDelete(p.name)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all" title="Eliminar">
                                                     <Trash2 size={18} />
                                                 </button>
                                             </>
