@@ -397,7 +397,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                             </>
                                         ) : (
                                             <>
-                                                <th className="px-3 py-3">Rend.</th>
+                                                <th className="px-3 py-3 whitespace-nowrap">Rend.</th>
                                                 <th className="px-3 py-3">Horas</th>
                                                 <th className="px-3 py-3">Días</th>
                                                 <th className="px-3 py-3 text-center">Estado</th>
@@ -482,8 +482,8 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                     <div className="font-medium text-gray-900">{req.professionalName}</div>
                                                     <div className="text-xs text-gray-500">{req.profession}</div>
                                                 </td>
-                                                <td className="p-4">
-                                                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                                                <td className="px-3 py-3 whitespace-nowrap">
+                                                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold whitespace-nowrap">
                                                         {req.performance} min
                                                     </span>
                                                 </td>
