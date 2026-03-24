@@ -8,7 +8,7 @@ export async function PATCH(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { status, agendaBlockedStatus } = body;
+        const { status, agendaBlockedStatus, pdfUrl, assignedAdmin } = body;
 
         if (status && !['Pending', 'Authorized', 'Rejected'].includes(status)) {
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
@@ -18,7 +18,7 @@ export async function PATCH(
             return NextResponse.json({ error: 'Invalid agenda status' }, { status: 400 });
         }
 
-        const updatedRequest = await updateRequestStatus(id, status, agendaBlockedStatus);
+        const updatedRequest = await updateRequestStatus(id, status, agendaBlockedStatus, pdfUrl, assignedAdmin);
 
         if (!updatedRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });

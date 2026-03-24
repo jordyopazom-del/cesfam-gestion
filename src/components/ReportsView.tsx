@@ -167,8 +167,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
             'Tipo Bloqueo': req.blockType,
             'Fechas Bloqueo': req.selectedDays ? req.selectedDays.map((d: string) => safeFormat(d, 'dd/MM/yyyy')).join(', ') : `${req.startDate} - ${req.endDate}`,
             'Hora Inicio': req.startTime,
-            'Hora Término': req.endTime,
-            'Estado Agenda': req.agendaBlockedStatus || 'Pendiente'
+            'Hora Término': req.startTime,
+            'Estado Agenda': req.agendaBlockedStatus || 'Pendiente',
+            'Documento Adjunto': req.pdfUrl ? `${window.location.origin}${req.pdfUrl}` : '-',
+            'Responsable Contactar': req.assignedAdmin || '-'
         }));
 
         const exportOpenings = filterByDateRange(openings).map(req => ({
@@ -262,6 +264,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                 </label>
                                 <input
                                     type="date"
+                                    aria-label="Fecha Inicio"
                                     value={exportStartDate}
                                     onChange={(e) => setExportStartDate(e.target.value)}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
@@ -273,6 +276,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                 </label>
                                 <input
                                     type="date"
+                                    aria-label="Fecha Término"
                                     value={exportEndDate}
                                     onChange={(e) => setExportEndDate(e.target.value)}
                                     className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition"
@@ -303,6 +307,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">Mes</label>
                                 <select
+                                    aria-label="Seleccionar mes"
                                     value={selectedMonth}
                                     onChange={(e) => setSelectedMonth(Number(e.target.value))}
                                     className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -318,6 +323,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">Año</label>
                                 <select
+                                    aria-label="Seleccionar año"
                                     value={selectedYear}
                                     onChange={(e) => setSelectedYear(Number(e.target.value))}
                                     className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -332,6 +338,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">Estamento</label>
                                 <select
+                                    aria-label="Seleccionar estamento"
                                     value={selectedProfession}
                                     onChange={handleProfessionChange}
                                     className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -347,6 +354,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">Profesional</label>
                                 <select
+                                    aria-label="Seleccionar profesional"
                                     value={selectedProfessional}
                                     onChange={(e) => setSelectedProfessional(e.target.value)}
                                     disabled={!selectedProfession}
@@ -371,26 +379,28 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="w-full text-left text-sm text-gray-600">
-                                <thead className="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider">
+                            <table className="w-full text-left text-[11px] md:text-xs text-gray-600">
+                                <thead className="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider border-b border-gray-100">
                                     <tr>
-                                        <th className="p-4">Fecha Solicitud</th>
-                                        <th className="p-4">Solicitante</th>
-                                        <th className="p-4">Lugar</th>
-                                        <th className="p-4">Profesional</th>
+                                        <th className="px-3 py-3 whitespace-nowrap">Fecha Solicitud</th>
+                                        <th className="px-3 py-3 whitespace-nowrap">Solicitante</th>
+                                        <th className="px-3 py-3">Lugar</th>
+                                        <th className="px-3 py-3">Profesional</th>
                                         {reportType === 'blockings' ? (
                                             <>
-                                                <th className="p-4">Tipo Bloqueo</th>
-                                                <th className="p-4">Fechas</th>
-                                                <th className="p-4">Horas</th>
-                                                <th className="p-4 text-center">Agenda Bloqueada</th>
+                                                <th className="px-3 py-3">Tipo</th>
+                                                <th className="px-3 py-3">Fechas</th>
+                                                <th className="px-3 py-3">Horas</th>
+                                                <th className="px-3 py-3 text-center">Estado</th>
+                                                <th className="px-3 py-3 text-center">Doc</th>
+                                                <th className="px-3 py-3">Responsable</th>
                                             </>
                                         ) : (
                                             <>
-                                                <th className="p-4">Rendimiento</th>
-                                                <th className="p-4">Horas</th>
-                                                <th className="p-4">Días</th>
-                                                <th className="p-4 text-center">Estado</th>
+                                                <th className="px-3 py-3">Rend.</th>
+                                                <th className="px-3 py-3">Horas</th>
+                                                <th className="px-3 py-3">Días</th>
+                                                <th className="px-3 py-3 text-center">Estado</th>
                                             </>
                                         )}
                                     </tr>
@@ -398,52 +408,64 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                 <tbody className="divide-y divide-gray-100">
                                     {reportType === 'blockings' ? (
                                         sortedRequests.map((req) => (
-                                            <tr key={req.id} className="hover:bg-gray-50 transition">
-                                                <td className="p-4 whitespace-nowrap">
-                                                    <div className="text-gray-900">
+                                            <tr key={req.id} className="hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
+                                                <td className="px-3 py-3 whitespace-nowrap">
+                                                    <div className="text-gray-900 font-medium">
                                                         {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                                        <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
                                                     </div>
                                                 </td>
-                                                <td className="p-4">{req.coordinator}</td>
-                                                <td className="p-4">{req.location || '-'}</td>
-                                                <td className="p-4">
-                                                    <div className="font-medium text-gray-900">{req.professionalName}</div>
-                                                    <div className="text-xs text-gray-500">{req.profession}</div>
+                                                <td className="px-3 py-3 whitespace-nowrap max-w-[120px] truncate" title={req.coordinator}>{req.coordinator}</td>
+                                                <td className="px-3 py-3 whitespace-nowrap">{req.location || '-'}</td>
+                                                <td className="px-3 py-3 min-w-[140px]">
+                                                    <div className="font-semibold text-gray-900 leading-tight">{req.professionalName}</div>
+                                                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{req.profession}</div>
                                                 </td>
-                                                <td className="p-4">
-                                                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-medium">
+                                                <td className="px-3 py-3">
+                                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold whitespace-nowrap">
                                                         {req.blockType}
                                                     </span>
                                                 </td>
-                                                <td className="p-4">
-                                                    <div className="max-w-[300px] text-xs leading-relaxed">
+                                                <td className="px-3 py-3">
+                                                    <div className="max-w-[100px] text-[10px] leading-tight text-gray-500">
                                                         {req.selectedDays
                                                             ? req.selectedDays
                                                                 .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())
                                                                 .map((d: string) => safeFormat(d, 'dd/MM'))
                                                                 .join(', ')
-                                                            : (() => {
-                                                                const [y1, m1, d1] = req.startDate.split('-').map(Number);
-                                                                const [y2, m2, d2] = req.endDate.split('-').map(Number);
-                                                                return `${d1}/${m1}/${y1} - ${d2}/${m2}/${y2}`;
-                                                            })() // Fallback for old data
+                                                            : '-'
                                                         }
                                                     </div>
                                                 </td>
-                                                <td className="p-4 whitespace-nowrap">
+                                                <td className="px-3 py-3 whitespace-nowrap font-medium">
                                                     {req.startTime} - {req.endTime}
                                                 </td>
-                                                <td className="p-4 text-center">
+                                                <td className="px-3 py-3 text-center">
                                                     <span className={clsx(
-                                                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                                        req.agendaBlockedStatus === 'Realizado' ? "bg-green-100 text-green-800" :
-                                                            req.agendaBlockedStatus === 'Sin Agenda' ? "bg-yellow-100 text-yellow-800" :
-                                                                req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-100 text-red-800" :
-                                                                    "text-gray-500"
+                                                        "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
+                                                        req.agendaBlockedStatus === 'Realizado' ? "bg-green-100 text-green-700" :
+                                                            req.agendaBlockedStatus === 'Sin Agenda' ? "bg-yellow-100 text-yellow-700" :
+                                                                req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-100 text-red-700" :
+                                                                    "bg-gray-100 text-gray-500"
                                                     )}>
                                                         {req.agendaBlockedStatus || '-'}
                                                     </span>
+                                                </td>
+                                                <td className="px-3 py-3 text-center">
+                                                    {req.pdfUrl ? (
+                                                        <a
+                                                            href={req.pdfUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-blue-500 hover:text-blue-700 transition flex justify-center"
+                                                            title="Ver Documento"
+                                                        >
+                                                            <FileText size={16} />
+                                                        </a>
+                                                    ) : <span className="text-gray-300">-</span>}
+                                                </td>
+                                                <td className="px-3 py-3 whitespace-nowrap text-[10px] font-semibold text-gray-700 uppercase">
+                                                    {req.assignedAdmin || '-'}
                                                 </td>
                                             </tr>
                                         ))

@@ -2,15 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import { BlockingRequest } from '@/lib/db';
-import { Search, Trash2 } from 'lucide-react';
+import { Search, FileText, UserCheck } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
+import ProcessingModal from './ProcessingModal';
+import { Official, getPersonnel } from '@/app/admin/personnel/actions';
 
 export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTrigger: number, isAdmin: boolean }) {
     const [requests, setRequests] = useState<BlockingRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedRequest, setSelectedRequest] = useState<BlockingRequest | null>(null);
+    const [personnel, setPersonnel] = useState<Official[]>([]);
     const itemsPerPage = 10;
 
     const fetchRequests = async () => {
@@ -28,10 +32,17 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
 
     useEffect(() => {
         fetchRequests();
+        getPersonnel().then(setPersonnel);
     }, [refreshTrigger]);
 
 
     const handleAgendaStatusChange = async (id: string, newStatus: BlockingRequest['agendaBlockedStatus']) => {
+        if (newStatus === 'Realizado') {
+            const req = requests.find(r => r.id === id);
+            if (req) setSelectedRequest(req);
+            return;
+        }
+
         // Optimistic update
         setRequests(prev => prev.map(r => r.id === id ? { ...r, agendaBlockedStatus: newStatus } : r));
 
@@ -102,17 +113,17 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
             </div>
 
             <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-gray-600">
-                    <thead className="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider">
+                <table className="w-full text-left text-[11px] md:text-xs text-gray-600">
+                    <thead className="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider border-b border-gray-100">
                         <tr>
-                            <th className="p-4">Fecha Solicitud</th>
-                            <th className="p-4">Solicitante</th>
-                            <th className="p-4">Lugar</th>
-                            <th className="p-4">Profesional</th>
-                            <th className="p-4">Tipo Bloqueo</th>
-                            <th className="p-4">Fechas</th>
-                            <th className="p-4">Horas</th>
-                            <th className="p-4 text-center">Agenda Bloqueada</th>
+                            <th className="px-3 py-3 whitespace-nowrap">Fecha Solicitud</th>
+                            <th className="px-3 py-3 whitespace-nowrap">Solicitante</th>
+                            <th className="px-3 py-3">Lugar</th>
+                            <th className="px-3 py-3">Profesional</th>
+                            <th className="px-3 py-3">Tipo</th>
+                            <th className="px-3 py-3">Fechas</th>
+                            <th className="px-3 py-3">Horas</th>
+                            <th className="px-3 py-3 text-center">Estado</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -124,65 +135,79 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                         req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-50 hover:bg-red-100" :
                                             "hover:bg-gray-50"
                             )}>
-                                <td className="p-4 whitespace-nowrap">
-                                    <div className="text-gray-900">
+                                <td className="px-3 py-3 whitespace-nowrap">
+                                    <div className="text-gray-900 font-medium">
                                         {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                        <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
                                     </div>
                                 </td>
-                                <td className="p-4">{req.coordinator}</td>
-                                <td className="p-4">{req.location || '-'}</td>
-                                <td className="p-4">
-                                    <div className="font-medium text-gray-900">{req.professionalName}</div>
-                                    <div className="text-xs text-gray-500">{req.profession}</div>
+                                <td className="px-3 py-3 whitespace-nowrap max-w-[120px] truncate" title={req.coordinator}>{req.coordinator}</td>
+                                <td className="px-3 py-3 whitespace-nowrap">{req.location || '-'}</td>
+                                <td className="px-3 py-3 min-w-[140px]">
+                                    <div className="font-semibold text-gray-900 leading-tight">{req.professionalName}</div>
+                                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{req.profession}</div>
                                 </td>
-                                <td className="p-4">
-                                    <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded-full text-xs font-medium">
+                                <td className="px-3 py-3">
+                                    <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-[10px] font-bold whitespace-nowrap">
                                         {req.blockType}
                                     </span>
                                 </td>
-                                <td className="p-4">
-                                    <div className="max-w-[300px] text-xs leading-relaxed">
+                                <td className="px-3 py-3">
+                                    <div className="max-w-[100px] text-[10px] leading-tight text-gray-500">
                                         {req.selectedDays
                                             ? req.selectedDays
                                                 .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
                                                 .map(d => format(new Date(d), 'dd/MM'))
                                                 .join(', ')
-                                            : (() => {
-                                                const [y1, m1, d1] = req.startDate.split('-').map(Number);
-                                                const [y2, m2, d2] = req.endDate.split('-').map(Number);
-                                                return `${d1}/${m1}/${y1} - ${d2}/${m2}/${y2}`;
-                                            })() // Fallback for old data
+                                            : '-'
                                         }
                                     </div>
                                 </td>
-                                <td className="p-4 whitespace-nowrap">
+                                <td className="px-3 py-3 whitespace-nowrap font-medium">
                                     {req.startTime} - {req.endTime}
                                 </td>
-                                <td className="p-4 text-center">
-                                    {isAdmin ? (
-                                        <select
-                                            aria-label="Estado de la agenda"
-                                            value={req.agendaBlockedStatus || ''}
-                                            onChange={(e) => handleAgendaStatusChange(req.id, e.target.value as any)}
-                                            className="block w-full pl-3 pr-10 py-2 text-xs border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white/50"
-                                        >
-                                            <option value="">Seleccionar...</option>
-                                            <option value="Realizado">Realizado</option>
-                                            <option value="Sin Agenda">Sin Agenda</option>
-                                            <option value="No Corresponde">No Corresponde</option>
-                                        </select>
-                                    ) : (
-                                        <span className={clsx(
-                                            "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                            req.agendaBlockedStatus === 'Realizado' ? "bg-green-100 text-green-800" :
-                                                req.agendaBlockedStatus === 'Sin Agenda' ? "bg-yellow-100 text-yellow-800" :
-                                                    req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-100 text-red-800" :
-                                                        "text-gray-500"
-                                        )}>
-                                            {req.agendaBlockedStatus || '-'}
-                                        </span>
-                                    )}
+                                <td className="px-3 py-3 text-center">
+                                    <div className="flex flex-col items-center gap-1">
+                                        {isAdmin ? (
+                                            <select
+                                                aria-label="Estado de la agenda"
+                                                value={req.agendaBlockedStatus || ''}
+                                                onChange={(e) => handleAgendaStatusChange(req.id, e.target.value as any)}
+                                                className="block w-full px-2 py-1 text-[10px] border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md bg-white/50"
+                                            >
+                                                <option value="">...</option>
+                                                <option value="Realizado">OK</option>
+                                                <option value="Sin Agenda">N/A</option>
+                                                <option value="No Corresponde">Err</option>
+                                            </select>
+                                        ) : (
+                                            <span className={clsx(
+                                                "inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold",
+                                                req.agendaBlockedStatus === 'Realizado' ? "bg-green-100 text-green-800" :
+                                                    req.agendaBlockedStatus === 'Sin Agenda' ? "bg-yellow-100 text-yellow-800" :
+                                                        req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-100 text-red-800" :
+                                                            "text-gray-500"
+                                            )}>
+                                                {req.agendaBlockedStatus || '-'}
+                                            </span>
+                                        )}
+
+                                        {req.assignedAdmin && (
+                                            <div className="text-[9px] text-blue-600 flex items-center gap-1 font-bold bg-blue-50 px-1 py-0.5 rounded uppercase">
+                                                <UserCheck size={9} /> {req.assignedAdmin}
+                                            </div>
+                                        )}
+                                        {req.pdfUrl && (
+                                            <a
+                                                href={req.pdfUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"
+                                            >
+                                                <FileText size={9} /> PDF
+                                            </a>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -237,6 +262,18 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                         </button>
                     </div>
                 </div>
+            )}
+            {/* Processing Modal */}
+            {selectedRequest && (
+                <ProcessingModal
+                    request={selectedRequest}
+                    personnel={personnel}
+                    onClose={() => setSelectedRequest(null)}
+                    onSuccess={(updated) => {
+                        setRequests(prev => prev.map(r => r.id === updated.id ? updated : r));
+                        setSelectedRequest(null);
+                    }}
+                />
             )}
         </div>
     );

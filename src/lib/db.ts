@@ -15,6 +15,9 @@ export interface BlockingRequest {
     endTime: string;
     status: 'Pending' | 'Authorized' | 'Rejected';
     agendaBlockedStatus?: 'Realizado' | 'Sin Agenda' | 'No Corresponde';
+    pdfUrl?: string;
+    assignedAdmin?: string;
+    processedAt?: string;
     createdAt: string;
 }
 
@@ -181,10 +184,12 @@ export async function saveRequest(request: BlockingRequest): Promise<BlockingReq
         await sql`
             INSERT INTO requests (
                 id, coordinator, location, profession, professional_name, block_type,
-                start_date, end_date, selected_days, start_time, end_time, status, agenda_blocked_status, created_at
+                start_date, end_date, selected_days, start_time, end_time, status, agenda_blocked_status, 
+                pdf_url, assigned_admin, processed_at, created_at
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.blockType},
-                ${request.startDate}, ${request.endDate}, ${JSON.stringify(request.selectedDays)}, ${request.startTime}, ${request.endTime}, ${request.status}, ${request.agendaBlockedStatus || null}, ${request.createdAt}
+                ${request.startDate}, ${request.endDate}, ${JSON.stringify(request.selectedDays)}, ${request.startTime}, ${request.endTime}, ${request.status}, ${request.agendaBlockedStatus || null}, 
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.createdAt}
             )
         `;
         return request;
@@ -194,7 +199,13 @@ export async function saveRequest(request: BlockingRequest): Promise<BlockingReq
     }
 }
 
-export async function updateRequestStatus(id: string, status?: BlockingRequest['status'], agendaBlockedStatus?: BlockingRequest['agendaBlockedStatus']): Promise<BlockingRequest | null> {
+export async function updateRequestStatus(
+    id: string, 
+    status?: BlockingRequest['status'], 
+    agendaBlockedStatus?: BlockingRequest['agendaBlockedStatus'],
+    pdfUrl?: string,
+    assignedAdmin?: string
+): Promise<BlockingRequest | null> {
     noStore();
     try {
         if (status) {
@@ -203,6 +214,13 @@ export async function updateRequestStatus(id: string, status?: BlockingRequest['
         if (agendaBlockedStatus) {
             await sql`UPDATE requests SET agenda_blocked_status = ${agendaBlockedStatus} WHERE id = ${id}`;
         }
+        if (pdfUrl) {
+            await sql`UPDATE requests SET pdf_url = ${pdfUrl} WHERE id = ${id}`;
+        }
+        if (assignedAdmin) {
+            await sql`UPDATE requests SET assigned_admin = ${assignedAdmin}, processed_at = NOW() WHERE id = ${id}`;
+        }
+
 
         const { rows } = await sql`SELECT * FROM requests WHERE id = ${id}`;
         if (rows.length === 0) return null;
@@ -222,6 +240,9 @@ export async function updateRequestStatus(id: string, status?: BlockingRequest['
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as 'Realizado' | 'Sin Agenda' | 'No Corresponde' | undefined,
+            pdfUrl: row.pdf_url,
+            assignedAdmin: row.assigned_admin,
+            processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             createdAt: row.created_at.toISOString()
         };
     } catch (error) {
