@@ -425,27 +425,27 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                             <table className="w-full text-left border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-widest font-bold border-b border-gray-100">
-                                        <th className="px-6 py-4 whitespace-nowrap">Fecha Solicitud</th>
-                                        <th className="px-6 py-4 whitespace-nowrap">Solicitante</th>
-                                        <th className="px-6 py-4">Lugar</th>
-                                        <th className="px-6 py-4">Profesional / Estamento</th>
+                                        <th className="px-3 py-3 whitespace-nowrap">Fecha Solicitud</th>
+                                        <th className="px-3 py-3 whitespace-nowrap">Solicitante</th>
+                                        <th className="px-3 py-3">Lugar</th>
+                                        <th className="px-3 py-3">Profesional / Estamento</th>
                                         {reportType === 'blockings' ? (
                                             <>
-                                                <th className="px-6 py-4">Tipo</th>
-                                                <th className="px-6 py-4">Fechas</th>
-                                                <th className="px-6 py-4">Horas</th>
-                                                <th className="px-6 py-4 text-center">Estado Agenda</th>
-                                                <th className="px-6 py-4 text-center">Doc</th>
-                                                <th className="px-6 py-4">Responsable</th>
+                                                <th className="px-3 py-3">Tipo</th>
+                                                <th className="px-3 py-3">Fechas</th>
+                                                <th className="px-3 py-3">Horas</th>
+                                                <th className="px-3 py-3 text-center">Estado Agenda</th>
+                                                <th className="px-3 py-3 text-center">Doc</th>
+                                                <th className="px-3 py-3">Responsable</th>
                                             </>
                                         ) : (
                                             <>
-                                                <th className="px-6 py-4 whitespace-nowrap">Rend.</th>
-                                                <th className="px-6 py-4">Horas</th>
-                                                <th className="px-6 py-4">Días de Apertura</th>
-                                                <th className="px-6 py-4 text-center">Estado</th>
-                                                <th className="px-6 py-4 text-center">Doc</th>
-                                                <th className="px-6 py-4">Responsable</th>
+                                                <th className="px-3 py-3 whitespace-nowrap">Rend.</th>
+                                                <th className="px-3 py-3">Horas</th>
+                                                <th className="px-3 py-3">Días de Apertura</th>
+                                                <th className="px-3 py-3 text-center">Estado</th>
+                                                <th className="px-3 py-3 text-center">Doc</th>
+                                                <th className="px-3 py-3">Responsable</th>
                                             </>
                                         )}
                                     </tr>
@@ -454,24 +454,24 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                     {reportType === 'blockings' ? (
                                         sortedRequests.map((req) => (
                                             <tr key={req.id} className="hover:bg-gray-50/80 transition-colors border-b border-gray-50 last:border-0 group">
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <div className="font-bold text-gray-900 text-sm">
                                                         {format(new Date(req.createdAt), 'dd/MM/yyyy')}
                                                     </div>
                                                     <div className="text-[10px] text-gray-400 font-medium">{format(new Date(req.createdAt), 'HH:mm')} hrs</div>
                                                 </td>
-                                                <td className="px-6 py-4 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
-                                                <td className="px-6 py-4 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
-                                                <td className="px-6 py-4 min-w-[140px]">
+                                                <td className="px-3 py-3 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
+                                                <td className="px-3 py-3 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
+                                                <td className="px-3 py-3 min-w-[110px]">
                                                     <div className="font-bold text-gray-900 text-sm leading-tight">{req.professionalName}</div>
                                                     <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{req.profession}</div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <span className="inline-block px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold border border-blue-100 uppercase">
                                                         {req.blockType}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <div className="max-w-[120px] text-[11px] font-bold leading-tight text-gray-700 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
                                                         {req.selectedDays
                                                             ? req.selectedDays
@@ -482,10 +482,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         }
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-900 bg-gray-50/50 rounded-lg">
+                                                <td className="px-3 py-3 whitespace-nowrap text-xs font-bold text-gray-900 bg-gray-50/50 rounded-lg">
                                                     {req.startTime} - {req.endTime}
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-3 py-3 text-center">
                                                     <span className={clsx(
                                                         "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
                                                         req.agendaBlockedStatus === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
@@ -496,7 +496,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         {req.agendaBlockedStatus || 'Pendiente'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
                                                         {req.pdfUrl ? (
                                                             <>
@@ -521,7 +521,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         ) : <span className="text-gray-300">-</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[140px]">
+                                                <td className="px-3 py-3 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[110px]">
                                                     {req.assignedAdmin || '-'}
                                                 </td>
                                             </tr>
@@ -529,27 +529,27 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                     ) : (
                                         sortedOpenings.map((req) => (
                                             <tr key={req.id} className="hover:bg-gray-50/80 transition-colors group">
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <div className="font-bold text-gray-900 text-sm">
                                                         {format(new Date(req.createdAt), 'dd/MM/yyyy')}
                                                     </div>
                                                     <div className="text-[10px] text-gray-400 font-medium">{format(new Date(req.createdAt), 'HH:mm')} hrs</div>
                                                 </td>
-                                                <td className="px-6 py-4 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
-                                                <td className="px-6 py-4 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
-                                                <td className="px-6 py-4 min-w-[140px]">
+                                                <td className="px-3 py-3 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
+                                                <td className="px-3 py-3 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
+                                                <td className="px-3 py-3 min-w-[110px]">
                                                     <div className="font-bold text-gray-900 text-sm leading-tight">{req.professionalName}</div>
                                                     <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{req.profession}</div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold border border-amber-100 whitespace-nowrap">
                                                         {req.performance} MIN
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-900 bg-gray-50/50 rounded-lg">
+                                                <td className="px-3 py-3 whitespace-nowrap text-xs font-bold text-gray-900 bg-gray-50/50 rounded-lg">
                                                     {req.startTime} - {req.endTime}
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <div className="max-w-[160px] text-[11px] font-bold leading-tight text-gray-700 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
                                                         {req.selectedDays && Array.isArray(req.selectedDays)
                                                             ? [...req.selectedDays]
@@ -560,7 +560,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         }
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
+                                                <td className="px-3 py-3 text-center">
                                                     <span className={clsx(
                                                         "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
                                                         req.status === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"
@@ -568,7 +568,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         {req.status === 'Pending' ? 'Pendiente' : req.status}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
                                                         {req.pdfUrl ? (
                                                             <>
@@ -593,7 +593,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         ) : <span className="text-gray-300">-</span>}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[140px]">
+                                                <td className="px-3 py-3 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[110px]">
                                                     {req.assignedAdmin || '-'}
                                                 </td>
                                             </tr>
