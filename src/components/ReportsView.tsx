@@ -309,7 +309,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 p-8 bg-gray-50/30">
                             {/* Month Filter */}
                             <div>
                                 <label className="block text-xs font-medium text-gray-500 mb-1">Mes</label>
