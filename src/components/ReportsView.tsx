@@ -409,20 +409,18 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                     {reportType === 'blockings' ? (
                                         sortedRequests.map((req) => (
                                             <tr key={req.id} className="hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
-                                                <td className="px-3 py-3 whitespace-nowrap">
-                                                    <div className="text-gray-900 font-medium">
-                                                        {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                                        <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
-                                                    </div>
+                                                <td className="px-3 py-3 font-medium text-gray-900">
+                                                    {format(new Date(req.createdAt), 'dd/MM/yyyy')}
+                                                    <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
                                                 </td>
-                                                <td className="px-3 py-3 whitespace-nowrap max-w-[120px] truncate" title={req.coordinator}>{req.coordinator}</td>
-                                                <td className="px-3 py-3 whitespace-nowrap">{req.location || '-'}</td>
+                                                <td className="px-3 py-3 leading-tight max-w-[100px]">{req.coordinator}</td>
+                                                <td className="px-3 py-3 leading-tight max-w-[120px]">{req.location || '-'}</td>
                                                 <td className="px-3 py-3 min-w-[140px]">
                                                     <div className="font-semibold text-gray-900 leading-tight">{req.professionalName}</div>
                                                     <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{req.profession}</div>
                                                 </td>
                                                 <td className="px-3 py-3">
-                                                    <span className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold whitespace-nowrap">
+                                                    <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold leading-tight">
                                                         {req.blockType}
                                                     </span>
                                                 </td>

@@ -135,20 +135,18 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                         req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-50 hover:bg-red-100" :
                                             "hover:bg-gray-50"
                             )}>
-                                <td className="px-3 py-3 whitespace-nowrap">
-                                    <div className="text-gray-900 font-medium">
-                                        {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                        <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
-                                    </div>
+                                <td className="px-3 py-3 align-top font-medium text-gray-900">
+                                    {format(new Date(req.createdAt), 'dd/MM/yyyy')}
+                                    <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
                                 </td>
-                                <td className="px-3 py-3 whitespace-nowrap max-w-[120px] truncate" title={req.coordinator}>{req.coordinator}</td>
-                                <td className="px-3 py-3 whitespace-nowrap">{req.location || '-'}</td>
-                                <td className="px-3 py-3 min-w-[140px]">
+                                <td className="px-3 py-3 align-top leading-tight max-w-[100px]">{req.coordinator}</td>
+                                <td className="px-3 py-3 align-top leading-tight max-w-[120px]">{req.location || '-'}</td>
+                                <td className="px-3 py-3 align-top min-w-[140px]">
                                     <div className="font-semibold text-gray-900 leading-tight">{req.professionalName}</div>
                                     <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{req.profession}</div>
                                 </td>
-                                <td className="px-3 py-3">
-                                    <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-[10px] font-bold whitespace-nowrap">
+                                <td className="px-3 py-3 align-top">
+                                    <span className="inline-block px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-[10px] font-bold leading-tight">
                                         {req.blockType}
                                     </span>
                                 </td>
