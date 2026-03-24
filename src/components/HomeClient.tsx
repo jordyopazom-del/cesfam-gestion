@@ -236,15 +236,20 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                     {activeTab === 'reports' && <ReportsView personnel={personnel} />}
                     {activeTab === 'activos' && (
                         <>
-                            <PersonnelView subTab={activeSubTab} personnel={personnel} refreshPersonnel={() => setRefreshTrigger(prev => prev + 1)} />
-                            {activeSubTab === 'COORDINADOR' && (
-                                <div className="mt-12 border-t border-gray-100 pt-8 p-6">
-                                    <div className="mb-6">
-                                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                            <Shield className="text-blue-600" size={20} />
-                                            Gestión de Cuentas de Usuario
-                                        </h3>
-                                        <p className="text-sm text-gray-500 mt-1">Administración de accesos y contraseñas del sistema</p>
+                            {activeSubTab !== 'COORDINADOR' ? (
+                                <PersonnelView 
+                                    subTab={activeSubTab} 
+                                    personnel={personnel} 
+                                    refreshPersonnel={() => setRefreshTrigger(prev => prev + 1)} 
+                                />
+                            ) : (
+                                <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden p-6 animate-in fade-in duration-500">
+                                    <div className="mb-8">
+                                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                                            <Shield className="text-blue-600" size={28} />
+                                            Gestión de Usuarios y Accesos
+                                        </h2>
+                                        <p className="text-gray-500 mt-1">Administración centralizada de cuentas, roles y seguridad del sistema.</p>
                                     </div>
                                     <UserManagement />
                                 </div>

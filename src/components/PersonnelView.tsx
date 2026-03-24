@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield } from 'lucide-react';
+import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X } from 'lucide-react';
 import clsx from 'clsx';
-import UserManagement from './UserManagement';
 
 interface PersonnelViewProps {
-    subTab: 'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR';
+    subTab: 'CLINICO' | 'ADMINISTRATIVO';
     personnel: Official[];
     refreshPersonnel: () => void;
 }
@@ -29,7 +28,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
         switch (subTab) {
             case 'CLINICO': return 'Personal Clínico';
             case 'ADMINISTRATIVO': return 'Personal Administrativo';
-            case 'COORDINADOR': return 'Solicitantes / Coordinadores';
+            default: return 'Personal';
         }
     };
 
