@@ -66,7 +66,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                                 className={clsx(
                                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all outline-none",
-                                    (activeTab === 'form' || activeTab === 'agenda') ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                                    (activeTab === 'form' || activeTab === 'agenda' || isDropdownOpen) ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
                                 )}
                             >
                                 <ListPlus size={18} />
@@ -110,7 +110,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                                 onClick={() => setIsActivosDropdownOpen(!isActivosDropdownOpen)}
                                 className={clsx(
                                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all outline-none",
-                                    activeTab === 'activos' ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                                    (activeTab === 'activos' || isActivosDropdownOpen) ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
                                 )}
                             >
                                 <UsersRound size={18} />
