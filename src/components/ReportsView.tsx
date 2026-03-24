@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
-import { Filter, FileText, Download, Calendar } from 'lucide-react';
+import { Filter, FileText, Download, Calendar, Mail, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
@@ -28,6 +28,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
     const [requests, setRequests] = useState<BlockingRequest[]>([]);
     const [openings, setOpenings] = useState<AgendaOpeningRequest[]>([]);
     const [loading, setLoading] = useState(true);
+    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
     // Filters for View
     const [selectedMonth, setSelectedMonth] = useState<number>(-1);
@@ -79,6 +80,34 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         };
         fetchData();
     }, []);
+
+    const handleSendEmail = async (req: any, type: 'blockings' | 'openings') => {
+        setSendingEmailId(req.id);
+        try {
+            const endpoint = type === 'blockings' ? `/api/requests/${req.id}` : `/api/agenda-openings/${req.id}`;
+            const bodyPayload = type === 'blockings' 
+                ? { agendaBlockedStatus: 'Realizado' }
+                : { status: 'Realizado' };
+
+            const response = await fetch(endpoint, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(bodyPayload)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to send email');
+            }
+            
+            alert('Documento reenviado exitosamente por correo.');
+        } catch (error) {
+            console.error(error);
+            alert('Error al reenviar el correo.');
+        } finally {
+            setSendingEmailId(null);
+        }
+    };
+
 
     // Reset professional when profession changes
     const handleProfessionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -415,6 +444,8 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                 <th className="px-6 py-4">Horas</th>
                                                 <th className="px-6 py-4">Días de Apertura</th>
                                                 <th className="px-6 py-4 text-center">Estado</th>
+                                                <th className="px-6 py-4 text-center">Doc</th>
+                                                <th className="px-6 py-4">Responsable</th>
                                             </>
                                         )}
                                     </tr>
@@ -465,20 +496,32 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         {req.agendaBlockedStatus || 'Pendiente'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    {req.pdfUrl ? (
-                                                        <a
-                                                            href={req.pdfUrl}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center mx-auto shadow-sm"
-                                                            title="Ver Documento"
-                                                        >
-                                                            <FileText size={16} />
-                                                        </a>
-                                                    ) : <span className="text-gray-300">-</span>}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        {req.pdfUrl ? (
+                                                            <>
+                                                                <a
+                                                                    href={req.pdfUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
+                                                                    title="Ver Documento"
+                                                                >
+                                                                    <FileText size={16} />
+                                                                </a>
+                                                                <button
+                                                                    onClick={() => handleSendEmail(req, 'blockings')}
+                                                                    disabled={sendingEmailId === req.id}
+                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm disabled:opacity-50"
+                                                                    title="Reenviar por Correo"
+                                                                >
+                                                                    {sendingEmailId === req.id ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                                                                </button>
+                                                            </>
+                                                        ) : <span className="text-gray-300">-</span>}
+                                                    </div>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-[10px] font-bold text-gray-600 uppercase bg-gray-50/30">
+                                                <td className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[140px]">
                                                     {req.assignedAdmin || '-'}
                                                 </td>
                                             </tr>
@@ -524,6 +567,34 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                     )}>
                                                         {req.status === 'Pending' ? 'Pendiente' : req.status}
                                                     </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center justify-center gap-2">
+                                                        {req.pdfUrl ? (
+                                                            <>
+                                                                <a
+                                                                    href={req.pdfUrl}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
+                                                                    title="Ver Documento"
+                                                                >
+                                                                    <FileText size={16} />
+                                                                </a>
+                                                                <button
+                                                                    onClick={() => handleSendEmail(req, 'openings')}
+                                                                    disabled={sendingEmailId === req.id}
+                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm disabled:opacity-50"
+                                                                    title="Reenviar por Correo"
+                                                                >
+                                                                    {sendingEmailId === req.id ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                                                                </button>
+                                                            </>
+                                                        ) : <span className="text-gray-300">-</span>}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[140px]">
+                                                    {req.assignedAdmin || '-'}
                                                 </td>
                                             </tr>
                                         ))
