@@ -124,10 +124,11 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
 
             <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Request Date (Automatic) */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Solicitud</label>
+                    {/* Fecha y Coordinador en una fila */}
+                    <div>
+                        <label htmlFor="fecha-solicitud" className="block text-sm font-medium text-gray-700 mb-1">Fecha de Solicitud</label>
                         <input
+                            id="fecha-solicitud"
                             type="text"
                             value={new Date().toLocaleDateString()}
                             disabled
@@ -135,10 +136,10 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                         />
                     </div>
 
-                    {/* Coordinator */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Coordinador Solicitante</label>
+                    <div>
+                        <label htmlFor="coordinator" className="block text-sm font-medium text-gray-700 mb-1">Coordinador Solicitante</label>
                         <select
+                            id="coordinator"
                             name="coordinator"
                             required
                             value={formData.coordinator}
@@ -150,10 +151,11 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                         </select>
                     </div>
 
-                    {/* Location */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Centro de promoción</label>
+                    {/* Lugar y Rendimiento en una fila */}
+                    <div>
+                        <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Lugar de Apertura</label>
                         <select
+                            id="location"
                             name="location"
                             required
                             value={formData.location}
@@ -165,41 +167,10 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                         </select>
                     </div>
 
-                    {/* Profession */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Profesión</label>
+                        <label htmlFor="performance" className="block text-sm font-medium text-gray-700 mb-1">Rendimiento (Minutos)</label>
                         <select
-                            name="profession"
-                            required
-                            value={formData.profession}
-                            onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                        >
-                            <option value="">Seleccione Profesión</option>
-                            {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
-                    </div>
-
-                    {/* Professional Name */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Profesional</label>
-                        <select
-                            name="professionalName"
-                            required
-                            disabled={!formData.profession}
-                            value={formData.professionalName}
-                            onChange={handleChange}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-400"
-                        >
-                            <option value="">Seleccione Nombre</option>
-                            {filteredNames.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                        </select>
-                    </div>
-
-                    {/* Performance */}
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Rendimiento (Minutos)</label>
-                        <select
+                            id="performance"
                             name="performance"
                             required
                             value={formData.performance}
@@ -212,12 +183,44 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                         </select>
                     </div>
 
+                    {/* Profesión y Nombre Profesional */}
+                    <div>
+                        <label htmlFor="profession" className="block text-sm font-medium text-gray-700 mb-1">Profesión</label>
+                        <select
+                            id="profession"
+                            name="profession"
+                            required
+                            value={formData.profession}
+                            onChange={handleChange}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        >
+                            <option value="">Seleccione Profesión</option>
+                            {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="professionalName" className="block text-sm font-medium text-gray-700 mb-1">Nombre Profesional</label>
+                        <select
+                            id="professionalName"
+                            name="professionalName"
+                            required
+                            disabled={!formData.profession}
+                            value={formData.professionalName}
+                            onChange={handleChange}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-400"
+                        >
+                            <option value="">Seleccione Nombre</option>
+                            {filteredNames.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                        </select>
+                    </div>
+
                     {/* Times */}
                     <div>
                         <TimeInput
                             label="Hora Inicio"
                             value={formData.startTime}
-                            onChange={(val) => setFormData(prev => ({ ...prev, startTime: val }))}
+                            onChange={(val: string) => setFormData(prev => ({ ...prev, startTime: val }))}
                             required
                         />
                     </div>
@@ -225,7 +228,7 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                         <TimeInput
                             label="Hora Término"
                             value={formData.endTime}
-                            onChange={(val) => setFormData(prev => ({ ...prev, endTime: val }))}
+                            onChange={(val: string) => setFormData(prev => ({ ...prev, endTime: val }))}
                             required
                         />
                     </div>
@@ -241,6 +244,7 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                                 type="button"
                                 onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
                                 className="p-1 hover:bg-gray-200 rounded-full transition"
+                                aria-label="Mes anterior"
                             >
                                 <ChevronLeft size={20} />
                             </button>
@@ -251,6 +255,7 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                                 type="button"
                                 onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
                                 className="p-1 hover:bg-gray-200 rounded-full transition"
+                                aria-label="Mes siguiente"
                             >
                                 <ChevronRight size={20} />
                             </button>
