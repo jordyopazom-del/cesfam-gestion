@@ -82,6 +82,23 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
     }, []);
 
     const handleSendEmail = async (req: any, type: 'blockings' | 'openings') => {
+        // Build recipients list to show to the user
+        const recipients = ['gestiondemandafutrono@munifutrono.cl'];
+        
+        const coordinator = personnel.find(p => p.name === req.coordinator);
+        if (coordinator?.email) recipients.push(coordinator.email);
+
+        if (req.assignedAdmin && req.assignedAdmin !== 'N/A') {
+            const admin = personnel.find(p => p.name === req.assignedAdmin);
+            if (admin?.email) recipients.push(admin.email);
+        }
+
+        const confirmMessage = `Confirmación de Reenvío:\n\nEl documento PDF y los detalles de esta solicitud serán enviados a las siguientes direcciones de correo:\n\n${recipients.map(e => `• ${e}`).join('\n')}\n\n¿Deseas proceder con el envío?`;
+        
+        if (!window.confirm(confirmMessage)) {
+            return;
+        }
+
         setSendingEmailId(req.id);
         try {
             const endpoint = type === 'blockings' ? `/api/requests/${req.id}` : `/api/agenda-openings/${req.id}`;
@@ -99,7 +116,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                 throw new Error('Failed to send email');
             }
             
-            alert('Documento reenviado exitosamente por correo.');
+            alert('Documento reenviado exitosamente a todos los destinatarios.');
         } catch (error) {
             console.error(error);
             alert('Error al reenviar el correo.');
