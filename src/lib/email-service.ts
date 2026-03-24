@@ -6,9 +6,11 @@ interface EmailParams {
     to: string[];
     subject: string;
     html: string;
+    fromName?: string;
+    replyTo?: string;
 }
 
-export async function sendEmail({ to, subject, html }: EmailParams) {
+export async function sendEmail({ to, subject, html, fromName, replyTo }: EmailParams) {
     if (!process.env.RESEND_API_KEY) {
         console.warn('RESEND_API_KEY no configurada. El correo no se enviará.');
         return { success: false, error: 'API Key missing' };
@@ -18,7 +20,8 @@ export async function sendEmail({ to, subject, html }: EmailParams) {
 
     try {
         const { data, error } = await resend.emails.send({
-            from: 'Cesfam Gestion <onboarding@resend.dev>', // Cambiar por dominio verificado en prod
+            from: fromName ? `${fromName} <onboarding@resend.dev>` : 'Cesfam Gestion <onboarding@resend.dev>',
+            replyTo,
             to,
             subject,
             html,

@@ -85,11 +85,11 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         // Build recipients list to show to the user
         const recipients = ['gestiondemandafutrono@munifutrono.cl'];
         
-        const coordinator = personnel.find(p => p.name === req.coordinator);
+        const coordinator = personnel.find(p => p.name.toLowerCase() === req.coordinator?.toLowerCase());
         if (coordinator?.email) recipients.push(coordinator.email);
 
         if (req.assignedAdmin && req.assignedAdmin !== 'N/A') {
-            const admin = personnel.find(p => p.name === req.assignedAdmin);
+            const admin = personnel.find(p => p.name.toLowerCase() === req.assignedAdmin.toLowerCase());
             if (admin?.email) recipients.push(admin.email);
         }
 

@@ -35,21 +35,29 @@ export async function PATCH(
                 const recipients = ['gestiondemandafutrono@munifutrono.cl'];
 
                 // Find Coordinator Email
-                const coordinator = personnel.find(p => p.name === updatedRequest.coordinator);
+                const coordinator = personnel.find(p => p.name.toLowerCase() === updatedRequest.coordinator?.toLowerCase());
                 if (coordinator?.email) recipients.push(coordinator.email);
 
                 // Find Admin Email
+                let adminName = undefined;
+                let adminEmail = undefined;
                 if (updatedRequest.assignedAdmin && updatedRequest.assignedAdmin !== 'N/A') {
-                    const admin = personnel.find(p => p.name === updatedRequest.assignedAdmin);
-                    if (admin?.email) recipients.push(admin.email);
+                    const admin = personnel.find(p => p.name.toLowerCase() === updatedRequest.assignedAdmin!.toLowerCase());
+                    if (admin?.email) {
+                        recipients.push(admin.email);
+                        adminName = admin.name;
+                        adminEmail = admin.email;
+                    }
                 }
 
                 if (recipients.length > 0) {
                     const html = generateRequestEmailHtml(updatedRequest, 'Bloqueo');
                     await sendEmail({
-                        to: recipients,
+                        to: Array.from(new Set(recipients)), // removed duplicates if any
                         subject: `Gestión Finalizada: Bloqueo - ${updatedRequest.professionalName}`,
-                        html
+                        html,
+                        fromName: adminName,
+                        replyTo: adminEmail
                     });
                 }
             } catch (emailError) {
