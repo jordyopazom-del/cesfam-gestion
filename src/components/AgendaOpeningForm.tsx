@@ -9,7 +9,7 @@ import { es } from 'date-fns/locale';
 import clsx from 'clsx';
 import { Official } from '@/app/admin/personnel/actions';
 
-const PERFORMANCES = [10, 20, 30, 40, 45, 60];
+const PERFORMANCES = [10, 15, 20, 30, 40, 45, 60];
 
 export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess: () => void, personnel: Official[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
