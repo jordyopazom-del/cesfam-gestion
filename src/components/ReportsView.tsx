@@ -424,8 +424,8 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         {req.blockType}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-3">
-                                                    <div className="max-w-[100px] text-[10px] leading-tight text-gray-500">
+                                                <td className="px-3 py-3 align-top">
+                                                    <div className="max-w-[100px] text-xs font-medium leading-tight text-gray-700">
                                                         {req.selectedDays
                                                             ? req.selectedDays
                                                                 .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())
