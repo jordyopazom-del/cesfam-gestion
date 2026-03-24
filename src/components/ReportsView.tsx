@@ -213,13 +213,13 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
     return (
         <div className="space-y-6">
             {/* Toggle Report Type */}
-            <div className="flex justify-center">
-                <div className="bg-gray-100 p-1 rounded-lg inline-flex">
+            <div className="flex justify-center mb-8">
+                <div className="bg-white p-1.5 rounded-xl shadow-sm border border-gray-100 inline-flex gap-1">
                     <button
                         onClick={() => setReportType('blockings')}
                         className={clsx(
-                            "px-4 py-2 rounded-md text-sm font-medium transition-all",
-                            reportType === 'blockings' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                            "px-6 py-2.5 rounded-lg text-sm font-bold transition-all",
+                            reportType === 'blockings' ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
                         )}
                     >
                         Reporte Bloqueos
@@ -227,8 +227,8 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                     <button
                         onClick={() => setReportType('openings')}
                         className={clsx(
-                            "px-4 py-2 rounded-md text-sm font-medium transition-all",
-                            reportType === 'openings' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                            "px-6 py-2.5 rounded-lg text-sm font-bold transition-all",
+                            reportType === 'openings' ? "bg-blue-600 text-white shadow-md shadow-blue-200" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
                         )}
                     >
                         Reporte Aperturas
@@ -236,24 +236,26 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                     <button
                         onClick={() => setReportType('export')}
                         className={clsx(
-                            "px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2",
-                            reportType === 'export' ? "bg-white text-green-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                            "px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2",
+                            reportType === 'export' ? "bg-emerald-600 text-white shadow-md shadow-emerald-200" : "text-gray-500 hover:text-gray-900 hover:bg-gray-50"
                         )}
                     >
                         <Download size={16} />
-                        Exportar Registros
+                        Exportar Excel
                     </button>
                 </div>
             </div>
 
             {reportType === 'export' ? (
-                <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-100 max-w-2xl mx-auto">
-                    <div className="text-center mb-8">
-                        <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FileText size={32} className="text-green-600" />
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden max-w-2xl mx-auto">
+                    <div className="p-8 border-b border-gray-100 bg-white flex items-center gap-4">
+                        <div className="p-3 bg-emerald-50 rounded-xl">
+                            <FileText size={28} className="text-emerald-600" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800">Exportar Reportes</h2>
-                        <p className="text-gray-500 mt-2">Seleccione un rango de fechas para descargar el reporte en Excel.</p>
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Exportar Reportes</h2>
+                            <p className="text-gray-500 mt-0.5">Seleccione un rango de fechas para descargar el consolidado en Excel.</p>
+                        </div>
                     </div>
 
                     <div className="space-y-6">
@@ -296,10 +298,15 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
             ) : (
                 <>
                     {/* Filters Section */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div className="flex items-center gap-2 mb-4 text-gray-800 font-semibold">
-                            <Filter size={20} className="text-blue-600" />
-                            <h2>Filtros de Reporte</h2>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+                        <div className="p-8 border-b border-gray-100 bg-white flex items-center gap-4">
+                            <div className="p-3 bg-blue-50 rounded-xl">
+                                <Filter size={28} className="text-blue-600" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Filtros de Reporte</h2>
+                                <p className="text-gray-500 mt-0.5">Refine la búsqueda para visualizar datos específicos en tiempo real.</p>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -370,62 +377,71 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                     </div>
 
                     {/* Results Table */}
-                    <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                                <FileText size={24} className="text-blue-600" />
-                                Resultados ({reportType === 'blockings' ? sortedRequests.length : sortedOpenings.length})
-                            </h2>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-white">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-gray-50 rounded-xl">
+                                    <FileText size={28} className="text-gray-600" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+                                        Resultados de {reportType === 'blockings' ? 'Bloqueos' : 'Aperturas'}
+                                    </h2>
+                                    <p className="text-gray-500 mt-0.5">Detectados {reportType === 'blockings' ? sortedRequests.length : sortedOpenings.length} registros según filtros.</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left text-[11px] md:text-xs text-gray-600">
-                                <thead className="bg-gray-50 text-gray-700 font-semibold uppercase tracking-wider border-b border-gray-100">
-                                    <tr>
-                                        <th className="px-3 py-3 whitespace-nowrap">Fecha Solicitud</th>
-                                        <th className="px-3 py-3 whitespace-nowrap">Solicitante</th>
-                                        <th className="px-3 py-3">Lugar</th>
-                                        <th className="px-3 py-3">Profesional</th>
+                        <div className="overflow-x-auto min-h-[400px]">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-50/50 text-gray-400 text-[10px] uppercase tracking-widest font-bold border-b border-gray-100">
+                                        <th className="px-6 py-4 whitespace-nowrap">Fecha Solicitud</th>
+                                        <th className="px-6 py-4 whitespace-nowrap">Solicitante</th>
+                                        <th className="px-6 py-4">Lugar</th>
+                                        <th className="px-6 py-4">Profesional / Estamento</th>
                                         {reportType === 'blockings' ? (
                                             <>
-                                                <th className="px-3 py-3">Tipo</th>
-                                                <th className="px-3 py-3">Fechas</th>
-                                                <th className="px-3 py-3">Horas</th>
-                                                <th className="px-3 py-3 text-center">Estado</th>
-                                                <th className="px-3 py-3 text-center">Doc</th>
-                                                <th className="px-3 py-3">Responsable</th>
+                                                <th className="px-6 py-4">Tipo</th>
+                                                <th className="px-6 py-4">Fechas</th>
+                                                <th className="px-6 py-4">Horas</th>
+                                                <th className="px-6 py-4 text-center">Estado Agenda</th>
+                                                <th className="px-6 py-4 text-center">Doc</th>
+                                                <th className="px-6 py-4">Responsable</th>
                                             </>
                                         ) : (
                                             <>
-                                                <th className="px-3 py-3 whitespace-nowrap">Rend.</th>
-                                                <th className="px-3 py-3">Horas</th>
-                                                <th className="px-3 py-3">Días</th>
-                                                <th className="px-3 py-3 text-center">Estado</th>
+                                                <th className="px-6 py-4 whitespace-nowrap">Rend.</th>
+                                                <th className="px-6 py-4">Horas</th>
+                                                <th className="px-6 py-4">Días de Apertura</th>
+                                                <th className="px-6 py-4 text-center">Estado</th>
                                             </>
                                         )}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-gray-50">
                                     {reportType === 'blockings' ? (
                                         sortedRequests.map((req) => (
-                                            <tr key={req.id} className="hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
-                                                <td className="px-3 py-3 font-medium text-gray-900">
-                                                    {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                                    <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                            <tr key={req.id} className="hover:bg-gray-50/80 transition-colors border-b border-gray-50 last:border-0 group">
+                                                <td className="px-6 py-4">
+                                                    <div className="font-bold text-gray-900 text-sm">
+                                                        {format(new Date(req.createdAt), 'dd/MM/yyyy')}
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-400 font-medium">{format(new Date(req.createdAt), 'HH:mm')} hrs</div>
                                                 </td>
-                                                <td className="px-3 py-3 leading-tight max-w-[100px]">{req.coordinator}</td>
-                                                <td className="px-3 py-3 leading-tight max-w-[120px]">{req.location || '-'}</td>
-                                                <td className="px-3 py-3 min-w-[140px]">
-                                                    <div className="font-semibold text-gray-900 leading-tight">{req.professionalName}</div>
-                                                    <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{req.profession}</div>
+                                                <td className="px-6 py-4 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
+                                                <td className="px-6 py-4 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
+                                                <td className="px-6 py-4 min-w-[140px]">
+                                                    <div className="font-bold text-gray-900 text-sm leading-tight">{req.professionalName}</div>
+                                                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{req.profession}</div>
                                                 </td>
-                                                <td className="px-3 py-3">
-                                                    <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold leading-tight">
+                                                <td className="px-6 py-4">
+                                                    <span className="inline-block px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold border border-blue-100 uppercase">
                                                         {req.blockType}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-3 align-top">
-                                                    <div className="max-w-[100px] text-xs font-medium leading-tight text-gray-700">
+                                                <td className="px-6 py-4">
+                                                    <div className="max-w-[120px] text-[11px] font-bold leading-tight text-gray-700 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
                                                         {req.selectedDays
                                                             ? req.selectedDays
                                                                 .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())
@@ -435,63 +451,63 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         }
                                                     </div>
                                                 </td>
-                                                <td className="px-3 py-3 whitespace-nowrap font-medium">
+                                                <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-900 bg-gray-50/50 rounded-lg">
                                                     {req.startTime} - {req.endTime}
                                                 </td>
-                                                <td className="px-3 py-3 text-center">
+                                                <td className="px-6 py-4 text-center">
                                                     <span className={clsx(
-                                                        "inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase",
-                                                        req.agendaBlockedStatus === 'Realizado' ? "bg-green-100 text-green-700" :
-                                                            req.agendaBlockedStatus === 'Sin Agenda' ? "bg-yellow-100 text-yellow-700" :
-                                                                req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-100 text-red-700" :
-                                                                    "bg-gray-100 text-gray-500"
+                                                        "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
+                                                        req.agendaBlockedStatus === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                                                            req.agendaBlockedStatus === 'Sin Agenda' ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                                                req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-50 text-red-700 border-red-100" :
+                                                                    "bg-gray-50 text-gray-400 border-gray-200"
                                                     )}>
-                                                        {req.agendaBlockedStatus || '-'}
+                                                        {req.agendaBlockedStatus || 'Pendiente'}
                                                     </span>
                                                 </td>
-                                                <td className="px-3 py-3 text-center">
+                                                <td className="px-6 py-4 text-center">
                                                     {req.pdfUrl ? (
                                                         <a
                                                             href={req.pdfUrl}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="text-blue-500 hover:text-blue-700 transition flex justify-center"
+                                                            className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center mx-auto shadow-sm"
                                                             title="Ver Documento"
                                                         >
                                                             <FileText size={16} />
                                                         </a>
                                                     ) : <span className="text-gray-300">-</span>}
                                                 </td>
-                                                <td className="px-3 py-3 whitespace-nowrap text-[10px] font-semibold text-gray-700 uppercase">
+                                                <td className="px-6 py-4 whitespace-nowrap text-[10px] font-bold text-gray-600 uppercase bg-gray-50/30">
                                                     {req.assignedAdmin || '-'}
                                                 </td>
                                             </tr>
                                         ))
                                     ) : (
                                         sortedOpenings.map((req) => (
-                                            <tr key={req.id} className="hover:bg-gray-50 transition">
-                                                <td className="p-4 whitespace-nowrap">
-                                                    <div className="text-gray-900">
+                                            <tr key={req.id} className="hover:bg-gray-50/80 transition-colors group">
+                                                <td className="px-6 py-4">
+                                                    <div className="font-bold text-gray-900 text-sm">
                                                         {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                                        <span className="text-gray-400 text-[10px] ml-2 font-medium">{format(new Date(req.createdAt), 'HH:mm')}</span>
                                                     </div>
+                                                    <div className="text-[10px] text-gray-400 font-medium">{format(new Date(req.createdAt), 'HH:mm')} hrs</div>
                                                 </td>
-                                                <td className="p-4">{req.coordinator}</td>
-                                                <td className="p-4">{req.location || '-'}</td>
-                                                <td className="p-4">
-                                                    <div className="font-medium text-gray-900">{req.professionalName}</div>
-                                                    <div className="text-xs text-gray-500">{req.profession}</div>
+                                                <td className="px-6 py-4 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
+                                                <td className="px-6 py-4 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
+                                                <td className="px-6 py-4 min-w-[140px]">
+                                                    <div className="font-bold text-gray-900 text-sm leading-tight">{req.professionalName}</div>
+                                                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{req.profession}</div>
                                                 </td>
-                                                <td className="px-3 py-3 whitespace-nowrap">
-                                                    <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold whitespace-nowrap">
-                                                        {req.performance} min
+                                                <td className="px-6 py-4">
+                                                    <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold border border-amber-100 whitespace-nowrap">
+                                                        {req.performance} MIN
                                                     </span>
                                                 </td>
-                                                <td className="p-4 whitespace-nowrap">
+                                                <td className="px-6 py-4 whitespace-nowrap text-xs font-bold text-gray-900 bg-gray-50/50 rounded-lg">
                                                     {req.startTime} - {req.endTime}
                                                 </td>
-                                                <td className="p-4">
-                                                    <div className="max-w-[300px] text-xs leading-relaxed">
+                                                <td className="px-6 py-4">
+                                                    <div className="max-w-[160px] text-[11px] font-bold leading-tight text-gray-700 bg-gray-50 p-1.5 rounded-lg border border-gray-100">
                                                         {req.selectedDays && Array.isArray(req.selectedDays)
                                                             ? [...req.selectedDays]
                                                                 .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())
@@ -501,10 +517,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                         }
                                                     </div>
                                                 </td>
-                                                <td className="p-4 text-center">
+                                                <td className="px-6 py-4 text-center">
                                                     <span className={clsx(
-                                                        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                                        req.status === 'Realizado' ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+                                                        "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
+                                                        req.status === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"
                                                     )}>
                                                         {req.status === 'Pending' ? 'Pendiente' : req.status}
                                                     </span>
