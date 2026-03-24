@@ -173,6 +173,9 @@ export async function getRequests(): Promise<BlockingRequest[]> {
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as 'Realizado' | 'Sin Agenda' | 'No Corresponde' | undefined,
+            pdfUrl: row.pdf_url,
+            assignedAdmin: row.assigned_admin,
+            processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             createdAt: row.created_at.toISOString()
         }));
     } catch (error) {
