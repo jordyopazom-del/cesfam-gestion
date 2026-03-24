@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X } from 'lucide-react';
+import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield } from 'lucide-react';
 import clsx from 'clsx';
+import UserManagement from './UserManagement';
 
 interface PersonnelViewProps {
     subTab: 'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR';
@@ -202,10 +203,10 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         {editingName === p.name ? (
                                             <>
-                                                <button onClick={handleUpdate} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Guardar">
+                                                <button onClick={handleUpdate} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Guardar cambios">
                                                     <Check size={18} />
                                                 </button>
-                                                <button onClick={() => setEditingName(null)} className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors" title="Cancelar">
+                                                <button onClick={() => setEditingName(null)} className="p-1.5 text-gray-400 hover:bg-gray-100 rounded-lg transition-colors" title="Cancelar edición">
                                                     <X size={18} />
                                                 </button>
                                             </>

@@ -6,7 +6,7 @@ import AgendaOpeningForm from '@/components/AgendaOpeningForm';
 import ManagementTable from '@/components/ManagementTable';
 import AgendaOpeningTable from '@/components/AgendaOpeningTable';
 
-import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield } from 'lucide-react';
 import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
@@ -186,18 +186,6 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                             <FileText size={18} />
                             Reportes
                         </button>
-                        {isAdmin && (
-                            <button
-                                onClick={() => setActiveTab('users')}
-                                className={clsx(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                                    activeTab === 'users' ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
-                                )}
-                            >
-                                <Users size={18} />
-                                Usuarios
-                            </button>
-                        )}
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <form action={logout}>
                             <button
@@ -246,8 +234,23 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                     )}
 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} />}
-                    {activeTab === 'users' && isAdmin && <UserManagement />}
-                    {activeTab === 'activos' && <PersonnelView subTab={activeSubTab} personnel={personnel} refreshPersonnel={() => setRefreshTrigger(prev => prev + 1)} />}
+                    {activeTab === 'activos' && (
+                        <>
+                            <PersonnelView subTab={activeSubTab} personnel={personnel} refreshPersonnel={() => setRefreshTrigger(prev => prev + 1)} />
+                            {activeSubTab === 'COORDINADOR' && (
+                                <div className="mt-12 border-t border-gray-100 pt-8 p-6">
+                                    <div className="mb-6">
+                                        <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                            <Shield className="text-blue-600" size={20} />
+                                            Gestión de Cuentas de Usuario
+                                        </h3>
+                                        <p className="text-sm text-gray-500 mt-1">Administración de accesos y contraseñas del sistema</p>
+                                    </div>
+                                    <UserManagement />
+                                </div>
+                            )}
+                        </>
+                    )}
                 </div>
             </div>
         </main >
