@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { COORDINATORS, LOCATIONS } from '@/data/constants';
 import { Loader2, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import TimeInput from './TimeInput';
@@ -105,6 +105,12 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
         }
     };
 
+    const [todayStr, setTodayStr] = useState('');
+
+    useEffect(() => {
+        setTodayStr(new Date().toLocaleDateString());
+    }, []);
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => {
@@ -123,14 +129,14 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
             </h2>
 
             <form onSubmit={handleSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     {/* Fecha y Coordinador en una fila */}
                     <div>
                         <label htmlFor="fecha-solicitud" className="block text-sm font-medium text-gray-700 mb-1">Fecha de Solicitud</label>
                         <input
                             id="fecha-solicitud"
                             type="text"
-                            value={new Date().toLocaleDateString()}
+                            value={todayStr}
                             disabled
                             className="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-600 cursor-not-allowed"
                         />
@@ -232,68 +238,64 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                             required
                         />
                     </div>
-                </div>
 
-                {/* Calendar Selection */}
-                <div className="border-t border-gray-200 pt-6">
-                    <label className="block text-lg font-medium text-gray-800 mb-4">Seleccione los días de agenda</label>
+                    {/* Calendar Selection (Unified Layout) */}
+                    <div className="col-span-2">
+                        <label className="block text-lg font-semibold text-gray-800 mb-4">Seleccione los días de apertura</label>
+                        <div className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">
+                            <div className="flex justify-between items-center mb-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition"
+                                    aria-label="Mes anterior"
+                                >
+                                    <ChevronLeft size={20} />
+                                </button>
+                                <h3 className="text-lg font-bold text-gray-700 capitalize">
+                                    {format(currentMonth, 'MMMM yyyy', { locale: es })}
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                                    className="p-2 hover:bg-gray-100 rounded-full transition"
+                                    aria-label="Mes siguiente"
+                                >
+                                    <ChevronRight size={20} />
+                                </button>
+                            </div>
 
-                    <div className="max-w-md mx-auto bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <button
-                                type="button"
-                                onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                                className="p-1 hover:bg-gray-200 rounded-full transition"
-                                aria-label="Mes anterior"
-                            >
-                                <ChevronLeft size={20} />
-                            </button>
-                            <span className="font-semibold text-gray-700 capitalize">
-                                {format(currentMonth, 'MMMM yyyy', { locale: es })}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-                                className="p-1 hover:bg-gray-200 rounded-full transition"
-                                aria-label="Mes siguiente"
-                            >
-                                <ChevronRight size={20} />
-                            </button>
-                        </div>
+                            <div className="grid grid-cols-7 gap-2 text-center mb-2">
+                                {['Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sa', 'Do'].map(day => (
+                                    <div key={day} className="text-xs font-medium text-gray-500 uppercase">{day}</div>
+                                ))}
+                            </div>
 
-                        <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
-                            <div>Lu</div><div>Ma</div><div>Mi</div><div>Ju</div><div>Vi</div><div>Sa</div><div>Do</div>
-                        </div>
-
-                        <div className="grid grid-cols-7 gap-1">
-                            {prefixDays.map((_, i) => (
-                                <div key={`prefix-${i}`} className="p-2"></div>
-                            ))}
-                            {daysInMonth.map((day) => {
-                                const isSelected = selectedDays.some(d => isSameDay(d, day));
-                                return (
-                                    <button
-                                        key={day.toISOString()}
-                                        type="button"
-                                        onClick={() => toggleDay(day)}
-                                        className={clsx(
-                                            "aspect-square flex items-center justify-center rounded-lg text-sm transition relative",
-                                            isSelected ? "bg-blue-600 text-white shadow-md scale-105" : "hover:bg-gray-200 text-gray-700",
-                                            isToday(day) && !isSelected && "border border-blue-400 text-blue-600 font-bold",
-                                            day.getDay() === 0 && !isSelected && "text-red-400 bg-red-50/50",
-                                            day.getDay() === 6 && !isSelected && "text-blue-400 bg-blue-50/50"
-                                        )}
-                                    >
-                                        {format(day, 'd')}
-                                        {isSelected && (
-                                            <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white"></span>
-                                        )}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                        <div className="mt-4 text-center text-sm text-gray-500">
-                            {selectedDays.length} día(s) seleccionado(s)
+                            <div className="grid grid-cols-7 gap-2">
+                                {prefixDays.map((_, i) => <div key={`empty-${i}`} />)}
+                                {daysInMonth.map(day => {
+                                    const isSelected = selectedDays.some(d => isSameDay(d, day));
+                                    return (
+                                        <button
+                                            key={day.toISOString()}
+                                            type="button"
+                                            onClick={() => toggleDay(day)}
+                                            className={clsx(
+                                                "h-10 w-10 rounded-full flex items-center justify-center text-sm transition-all duration-200",
+                                                isSelected ? "bg-blue-600 text-white shadow-md scale-105" : "hover:bg-blue-50 text-gray-700",
+                                                isToday(day) && !isSelected && "border-2 border-blue-200 font-bold",
+                                                day.getDay() === 0 && !isSelected && "text-red-400 bg-red-50/50",
+                                                day.getDay() === 6 && !isSelected && "text-blue-400 bg-blue-50/50"
+                                            )}
+                                        >
+                                            {format(day, 'd')}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-4 text-center text-sm text-gray-500">
+                                {selectedDays.length} día(s) seleccionado(s)
+                            </div>
                         </div>
                     </div>
                 </div>

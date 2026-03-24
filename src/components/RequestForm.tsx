@@ -130,13 +130,13 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
     const emptyStartDays = Array.from({ length: (startDayOfWeek + 6) % 7 }, (_, i) => i);
 
     return (
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+        <div className="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-gray-100">
             <h2 className="text-2xl font-bold mb-6 text-red-600 flex items-center gap-2">
-                📝 Ingreso de Solicitud de Bloqueo
+                📝 Solicitud de Bloqueo de Agenda
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     {/* Fecha y Coordinador en una fila */}
                     <div>
                         <label htmlFor="fecha-solicitud" className="block text-sm font-medium text-gray-700 mb-1">Fecha de Solicitud</label>
