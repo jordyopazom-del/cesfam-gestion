@@ -7,13 +7,15 @@ export interface Official {
     name: string;
     profession: string;
     type?: 'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR';
+    email?: string;
 }
 
 export async function getPersonnel(): Promise<Official[]> {
     noStore();
     try {
-        // Migration: Add type column if it doesn't exist
+        // Migration: Add columns if they don't exist
         await sql`ALTER TABLE personnel ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'CLINICO'`;
+        await sql`ALTER TABLE personnel ADD COLUMN IF NOT EXISTS email VARCHAR(255)`;
         
         // Migration: Unify professions
         await sql`UPDATE personnel SET profession = 'FONOAUDIÓLOGA/O' WHERE profession = 'FONOAUDIOLOGO'`;
@@ -52,7 +54,8 @@ export async function getPersonnel(): Promise<Official[]> {
         return rows.map(row => ({
             name: row.name,
             profession: row.profession,
-            type: row.type as any
+            type: row.type as any,
+            email: row.email || ''
         }));
     } catch (error) {
         console.error('Error reading personnel data:', error);
@@ -63,8 +66,8 @@ export async function getPersonnel(): Promise<Official[]> {
 export async function addOfficial(official: Official): Promise<void> {
     try {
         await sql`
-            INSERT INTO personnel (name, profession, type)
-            VALUES (${official.name}, ${official.profession}, ${official.type || 'CLINICO'})
+            INSERT INTO personnel (name, profession, type, email)
+            VALUES (${official.name}, ${official.profession}, ${official.type || 'CLINICO'}, ${official.email || ''})
         `;
         revalidatePath('/admin/personnel');
     } catch (error) {
@@ -77,7 +80,7 @@ export async function updateOfficial(oldName: string, updatedOfficial: Official)
     try {
         await sql`
             UPDATE personnel 
-            SET name = ${updatedOfficial.name}, profession = ${updatedOfficial.profession}, type = ${updatedOfficial.type}
+            SET name = ${updatedOfficial.name}, profession = ${updatedOfficial.profession}, type = ${updatedOfficial.type}, email = ${updatedOfficial.email}
             WHERE name = ${oldName}
         `;
         revalidatePath('/admin/personnel');

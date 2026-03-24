@@ -72,14 +72,14 @@ export default function PersonnelAdminPage() {
                     <Plus className="w-5 h-5" />
                     Agregar Nuevo Funcionario
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         <div className="space-y-1">
                             <label htmlFor="add-name" className="text-xs font-semibold text-gray-500 uppercase ml-1">Nombre Completo</label>
                             <input
                                 id="add-name"
                                 type="text"
                                 placeholder="Eje: JUAN PEREZ"
-                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all uppercase"
                                 value={newOfficial.name}
                                 onChange={(e) => setNewOfficial({ ...newOfficial, name: e.target.value.toUpperCase() })}
                             />
@@ -90,13 +90,27 @@ export default function PersonnelAdminPage() {
                                 id="add-profession"
                                 type="text"
                                 placeholder="Eje: MEDICO"
-                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all uppercase"
                                 value={newOfficial.profession}
                                 onChange={(e) => setNewOfficial({ ...newOfficial, profession: e.target.value.toUpperCase() })}
                             />
                         </div>
+                        <div className="space-y-1">
+                            <label htmlFor="add-email" className="text-xs font-semibold text-gray-500 uppercase ml-1">Correo</label>
+                            <input
+                                id="add-email"
+                                type="email"
+                                placeholder="Eje: juan@cesfam.cl"
+                                title="Correo electrónico del funcionario"
+                                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all lowercase"
+                                value={newOfficial.email || ''}
+                                onChange={(e) => setNewOfficial({ ...newOfficial, email: e.target.value.toLowerCase() })}
+                            />
+                        </div>
                     <div className="relative">
+                        <label htmlFor="add-type" className="text-xs font-semibold text-gray-500 uppercase ml-1">Tipo</label>
                         <select
+                            id="add-type"
                             title="Tipo de Funcionario"
                             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                             value={newOfficial.type || 'CLINICO'}
@@ -132,6 +146,7 @@ export default function PersonnelAdminPage() {
                                 <tr>
                                     <th className="p-4">Nombre</th>
                                     <th className="p-4">Profesión</th>
+                                    <th className="p-4">Correo</th>
                                     <th className="p-4">Tipo</th>
                                     <th className="p-4 text-right">Acciones</th>
                                 </tr>
@@ -144,6 +159,9 @@ export default function PersonnelAdminPage() {
                                             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm">
                                                 {p.profession}
                                             </span>
+                                        </td>
+                                        <td className="p-4 text-gray-600 text-sm italic">
+                                            {p.email || 'No asignado'}
                                         </td>
                                         <td className="p-4">
                                             <span className={clsx(

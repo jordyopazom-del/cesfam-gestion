@@ -15,13 +15,15 @@ interface PersonnelViewProps {
 export default function PersonnelView({ subTab, personnel, refreshPersonnel }: PersonnelViewProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isAdding, setIsAdding] = useState(false);
-    const [newOfficial, setNewOfficial] = useState<Official>({ name: '', profession: '', type: subTab });
+    const [newOfficial, setNewOfficial] = useState<Official>({ name: '', profession: '', type: subTab, email: '' });
     const [editingName, setEditingName] = useState<string | null>(null);
-    const [editForm, setEditForm] = useState<Official>({ name: '', profession: '', type: subTab });
+    const [editForm, setEditForm] = useState<Official>({ name: '', profession: '', type: subTab, email: '' });
 
     const filteredPersonnel = personnel
         .filter(p => p.type === subTab)
-        .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.profession.toLowerCase().includes(searchTerm.toLowerCase()));
+        .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                     p.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase())));
 
     const getTitle = () => {
         switch (subTab) {
@@ -35,7 +37,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
         if (!newOfficial.name || !newOfficial.profession) return;
         try {
             await addOfficial({ ...newOfficial, type: subTab });
-            setNewOfficial({ name: '', profession: '', type: subTab });
+            setNewOfficial({ name: '', profession: '', type: subTab, email: '' });
             setIsAdding(false);
             refreshPersonnel();
         } catch (error) {
@@ -102,7 +104,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
 
             {isAdding && (
                 <div className="p-6 bg-blue-50/50 border-b border-blue-100 animate-in slide-in-from-top-4 duration-300">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
                             <label htmlFor="view-add-name" className="text-xs font-semibold text-gray-500 uppercase ml-1">Nombre Completo</label>
                             <input
@@ -123,6 +125,18 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                 className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                                 value={newOfficial.profession}
                                 onChange={(e) => setNewOfficial({ ...newOfficial, profession: e.target.value.toUpperCase() })}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <label htmlFor="view-add-email" className="text-xs font-semibold text-gray-500 uppercase ml-1">Correo Electrónico</label>
+                            <input
+                                id="view-add-email"
+                                type="email"
+                                placeholder="Eje: juan@cesfam.cl"
+                                title="Correo electrónico del funcionario"
+                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                                value={newOfficial.email}
+                                onChange={(e) => setNewOfficial({ ...newOfficial, email: e.target.value.toLowerCase() })}
                             />
                         </div>
                         <div className="flex items-end gap-2">
@@ -150,6 +164,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                         <tr className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider font-semibold">
                             <th className="px-6 py-4">Nombre</th>
                             <th className="px-6 py-4">Profesión / Función</th>
+                            <th className="px-6 py-4">Correo</th>
                             <th className="px-6 py-4">Tipo</th>
                             <th className="px-6 py-4 text-right">Acciones</th>
                         </tr>
@@ -187,6 +202,19 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                             <Briefcase size={14} className="text-gray-400" />
                                             <span>{p.profession}</span>
                                         </div>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4">
+                                    {editingName === p.name ? (
+                                        <input
+                                            type="email"
+                                            title="Editar correo electrónico"
+                                            className="w-full px-2 py-1 border border-blue-300 rounded focus:ring-1 focus:ring-blue-500 outline-none lowercase"
+                                            value={editForm.email}
+                                            onChange={(e) => setEditForm({ ...editForm, email: e.target.value.toLowerCase() })}
+                                        />
+                                    ) : (
+                                        <span className="text-sm text-gray-500 italic">{p.email || 'No asignado'}</span>
                                     )}
                                 </td>
                                 <td className="px-6 py-4">
