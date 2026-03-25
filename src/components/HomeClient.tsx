@@ -5,6 +5,7 @@ import RequestForm from '@/components/RequestForm';
 import AgendaOpeningForm from '@/components/AgendaOpeningForm';
 import ManagementTable from '@/components/ManagementTable';
 import AgendaOpeningTable from '@/components/AgendaOpeningTable';
+import UnblockManagementTable from '@/components/UnblockManagementTable';
 
 import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield, User, Briefcase, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
@@ -14,6 +15,7 @@ import UserManagement from './UserManagement';
 import { Official } from '@/app/admin/personnel/actions';
 import { useEffect, useRef } from 'react';
 import PersonnelView from './PersonnelView';
+import UnblockRequestsView from './UnblockRequestsView';
 
 interface HomeClientProps {
     isAdmin: boolean;
@@ -23,9 +25,9 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ isAdmin, personnel, userEmail, userName }: HomeClientProps) {
-    const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos'>('form');
+    const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock'>('form');
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
-    const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
+    const [managementView, setManagementView] = useState<'blockings' | 'openings' | 'unblocks'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isActivosDropdownOpen, setIsActivosDropdownOpen] = useState(false);
@@ -228,17 +230,29 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                                     >
                                         Aperturas
                                     </button>
+                                    <button
+                                        onClick={() => setManagementView('unblocks')}
+                                        className={clsx(
+                                            "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
+                                            managementView === 'unblocks' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
+                                        )}
+                                    >
+                                        Desbloqueos
+                                    </button>
                                 </div>
                             </div>
                             {managementView === 'blockings' ? (
                                 <ManagementTable refreshTrigger={refreshTrigger} isAdmin={isAdmin} />
-                            ) : (
+                            ) : managementView === 'openings' ? (
                                 <AgendaOpeningTable refreshTrigger={refreshTrigger} isAdmin={isAdmin} />
+                            ) : (
+                                <UnblockManagementTable refreshTrigger={refreshTrigger} isAdmin={isAdmin} />
                             )}
                         </div>
                     )}
 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} isAdmin={isAdmin} />}
+                    {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} userName={userName} />}
                     {activeTab === 'activos' && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             {activeSubTab !== 'COORDINADOR' ? (

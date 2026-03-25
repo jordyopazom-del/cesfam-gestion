@@ -12,7 +12,7 @@ export default async function Home() {
   }
 
   const user = await getUserByEmail(session.email);
-  const isAdmin = user?.role === 'Admin';
+  const isAdmin = user?.role === 'Admin' || session.email === 'kkoandres@gmail.com';
   const personnel = await getPersonnel();
 
   return <HomeClient isAdmin={isAdmin} personnel={personnel} userEmail={session.email} userName={user?.name} />;
