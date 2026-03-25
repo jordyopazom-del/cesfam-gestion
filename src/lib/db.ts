@@ -198,7 +198,7 @@ export async function saveRequest(request: BlockingRequest): Promise<BlockingReq
             INSERT INTO requests (
                 id, coordinator, location, profession, professional_name, block_type,
                 start_date, end_date, selected_days, start_time, end_time, status, agenda_blocked_status, 
-                pdf_url, assigned_admin, processed_at, submitter_email, created_at
+                pdf_url, assigned_admin, processed_at, submitter_email, unblock_status, unblock_reason, created_at
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.blockType},
                 ${request.startDate}, ${request.endDate}, ${JSON.stringify(request.selectedDays)}, ${request.startTime}, ${request.endTime}, ${request.status}, ${request.agendaBlockedStatus || null}, 
