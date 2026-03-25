@@ -34,8 +34,10 @@ export default function UnblockRequestsView({ userEmail, userName }: UnblockRequ
                     
                     if (!isOwner) return false;
 
-                    // 2. Status check (Only Authorized or those already in unblock flow)
-                    const statusOk = req.status === 'Authorized' || req.unblockStatus !== 'None';
+                    // 2. Status check (Authorized OR Processed OR already in unblock flow)
+                    const isProcessed = req.agendaBlockedStatus === 'Realizado' || 
+                                       req.agendaBlockedStatus === 'Sin Agenda';
+                    const statusOk = req.status === 'Authorized' || isProcessed || req.unblockStatus !== 'None';
                     if (!statusOk) return false;
 
                     // 3. Date check (Only today or future)

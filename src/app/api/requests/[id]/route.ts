@@ -48,6 +48,7 @@ export async function PATCH(
                         "Coordinador Convenios": "convenioscesfam@munifutrono.cl",
                         "Coordinador Some": "some.cesfam@munifutrono.cl",
                         "Coordinador Gore": "proyectogoread@munifutrono.cl",
+                        "Encargado Agendas": "kkoandres@gmail.com",
                     };
                     const mappedEmail = fallbackMap[updatedRequest.coordinator];
                     if (mappedEmail) recipients.push(mappedEmail);
