@@ -1,6 +1,4 @@
-import { Resend } from 'resend';
-
-// Resend no se instancia aquí para evitar errores durante el build si la API KEY no está presente
+import nodemailer from 'nodemailer';
 
 interface EmailParams {
     to: string[];
@@ -11,31 +9,31 @@ interface EmailParams {
 }
 
 export async function sendEmail({ to, subject, html, fromName, replyTo }: EmailParams) {
-    if (!process.env.RESEND_API_KEY) {
-        console.warn('RESEND_API_KEY no configurada. El correo no se enviará.');
-        return { success: false, error: 'API Key missing' };
-    }
+    const user = process.env.EMAIL_USER || 'calvarado@munifutrono.cl';
+    const pass = process.env.EMAIL_PASS || 'Loki4040';
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user,
+            pass
+        }
+    });
 
     try {
-        const { data, error } = await resend.emails.send({
-            from: fromName ? `${fromName} <onboarding@resend.dev>` : 'Cesfam Gestion <onboarding@resend.dev>',
-            replyTo,
-            to,
+        const mailOptions = {
+            from: fromName ? `"${fromName} (CESFAM Gestión)" <${user}>` : `"CESFAM Gestión" <${user}>`,
+            replyTo: replyTo || user,
+            to: to.join(', '),
             subject,
-            html,
-        });
+            html
+        };
 
-        if (error) {
-            console.error('Error de Resend:', error);
-            return { success: false, error };
-        }
-
-        return { success: true, data };
-    } catch (err: any) {
-        console.error('Error al enviar correo:', err);
-        return { success: false, error: err.message };
+        const info = await transporter.sendMail(mailOptions);
+        return { success: true, data: info };
+    } catch (error: any) {
+        console.error('Error al enviar correo con nodemailer:', error);
+        return { success: false, error: error.message };
     }
 }
 
