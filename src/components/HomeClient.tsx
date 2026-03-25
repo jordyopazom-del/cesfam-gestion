@@ -21,9 +21,10 @@ interface HomeClientProps {
     isAdmin: boolean;
     personnel: Official[];
     userEmail?: string;
+    userName?: string;
 }
 
-export default function HomeClient({ isAdmin, personnel, userEmail }: HomeClientProps) {
+export default function HomeClient({ isAdmin, personnel, userEmail, userName }: HomeClientProps) {
     const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock'>('form');
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
     const [managementView, setManagementView] = useState<'blockings' | 'openings' | 'unblocks'>('blockings');
@@ -265,7 +266,7 @@ export default function HomeClient({ isAdmin, personnel, userEmail }: HomeClient
                     )}
 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} isAdmin={isAdmin} />}
-                    {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} />}
+                    {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} userName={userName} />}
                     {activeTab === 'activos' && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             {activeSubTab !== 'COORDINADOR' ? (

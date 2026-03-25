@@ -8,9 +8,10 @@ import clsx from 'clsx';
 
 interface UnblockRequestsViewProps {
     userEmail: string;
+    userName?: string;
 }
 
-export default function UnblockRequestsView({ userEmail }: UnblockRequestsViewProps) {
+export default function UnblockRequestsView({ userEmail, userName }: UnblockRequestsViewProps) {
     const [requests, setRequests] = useState<BlockingRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -23,10 +24,29 @@ export default function UnblockRequestsView({ userEmail }: UnblockRequestsViewPr
             const res = await fetch('/api/requests');
             const data = await res.json();
             if (Array.isArray(data)) {
-                // Only show my authorized requests or those with unblock already requested
-                const myRequests = data.filter((req: BlockingRequest) => 
-                    req.submitterEmail === userEmail && (req.status === 'Authorized' || req.unblockStatus !== 'None')
-                );
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const myRequests = data.filter((req: BlockingRequest) => {
+                    // 1. Ownership check (Email OR fallback to Name for old requests)
+                    const isOwner = req.submitterEmail === userEmail || 
+                                   (!req.submitterEmail && userName && req.coordinator === userName);
+                    
+                    if (!isOwner) return false;
+
+                    // 2. Status check (Only Authorized or those already in unblock flow)
+                    const statusOk = req.status === 'Authorized' || req.unblockStatus !== 'None';
+                    if (!statusOk) return false;
+
+                    // 3. Date check (Only today or future)
+                    const dates = req.selectedDays && req.selectedDays.length > 0 
+                                 ? req.selectedDays 
+                                 : [req.startDate];
+                    
+                    const isFutureOrToday = dates.some(d => new Date(d) >= today);
+                    
+                    return isFutureOrToday;
+                });
                 setRequests(myRequests);
             }
         } catch (error) {
