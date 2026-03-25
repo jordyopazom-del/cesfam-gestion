@@ -34,6 +34,9 @@ export async function PATCH(
                 const coordinator = personnel.find(p => p.name.toLowerCase() === updatedRequest.coordinator?.toLowerCase());
                 if (coordinator?.email) recipients.push(coordinator.email);
 
+                const professional = personnel.find(p => p.name.toLowerCase() === updatedRequest.professionalName?.toLowerCase());
+                if (professional?.email) recipients.push(professional.email);
+
                 // Find Admin Email
                 let adminName = undefined;
                 let adminEmail = undefined;

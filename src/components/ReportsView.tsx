@@ -87,6 +87,9 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         const coordinator = personnel.find(p => p.name.toLowerCase() === req.coordinator?.toLowerCase());
         if (coordinator?.email) recipients.push(coordinator.email);
 
+        const professional = personnel.find(p => p.name.toLowerCase() === req.professionalName?.toLowerCase());
+        if (professional?.email) recipients.push(professional.email);
+
         if (req.assignedAdmin && req.assignedAdmin !== 'N/A') {
             const admin = personnel.find(p => p.name.toLowerCase() === req.assignedAdmin.toLowerCase());
             if (admin?.email) recipients.push(admin.email);
@@ -116,7 +119,8 @@ ${docLink}
 Saludos cordiales.`;
         
         // Use authuser to attempt to open the specific account (calvarado@munifutrono.cl) if logged in
-        const mailtoLink = `https://mail.google.com/mail/u/calvarado@munifutrono.cl/?view=cm&fs=1&to=${recipients.join(',')}&su=${subject}&body=${encodeURIComponent(bodyText)}`;
+        const uniqueRecipients = Array.from(new Set(recipients)).filter(Boolean);
+        const mailtoLink = `https://mail.google.com/mail/u/calvarado@munifutrono.cl/?view=cm&fs=1&to=${uniqueRecipients.join(',')}&su=${subject}&body=${encodeURIComponent(bodyText)}`;
         
         // Open the Gmail compose window
         window.open(mailtoLink, '_blank', 'noopener,noreferrer');
