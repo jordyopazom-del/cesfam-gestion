@@ -30,9 +30,24 @@ export async function PATCH(
                 const personnel = await getPersonnel();
                 const recipients = ['gestiondemandafutrono@munifutrono.cl'];
 
-                // Find Coordinator Email
-                const coordinator = personnel.find(p => p.name.toLowerCase() === updatedRequest.coordinator?.toLowerCase());
-                if (coordinator?.email) recipients.push(coordinator.email);
+                // Find Submitter Email
+                if (updatedRequest.submitterEmail) {
+                    recipients.push(updatedRequest.submitterEmail);
+                } else if (updatedRequest.coordinator) {
+                    const fallbackMap: Record<string, string> = {
+                        "Directora": "direccioncesfam@munifutrono.cl",
+                        "Coordinadora Técnica": "coordinaciontecnica@munifutrono.cl",
+                        "Coordinador Rural Cordillera": "coordinacionsaludrural@munifutrono.cl",
+                        "Coordinador Rural Valle": "coordinacionsaludrural@munifutrono.cl",
+                        "Coordinador Sector 1": "coordinacions1@munifutrono.cl",
+                        "Coordinador Sector 2": "coordinacions2@munifutrono.cl",
+                        "Coordinador Convenios": "convenioscesfam@munifutrono.cl",
+                        "Coordinador Some": "some.cesfam@munifutrono.cl",
+                        "Coordinador Gore": "proyectogoread@munifutrono.cl",
+                    };
+                    const mappedEmail = fallbackMap[updatedRequest.coordinator];
+                    if (mappedEmail) recipients.push(mappedEmail);
+                }
 
                 const professional = personnel.find(p => p.name.toLowerCase() === updatedRequest.professionalName?.toLowerCase());
                 if (professional?.email) recipients.push(professional.email);

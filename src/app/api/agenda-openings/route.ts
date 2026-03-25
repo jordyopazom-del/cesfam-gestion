@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from 'next/server';
 import { saveAgendaOpening, getAgendaOpenings, checkAgendaOpeningOverlap, AgendaOpeningRequest } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 function generateId() {
     return crypto.randomUUID();
@@ -43,10 +44,14 @@ export async function POST(req: NextRequest) {
         }
         // ──────────────────────────────────────────────────────────────────────
 
+        const session = await getSession();
+        const submitterEmail = session?.email || undefined;
+
         const newRequest: AgendaOpeningRequest = {
             id: generateId(),
             ...body,
             status: 'Pending',
+            submitterEmail,
             createdAt: new Date().toISOString(),
         };
         await saveAgendaOpening(newRequest);

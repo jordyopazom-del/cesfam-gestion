@@ -84,12 +84,31 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         // Build recipients list
         const recipients = ['gestiondemandafutrono@munifutrono.cl'];
         
-        const coordinator = personnel.find(p => p.name.toLowerCase() === req.coordinator?.toLowerCase());
-        if (coordinator?.email) recipients.push(coordinator.email);
+        // 1. Submitter (the logged in user who created this request)
+        if (req.submitterEmail) {
+            recipients.push(req.submitterEmail);
+        } else if (req.coordinator) {
+            // Fallback for old requests before submitterEmail was tracked
+            const fallbackMap: Record<string, string> = {
+                "Directora": "direccioncesfam@munifutrono.cl",
+                "Coordinadora Técnica": "coordinaciontecnica@munifutrono.cl",
+                "Coordinador Rural Cordillera": "coordinacionsaludrural@munifutrono.cl",
+                "Coordinador Rural Valle": "coordinacionsaludrural@munifutrono.cl",
+                "Coordinador Sector 1": "coordinacions1@munifutrono.cl",
+                "Coordinador Sector 2": "coordinacions2@munifutrono.cl",
+                "Coordinador Convenios": "convenioscesfam@munifutrono.cl",
+                "Coordinador Some": "some.cesfam@munifutrono.cl",
+                "Coordinador Gore": "proyectogoread@munifutrono.cl",
+            };
+            const mappedEmail = fallbackMap[req.coordinator];
+            if (mappedEmail) recipients.push(mappedEmail);
+        }
 
+        // 2. Professional (the clinician who is missing/having their agenda opened)
         const professional = personnel.find(p => p.name.toLowerCase() === req.professionalName?.toLowerCase());
         if (professional?.email) recipients.push(professional.email);
 
+        // 3. Assigned Admin
         if (req.assignedAdmin && req.assignedAdmin !== 'N/A') {
             const admin = personnel.find(p => p.name.toLowerCase() === req.assignedAdmin.toLowerCase());
             if (admin?.email) recipients.push(admin.email);

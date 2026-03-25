@@ -18,6 +18,7 @@ export interface BlockingRequest {
     pdfUrl?: string;
     assignedAdmin?: string;
     processedAt?: string;
+    submitterEmail?: string;
     createdAt: string;
 }
 
@@ -35,6 +36,7 @@ export interface AgendaOpeningRequest {
     pdfUrl?: string;
     assignedAdmin?: string;
     processedAt?: string;
+    submitterEmail?: string;
     createdAt: string;
 }
 
@@ -176,6 +178,7 @@ export async function getRequests(): Promise<BlockingRequest[]> {
             pdfUrl: row.pdf_url,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
+            submitterEmail: row.submitter_email,
             createdAt: row.created_at.toISOString()
         }));
     } catch (error) {
@@ -191,11 +194,11 @@ export async function saveRequest(request: BlockingRequest): Promise<BlockingReq
             INSERT INTO requests (
                 id, coordinator, location, profession, professional_name, block_type,
                 start_date, end_date, selected_days, start_time, end_time, status, agenda_blocked_status, 
-                pdf_url, assigned_admin, processed_at, created_at
+                pdf_url, assigned_admin, processed_at, submitter_email, created_at
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.blockType},
                 ${request.startDate}, ${request.endDate}, ${JSON.stringify(request.selectedDays)}, ${request.startTime}, ${request.endTime}, ${request.status}, ${request.agendaBlockedStatus || null}, 
-                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.createdAt}
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, ${request.createdAt}
             )
         `;
         return request;
@@ -249,6 +252,7 @@ export async function updateRequestStatus(
             pdfUrl: row.pdf_url,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
+            submitterEmail: row.submitter_email,
             createdAt: row.created_at.toISOString()
         };
     } catch (error) {
@@ -275,6 +279,7 @@ export async function getAgendaOpenings(): Promise<AgendaOpeningRequest[]> {
             pdfUrl: row.pdf_url,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
+            submitterEmail: row.submitter_email,
             createdAt: row.created_at.toISOString()
         }));
     } catch (error) {
@@ -289,11 +294,11 @@ export async function saveAgendaOpening(request: AgendaOpeningRequest): Promise<
         await sql`
             INSERT INTO agenda_openings (
                 id, coordinator, location, profession, professional_name, performance,
-                start_time, end_time, selected_days, status, pdf_url, assigned_admin, processed_at, created_at
+                start_time, end_time, selected_days, status, pdf_url, assigned_admin, processed_at, submitter_email, created_at
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.performance},
                 ${request.startTime}, ${request.endTime}, ${JSON.stringify(request.selectedDays)}, ${request.status}, 
-                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.createdAt}
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, ${request.createdAt}
             )
         `;
         return request;
@@ -339,6 +344,7 @@ export async function updateAgendaOpeningStatus(
             pdfUrl: row.pdf_url,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
+            submitterEmail: row.submitter_email,
             createdAt: row.created_at.toISOString()
         };
     } catch (error) {
