@@ -14,11 +14,13 @@ export interface BlockingRequest {
     startTime: string;
     endTime: string;
     status: 'Pending' | 'Authorized' | 'Rejected';
-    agendaBlockedStatus?: 'Realizado' | 'Sin Agenda' | 'No Corresponde';
+    agendaBlockedStatus?: 'Realizado' | 'Sin Agenda' | 'No Corresponde' | 'Desbloqueado';
     pdfUrl?: string;
     assignedAdmin?: string;
     processedAt?: string;
     submitterEmail?: string;
+    unblockStatus?: 'None' | 'Requested' | 'Approved' | 'Rejected';
+    unblockReason?: string;
     createdAt: string;
 }
 
@@ -179,6 +181,8 @@ export async function getRequests(): Promise<BlockingRequest[]> {
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
+            unblockStatus: row.unblock_status as any || 'None',
+            unblockReason: row.unblock_reason,
             createdAt: row.created_at.toISOString()
         }));
     } catch (error) {
@@ -198,7 +202,9 @@ export async function saveRequest(request: BlockingRequest): Promise<BlockingReq
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.blockType},
                 ${request.startDate}, ${request.endDate}, ${JSON.stringify(request.selectedDays)}, ${request.startTime}, ${request.endTime}, ${request.status}, ${request.agendaBlockedStatus || null}, 
-                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, ${request.createdAt}
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, 
+                ${request.unblockStatus || 'None'}, ${request.unblockReason || null},
+                ${request.createdAt}
             )
         `;
         return request;
@@ -213,7 +219,9 @@ export async function updateRequestStatus(
     status?: BlockingRequest['status'], 
     agendaBlockedStatus?: BlockingRequest['agendaBlockedStatus'],
     pdfUrl?: string,
-    assignedAdmin?: string
+    assignedAdmin?: string,
+    unblockStatus?: BlockingRequest['unblockStatus'],
+    unblockReason?: string
 ): Promise<BlockingRequest | null> {
     noStore();
     try {
@@ -229,7 +237,12 @@ export async function updateRequestStatus(
         if (assignedAdmin) {
             await sql`UPDATE requests SET assigned_admin = ${assignedAdmin}, processed_at = NOW() WHERE id = ${id}`;
         }
-
+        if (unblockStatus) {
+            await sql`UPDATE requests SET unblock_status = ${unblockStatus} WHERE id = ${id}`;
+        }
+        if (unblockReason) {
+            await sql`UPDATE requests SET unblock_reason = ${unblockReason} WHERE id = ${id}`;
+        }
 
         const { rows } = await sql`SELECT * FROM requests WHERE id = ${id}`;
         if (rows.length === 0) return null;
@@ -248,15 +261,62 @@ export async function updateRequestStatus(
             startTime: row.start_time,
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
-            agendaBlockedStatus: row.agenda_blocked_status as 'Realizado' | 'Sin Agenda' | 'No Corresponde' | undefined,
+            agendaBlockedStatus: row.agenda_blocked_status as any,
             pdfUrl: row.pdf_url,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
+            unblockStatus: row.unblock_status as any || 'None',
+            unblockReason: row.unblock_reason,
             createdAt: row.created_at.toISOString()
         };
     } catch (error) {
         console.error('Error updating request status:', error);
+        return null;
+    }
+}
+
+export async function updateUnblockStatus(
+    id: string,
+    unblockStatus: BlockingRequest['unblockStatus'],
+    unblockReason?: string
+): Promise<BlockingRequest | null> {
+    noStore();
+    try {
+        if (unblockReason) {
+            await sql`UPDATE requests SET unblock_status = ${unblockStatus}, unblock_reason = ${unblockReason} WHERE id = ${id}`;
+        } else {
+            await sql`UPDATE requests SET unblock_status = ${unblockStatus} WHERE id = ${id}`;
+        }
+
+        const { rows } = await sql`SELECT * FROM requests WHERE id = ${id}`;
+        if (rows.length === 0) return null;
+
+        const row = rows[0];
+        return {
+            id: row.id,
+            coordinator: row.coordinator,
+            location: row.location,
+            profession: row.profession,
+            professionalName: row.professional_name,
+            blockType: row.block_type,
+            startDate: row.start_date,
+            endDate: row.end_date,
+            selectedDays: JSON.parse(row.selected_days),
+            startTime: row.start_time,
+            endTime: row.end_time,
+            status: row.status as 'Pending' | 'Authorized' | 'Rejected',
+            agendaBlockedStatus: row.agenda_blocked_status as any,
+            pdfUrl: row.pdf_url,
+            assignedAdmin: row.assigned_admin,
+            processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
+            submitterEmail: row.submitter_email,
+            unblockStatus: row.unblock_status as any || 'None',
+            unblockReason: row.unblock_reason,
+            createdAt: row.created_at.toISOString()
+        };
+    } catch (error) {
+        console.error('Error updating unblock status:', error);
         return null;
     }
 }

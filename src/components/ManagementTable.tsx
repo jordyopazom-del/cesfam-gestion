@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { BlockingRequest } from '@/lib/db';
-import { Search, FileText, UserCheck } from 'lucide-react';
+import { Search, FileText, UserCheck, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import ProcessingModal from './ProcessingModal';
@@ -47,10 +47,17 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
         setRequests(prev => prev.map(r => r.id === id ? { ...r, agendaBlockedStatus: newStatus } : r));
 
         try {
+            const body: any = { agendaBlockedStatus: newStatus };
+            
+            // If the admin is unblocking, also update unblockStatus to 'Approved'
+            if (newStatus === 'Desbloqueado') {
+                body.unblockStatus = 'Approved';
+            }
+
             const res = await fetch(`/api/requests/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ agendaBlockedStatus: newStatus }),
+                body: JSON.stringify(body),
             });
 
             if (!res.ok) {
@@ -67,7 +74,8 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
     const filteredRequests = requests.filter(r => {
         const isProcessed = r.agendaBlockedStatus === 'Realizado' ||
             r.agendaBlockedStatus === 'Sin Agenda' ||
-            r.agendaBlockedStatus === 'No Corresponde';
+            r.agendaBlockedStatus === 'No Corresponde' ||
+            r.agendaBlockedStatus === 'Desbloqueado';
 
         const matchesFilter = r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
             r.profession.toLowerCase().includes(filter.toLowerCase()) ||
@@ -137,7 +145,14 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                             )}>
                                 <td className="px-3 py-3 align-top font-medium text-gray-900">
                                     {format(new Date(req.createdAt), 'dd/MM/yyyy')}
-                                    <span className="text-gray-400 text-[9px] ml-1">{format(new Date(req.createdAt), 'HH:mm')}</span>
+                                    <div className="text-[10px] text-gray-400 font-medium">{format(new Date(req.createdAt), 'HH:mm')} hrs</div>
+                                    {req.unblockStatus === 'Requested' && (
+                                        <div className="mt-1 animate-pulse">
+                                            <span className="bg-amber-100 text-amber-700 text-[9px] font-bold px-1.5 py-0.5 rounded border border-amber-200 uppercase flex items-center gap-1 shadow-sm">
+                                                <RefreshCw size={10} className="animate-spin" /> Solicita Desbloqueo
+                                            </span>
+                                        </div>
+                                    )}
                                 </td>
                                 <td className="px-3 py-3 align-top leading-tight max-w-[100px]">{req.coordinator}</td>
                                 <td className="px-3 py-3 align-top leading-tight max-w-[120px]">{req.location || '-'}</td>
@@ -177,6 +192,7 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                                 <option value="Realizado">OK</option>
                                                 <option value="Sin Agenda">N/A</option>
                                                 <option value="No Corresponde">Err</option>
+                                                <option value="Desbloqueado">DESBLOQUEAR</option>
                                             </select>
                                         ) : (
                                             <span className={clsx(

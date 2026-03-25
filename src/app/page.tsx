@@ -15,5 +15,5 @@ export default async function Home() {
   const isAdmin = user?.role === 'Admin';
   const personnel = await getPersonnel();
 
-  return <HomeClient isAdmin={isAdmin} personnel={personnel} />;
+  return <HomeClient isAdmin={isAdmin} personnel={personnel} userEmail={session.email} />;
 }
