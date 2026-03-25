@@ -81,7 +81,8 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
             r.profession.toLowerCase().includes(filter.toLowerCase()) ||
             r.coordinator.toLowerCase().includes(filter.toLowerCase());
 
-        return !isProcessed && matchesFilter;
+        const isUnblockRequested = r.unblockStatus === 'Requested';
+        return (!isProcessed || isUnblockRequested) && matchesFilter;
     });
 
     // Sort by created date desc

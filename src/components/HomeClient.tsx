@@ -27,7 +27,7 @@ interface HomeClientProps {
 export default function HomeClient({ isAdmin, personnel, userEmail, userName }: HomeClientProps) {
     const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock'>('form');
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
-    const [managementView, setManagementView] = useState<'blockings' | 'openings' | 'unblocks'>('blockings');
+    const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isActivosDropdownOpen, setIsActivosDropdownOpen] = useState(false);
@@ -230,23 +230,12 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                                     >
                                         Aperturas
                                     </button>
-                                    <button
-                                        onClick={() => setManagementView('unblocks')}
-                                        className={clsx(
-                                            "px-4 py-1.5 rounded-lg text-sm font-medium transition-all",
-                                            managementView === 'unblocks' ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-900"
-                                        )}
-                                    >
-                                        Desbloqueos
-                                    </button>
                                 </div>
                             </div>
                             {managementView === 'blockings' ? (
                                 <ManagementTable refreshTrigger={refreshTrigger} isAdmin={isAdmin} />
-                            ) : managementView === 'openings' ? (
-                                <AgendaOpeningTable refreshTrigger={refreshTrigger} isAdmin={isAdmin} />
                             ) : (
-                                <UnblockManagementTable refreshTrigger={refreshTrigger} isAdmin={isAdmin} />
+                                <AgendaOpeningTable refreshTrigger={refreshTrigger} isAdmin={isAdmin} />
                             )}
                         </div>
                     )}
