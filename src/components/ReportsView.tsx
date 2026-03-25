@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
-import { Filter, FileText, Download, Calendar, Mail, Loader2, Pencil } from 'lucide-react';
+import { Filter, FileText, Download, Calendar, Mail, Loader2, Pencil, ChevronLeft, ChevronRight } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
@@ -37,9 +37,17 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
     const [selectedProfession, setSelectedProfession] = useState('');
     const [selectedProfessional, setSelectedProfessional] = useState('');
 
-    // Filters for Export
     const [exportStartDate, setExportStartDate] = useState('');
     const [exportEndDate, setExportEndDate] = useState('');
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 20;
+
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [reportType, selectedMonth, selectedYear, selectedProfession, selectedProfessional]);
 
     const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)));
 
@@ -207,6 +215,20 @@ Saludos cordiales.`;
 
     const sortedRequests = sortData(filteredRequests);
     const sortedOpenings = sortData(filteredOpenings);
+
+    // Get current page items
+    const paginatedRequests = sortedRequests.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+    const paginatedOpenings = sortedOpenings.slice(
+        (currentPage - 1) * ITEMS_PER_PAGE,
+        currentPage * ITEMS_PER_PAGE
+    );
+
+    const totalPages = Math.ceil(
+        (reportType === 'blockings' ? sortedRequests.length : sortedOpenings.length) / ITEMS_PER_PAGE
+    );
 
     const filteredProfessionals = personnel.filter(p => p.profession === selectedProfession);
 
@@ -468,6 +490,31 @@ Saludos cordiales.`;
                                     <p className="text-gray-500 mt-0.5">Detectados {reportType === 'blockings' ? sortedRequests.length : sortedOpenings.length} registros según filtros.</p>
                                 </div>
                             </div>
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        title="Anterior"
+                                    >
+                                        <ChevronLeft size={20} />
+                                    </button>
+                                    <div className="text-sm font-bold text-gray-600 px-4 py-2 bg-gray-50 rounded-lg border border-gray-100 min-w-[120px] text-center">
+                                        Página <span className="text-blue-600">{currentPage}</span> de {totalPages}
+                                    </div>
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        title="Siguiente"
+                                    >
+                                        <ChevronRight size={20} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="overflow-x-auto min-h-[400px]">
@@ -501,7 +548,7 @@ Saludos cordiales.`;
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
                                     {reportType === 'blockings' ? (
-                                        sortedRequests.map((req) => (
+                                        paginatedRequests.map((req) => (
                                             <tr key={req.id} className="hover:bg-gray-50/80 transition-colors border-b border-gray-50 last:border-0 group">
                                                 <td className="px-3 py-3">
                                                     <div className="font-bold text-gray-900 text-sm">
@@ -585,7 +632,7 @@ Saludos cordiales.`;
                                             </tr>
                                         ))
                                     ) : (
-                                        sortedOpenings.map((req) => (
+                                        paginatedOpenings.map((req) => (
                                             <tr key={req.id} className="hover:bg-gray-50/80 transition-colors group">
                                                 <td className="px-3 py-3">
                                                     <div className="font-bold text-gray-900 text-sm">
