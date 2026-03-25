@@ -353,3 +353,25 @@ export async function updateAgendaOpeningStatus(
     }
 }
 
+export async function getPdfById(id: string): Promise<string | null> {
+    noStore();
+    try {
+        // Try requests table first
+        const { rows: reqRows } = await sql`SELECT pdf_url FROM requests WHERE id = ${id}`;
+        if (reqRows.length > 0 && reqRows[0].pdf_url) {
+            return reqRows[0].pdf_url;
+        }
+
+        // Try agenda_openings table
+        const { rows: openRows } = await sql`SELECT pdf_url FROM agenda_openings WHERE id = ${id}`;
+        if (openRows.length > 0 && openRows[0].pdf_url) {
+            return openRows[0].pdf_url;
+        }
+
+        return null;
+    } catch (error) {
+        console.error('Error fetching PDF by ID:', error);
+        return null;
+    }
+}
+

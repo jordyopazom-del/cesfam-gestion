@@ -119,7 +119,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
 
         const isBlock = type === 'blockings';
         const docLink = req.pdfUrl && req.pdfUrl !== 'SIN PACIENTES' 
-            ? `${window.location.origin}${req.pdfUrl}` 
+            ? `${window.location.origin}/api/pdf/${req.id}` 
             : 'Sin documento añadido';
 
         const subject = encodeURIComponent(`Gestión Finalizada: ${isBlock ? 'Bloqueo' : 'Apertura'} - ${req.professionalName}`);
@@ -560,7 +560,7 @@ Saludos cordiales.`;
                                                         {req.pdfUrl ? (
                                                             <>
                                                                 <a
-                                                                    href={req.pdfUrl}
+                                                                    href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
@@ -644,7 +644,7 @@ Saludos cordiales.`;
                                                         {req.pdfUrl ? (
                                                             <>
                                                                 <a
-                                                                    href={req.pdfUrl}
+                                                                    href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
                                                                     target="_blank"
                                                                     rel="noopener noreferrer"
                                                                     className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
