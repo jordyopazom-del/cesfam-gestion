@@ -8,6 +8,7 @@ export const COORDINATORS = [
     "Coordinador Convenios",
     "Coordinador Some",
     "Coordinador Gore",
+    "Encargado Agendas",
 ];
 
 export const BLOCK_TYPES = [
