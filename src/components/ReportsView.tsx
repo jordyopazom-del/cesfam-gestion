@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
-import { Filter, FileText, Download, Calendar, Mail, Loader2 } from 'lucide-react';
+import { Filter, FileText, Download, Calendar, Mail, Loader2, Pencil } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { Official } from '@/app/admin/personnel/actions';
+import ProcessingModal from './ProcessingModal';
 
 const MONTHS = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -23,8 +24,9 @@ const safeFormat = (dateStr: string, formatStr: string) => {
     }
 };
 
-export default function ReportsView({ personnel }: { personnel: Official[] }) {
+export default function ReportsView({ personnel, isAdmin }: { personnel: Official[], isAdmin?: boolean }) {
     const [reportType, setReportType] = useState<'blockings' | 'openings' | 'export'>('blockings');
+    const [selectedRequestToEdit, setSelectedRequestToEdit] = useState<BlockingRequest | AgendaOpeningRequest | null>(null);
     const [requests, setRequests] = useState<BlockingRequest[]>([]);
     const [openings, setOpenings] = useState<AgendaOpeningRequest[]>([]);
     const [loading, setLoading] = useState(true);
@@ -41,42 +43,43 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
 
     const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)));
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const [reqRes, openRes] = await Promise.all([
-                    fetch('/api/requests'),
-                    fetch('/api/agenda-openings')
-                ]);
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [reqRes, openRes] = await Promise.all([
+                fetch('/api/requests'),
+                fetch('/api/agenda-openings')
+            ]);
 
-                if (!reqRes.ok) throw new Error(`Requests API error: ${reqRes.status}`);
-                if (!openRes.ok) throw new Error(`Openings API error: ${openRes.status}`);
+            if (!reqRes.ok) throw new Error(`Requests API error: ${reqRes.status}`);
+            if (!openRes.ok) throw new Error(`Openings API error: ${openRes.status}`);
 
-                const reqData = await reqRes.json();
-                const openData = await openRes.json();
+            const reqData = await reqRes.json();
+            const openData = await openRes.json();
 
-                if (Array.isArray(reqData)) {
-                    setRequests(reqData);
-                } else {
-                    console.error('Requests data is not an array:', reqData);
-                    setRequests([]);
-                }
-
-                if (Array.isArray(openData)) {
-                    setOpenings(openData);
-                } else {
-                    console.error('Openings data is not an array:', openData);
-                    setOpenings([]);
-                }
-            } catch (error) {
-                console.error('Failed to fetch data', error);
+            if (Array.isArray(reqData)) {
+                setRequests(reqData);
+            } else {
+                console.error('Requests data is not an array:', reqData);
                 setRequests([]);
-                setOpenings([]);
-            } finally {
-                setLoading(false);
             }
-        };
+
+            if (Array.isArray(openData)) {
+                setOpenings(openData);
+            } else {
+                console.error('Openings data is not an array:', openData);
+                setOpenings([]);
+            }
+        } catch (error) {
+            console.error('Failed to fetch data', error);
+            setRequests([]);
+            setOpenings([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchData();
     }, []);
 
@@ -532,15 +535,25 @@ Saludos cordiales.`;
                                                     {req.startTime} - {req.endTime}
                                                 </td>
                                                 <td className="px-3 py-3 text-center">
-                                                    <span className={clsx(
-                                                        "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
-                                                        req.agendaBlockedStatus === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
-                                                            req.agendaBlockedStatus === 'Sin Agenda' ? "bg-amber-50 text-amber-700 border-amber-100" :
-                                                                req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-50 text-red-700 border-red-100" :
-                                                                    "bg-gray-50 text-gray-400 border-gray-200"
-                                                    )}>
-                                                        {req.agendaBlockedStatus || 'Pendiente'}
-                                                    </span>
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <span className={clsx(
+                                                            "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
+                                                            req.agendaBlockedStatus === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                                                                req.agendaBlockedStatus === 'Sin Agenda' ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                                                    req.agendaBlockedStatus === 'No Corresponde' ? "bg-red-50 text-red-700 border-red-100" :
+                                                                        "bg-gray-50 text-gray-400 border-gray-200"
+                                                        )}>
+                                                            {req.agendaBlockedStatus || 'Pendiente'}
+                                                        </span>
+                                                        {isAdmin && (req.agendaBlockedStatus === 'Realizado' || req.agendaBlockedStatus === 'Sin Agenda') && (
+                                                            <button
+                                                                onClick={() => setSelectedRequestToEdit(req)}
+                                                                className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition-colors"
+                                                            >
+                                                                <Pencil size={10} /> Editar Doc
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
@@ -606,12 +619,25 @@ Saludos cordiales.`;
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3 text-center">
-                                                    <span className={clsx(
-                                                        "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
-                                                        req.status === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"
-                                                    )}>
-                                                        {req.status === 'Pending' ? 'Pendiente' : req.status}
-                                                    </span>
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <span className={clsx(
+                                                            "inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border",
+                                                            req.status === 'Realizado' ? "bg-emerald-50 text-emerald-700 border-emerald-100" :
+                                                                req.status === 'No Corresponde' ? "bg-red-50 text-red-700 border-red-100" :
+                                                                    req.status === 'Pending' ? "bg-amber-50 text-amber-700 border-amber-100" :
+                                                                        "bg-gray-50 text-gray-400 border-gray-200"
+                                                        )}>
+                                                            {req.status === 'Pending' ? 'Pendiente' : req.status}
+                                                        </span>
+                                                        {isAdmin && (req.status === 'Realizado') && (
+                                                            <button
+                                                                onClick={() => setSelectedRequestToEdit(req)}
+                                                                className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition-colors"
+                                                            >
+                                                                <Pencil size={10} /> Editar Doc
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
@@ -647,7 +673,7 @@ Saludos cordiales.`;
                                     {((reportType === 'blockings' && sortedRequests.length === 0) ||
                                         (reportType === 'openings' && sortedOpenings.length === 0)) && (
                                             <tr>
-                                                <td colSpan={8} className="p-8 text-center text-gray-400">
+                                                <td colSpan={reportType === 'blockings' ? 9 : 9} className="p-8 text-center text-gray-400">
                                                     No se encontraron solicitudes para los filtros seleccionados.
                                                 </td>
                                             </tr>
@@ -657,6 +683,19 @@ Saludos cordiales.`;
                         </div>
                     </div>
                 </>
+            )}
+            
+            {selectedRequestToEdit && (
+                <ProcessingModal
+                    request={selectedRequestToEdit}
+                    type={reportType === 'blockings' ? 'Bloqueo' : 'Apertura'}
+                    personnel={personnel}
+                    onClose={() => setSelectedRequestToEdit(null)}
+                    onSuccess={() => {
+                        setSelectedRequestToEdit(null);
+                        fetchData();
+                    }}
+                />
             )}
         </div>
     );

@@ -236,7 +236,7 @@ export default function HomeClient({ isAdmin, personnel }: HomeClientProps) {
                         </div>
                     )}
 
-                    {activeTab === 'reports' && <ReportsView personnel={personnel} />}
+                    {activeTab === 'reports' && <ReportsView personnel={personnel} isAdmin={isAdmin} />}
                     {activeTab === 'activos' && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                             {activeSubTab !== 'COORDINADOR' ? (
