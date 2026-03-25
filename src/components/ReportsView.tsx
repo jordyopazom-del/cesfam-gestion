@@ -121,6 +121,14 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
 
         const subject = encodeURIComponent(`Gestión Finalizada: ${isBlock ? 'Bloqueo' : 'Apertura'} - ${req.professionalName}`);
         
+        const sortedDays = [...(req.selectedDays || [])].sort((a: any, b: any) => new Date(a).getTime() - new Date(b).getTime());
+        let datesString = 'No especificado';
+        if (sortedDays.length === 1) {
+            datesString = format(new Date(sortedDays[0]), 'dd-MM-yyyy');
+        } else if (sortedDays.length > 1) {
+            datesString = `desde el ${format(new Date(sortedDays[0]), 'dd-MM-yyyy')} al ${format(new Date(sortedDays[sortedDays.length - 1]), 'dd-MM-yyyy')}`;
+        }
+
         const bodyText = `Estimado/a,
 
 Le informamos que la solicitud de ${isBlock ? 'Bloqueo' : 'Apertura'} ha sido procesada y finalizada con éxito.
@@ -129,6 +137,7 @@ Le informamos que la solicitud de ${isBlock ? 'Bloqueo' : 'Apertura'} ha sido pr
 - Profesional: ${req.professionalName}
 - Solicitante: ${req.coordinator}
 - Tipo: ${isBlock ? req.blockType : req.performance + ' MIN'}
+- ${isBlock ? 'Fechas Bloqueadas' : 'Fechas de Apertura'}: ${datesString}
 - Horario: ${req.startTime} - ${req.endTime}
 - Administrativo Asignado: ${req.assignedAdmin || '-'}
 
