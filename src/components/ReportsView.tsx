@@ -28,7 +28,6 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
     const [requests, setRequests] = useState<BlockingRequest[]>([]);
     const [openings, setOpenings] = useState<AgendaOpeningRequest[]>([]);
     const [loading, setLoading] = useState(true);
-    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
     // Filters for View
     const [selectedMonth, setSelectedMonth] = useState<number>(-1);
@@ -81,7 +80,7 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         fetchData();
     }, []);
 
-    const handleSendEmail = async (req: any, type: 'blockings' | 'openings') => {
+    const handleSendEmail = (req: any, type: 'blockings' | 'openings') => {
         // Build recipients list
         const recipients = ['gestiondemandafutrono@munifutrono.cl'];
         
@@ -94,36 +93,33 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
         }
 
         const isBlock = type === 'blockings';
-        const confirmMessage = `Confirmación de Reenvío:\n\nEl documento PDF y los detalles de esta solicitud serán enviados a las siguientes direcciones de correo:\n\n${recipients.map(e => `• ${e}`).join('\n')}\n\nNota: Los correos se enviarán automáticamente desde 'calvarado@munifutrono.cl'.\n\n¿Deseas proceder con el envío?`;
+        const docLink = req.pdfUrl && req.pdfUrl !== 'SIN PACIENTES' 
+            ? `${window.location.origin}${req.pdfUrl}` 
+            : 'Sin documento añadido';
+
+        const subject = encodeURIComponent(`Gestión Finalizada: ${isBlock ? 'Bloqueo' : 'Apertura'} - ${req.professionalName}`);
         
-        if (!window.confirm(confirmMessage)) {
-            return;
-        }
+        const bodyText = `Estimado/a,
 
-        setSendingEmailId(req.id);
-        try {
-            const endpoint = type === 'blockings' ? `/api/requests/${req.id}` : `/api/agenda-openings/${req.id}`;
-            const bodyPayload = type === 'blockings' 
-                ? { agendaBlockedStatus: 'Realizado' }
-                : { status: 'Realizado' };
+Le informamos que la solicitud de ${isBlock ? 'Bloqueo' : 'Apertura'} ha sido procesada y finalizada con éxito.
 
-            const response = await fetch(endpoint, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(bodyPayload)
-            });
+📋 Detalles de la Gestión:
+- Profesional: ${req.professionalName}
+- Solicitante: ${req.coordinator}
+- Tipo: ${isBlock ? req.blockType : req.performance + ' MIN'}
+- Horario: ${req.startTime} - ${req.endTime}
+- Administrativo Asignado: ${req.assignedAdmin || '-'}
 
-            if (!response.ok) {
-                throw new Error('Failed to send email');
-            }
-            
-            alert('Documento reenviado exitosamente a todos los destinatarios.');
-        } catch (error) {
-            console.error(error);
-            alert('Error al reenviar el correo. Es posible que Google esté bloqueando el acceso o requiera "App Passwords".');
-        } finally {
-            setSendingEmailId(null);
-        }
+📄 Documento Adjunto:
+${docLink}
+
+Saludos cordiales.`;
+        
+        // Use authuser to attempt to open the specific account (calvarado@munifutrono.cl) if logged in
+        const mailtoLink = `https://mail.google.com/mail/u/calvarado@munifutrono.cl/?view=cm&fs=1&to=${recipients.join(',')}&su=${subject}&body=${encodeURIComponent(bodyText)}`;
+        
+        // Open the Gmail compose window
+        window.open(mailtoLink, '_blank', 'noopener,noreferrer');
     };
 
 
@@ -529,11 +525,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                                 </a>
                                                                 <button
                                                                     onClick={() => handleSendEmail(req, 'blockings')}
-                                                                    disabled={sendingEmailId === req.id}
-                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm disabled:opacity-50"
+                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
                                                                     title="Reenviar por Correo"
                                                                 >
-                                                                    {sendingEmailId === req.id ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                                                                    <Mail size={16} />
                                                                 </button>
                                                             </>
                                                         ) : <span className="text-gray-300">-</span>}
@@ -601,11 +596,10 @@ export default function ReportsView({ personnel }: { personnel: Official[] }) {
                                                                 </a>
                                                                 <button
                                                                     onClick={() => handleSendEmail(req, 'openings')}
-                                                                    disabled={sendingEmailId === req.id}
-                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm disabled:opacity-50"
+                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
                                                                     title="Reenviar por Correo"
                                                                 >
-                                                                    {sendingEmailId === req.id ? <Loader2 size={16} className="animate-spin" /> : <Mail size={16} />}
+                                                                    <Mail size={16} />
                                                                 </button>
                                                             </>
                                                         ) : <span className="text-gray-300">-</span>}
