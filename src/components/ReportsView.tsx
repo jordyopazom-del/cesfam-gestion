@@ -127,7 +127,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
         }
 
         const isBlock = type === 'blockings';
-        const docLink = req.pdfUrl && req.pdfUrl !== 'SIN PACIENTES' 
+        const docLink = req.pdfUrl && typeof req.pdfUrl === 'string' && req.pdfUrl !== 'SIN PACIENTES' 
             ? `${window.location.origin}/api/pdf/${req.id}` 
             : 'Sin documento añadido';
 
@@ -607,7 +607,7 @@ Saludos cordiales.`;
                                                     <div className="flex items-center justify-center gap-2">
                                                         {req.pdfUrl ? (
                                                             <a
-                                                                href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
+                                                                href={req.pdfUrl && typeof req.pdfUrl === 'string' && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
@@ -648,6 +648,16 @@ Saludos cordiales.`;
                                                 <td className="px-3 py-3 min-w-[110px]">
                                                     <div className="font-bold text-gray-900 text-sm leading-tight">{req.professionalName}</div>
                                                     <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{req.profession}</div>
+                                                </td>
+                                                <td className="px-3 py-3">
+                                                    <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-100 uppercase">
+                                                        {req.requestType || 'Apertura'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-3 py-3">
+                                                    <span className="text-[10px] font-medium text-gray-600 bg-gray-50 px-2 py-1 rounded border border-gray-100 uppercase">
+                                                        {req.categoryType || '-'}
+                                                    </span>
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <span className="inline-block px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[10px] font-bold border border-amber-100 whitespace-nowrap">
@@ -693,7 +703,7 @@ Saludos cordiales.`;
                                                     <div className="flex items-center justify-center gap-2">
                                                         {req.pdfUrl ? (
                                                             <a
-                                                                href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
+                                                                href={req.pdfUrl && typeof req.pdfUrl === 'string' && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
@@ -725,7 +735,7 @@ Saludos cordiales.`;
                                     {((reportType === 'blockings' && sortedRequests.length === 0) ||
                                         (reportType === 'openings' && sortedOpenings.length === 0)) && (
                                             <tr>
-                                                <td colSpan={reportType === 'blockings' ? 9 : 9} className="p-8 text-center text-gray-400">
+                                                <td colSpan={reportType === 'blockings' ? 10 : 12} className="p-8 text-center text-gray-400">
                                                     No se encontraron solicitudes para los filtros seleccionados.
                                                 </td>
                                             </tr>

@@ -179,7 +179,7 @@ export async function getRequests(): Promise<BlockingRequest[]> {
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as 'Realizado' | 'Sin Agenda' | 'No Corresponde' | undefined,
-            pdfUrl: row.pdf_urls,
+            pdfUrl: Array.isArray(row.pdf_urls) ? row.pdf_urls[0] : row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -264,7 +264,7 @@ export async function updateRequestStatus(
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as any,
-            pdfUrl: row.pdf_urls,
+            pdfUrl: Array.isArray(row.pdf_urls) ? row.pdf_urls[0] : row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -309,7 +309,7 @@ export async function updateUnblockStatus(
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as any,
-            pdfUrl: row.pdf_urls,
+            pdfUrl: Array.isArray(row.pdf_urls) ? row.pdf_urls[0] : row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -338,7 +338,7 @@ export async function getAgendaOpenings(): Promise<AgendaOpeningRequest[]> {
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
-            pdfUrl: row.pdf_urls,
+            pdfUrl: Array.isArray(row.pdf_urls) ? row.pdf_urls[0] : row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -407,7 +407,7 @@ export async function updateAgendaOpeningStatus(
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
-            pdfUrl: row.pdf_urls,
+            pdfUrl: Array.isArray(row.pdf_urls) ? row.pdf_urls[0] : row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -427,13 +427,15 @@ export async function getPdfById(id: string): Promise<string | null> {
         // Try requests table first
         const { rows: reqRows } = await sql`SELECT pdf_urls FROM requests WHERE id = ${id}`;
         if (reqRows.length > 0 && reqRows[0].pdf_urls) {
-            return reqRows[0].pdf_urls;
+            const val = reqRows[0].pdf_urls;
+            return Array.isArray(val) ? val[0] : val;
         }
 
         // Try agenda_openings table
         const { rows: openRows } = await sql`SELECT pdf_urls FROM agenda_openings WHERE id = ${id}`;
         if (openRows.length > 0 && openRows[0].pdf_urls) {
-            return openRows[0].pdf_urls;
+            const val = openRows[0].pdf_urls;
+            return Array.isArray(val) ? val[0] : val;
         }
 
         return null;
