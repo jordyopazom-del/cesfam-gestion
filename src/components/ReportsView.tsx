@@ -606,25 +606,27 @@ Saludos cordiales.`;
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
                                                         {req.pdfUrl ? (
-                                                            <>
-                                                                <a
-                                                                    href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
-                                                                    title="Ver Documento"
-                                                                >
-                                                                    <FileText size={16} />
-                                                                </a>
-                                                                <button
-                                                                    onClick={() => handleSendEmail(req, 'blockings')}
-                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
-                                                                    title="Reenviar por Correo"
-                                                                >
-                                                                    <Mail size={16} />
-                                                                </button>
-                                                            </>
-                                                        ) : <span className="text-gray-300">-</span>}
+                                                            <a
+                                                                href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
+                                                                title="Ver Documento"
+                                                            >
+                                                                <FileText size={16} />
+                                                            </a>
+                                                        ) : (
+                                                            <div className="w-8 h-8 flex items-center justify-center text-gray-200" title="Sin Documento">
+                                                                <FileText size={16} />
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleSendEmail(req, 'blockings')}
+                                                            className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
+                                                            title="Enviar por Correo"
+                                                        >
+                                                            <Mail size={16} />
+                                                        </button>
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[110px]">
@@ -690,25 +692,27 @@ Saludos cordiales.`;
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
                                                         {req.pdfUrl ? (
-                                                            <>
-                                                                <a
-                                                                    href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
-                                                                    title="Ver Documento"
-                                                                >
-                                                                    <FileText size={16} />
-                                                                </a>
-                                                                <button
-                                                                    onClick={() => handleSendEmail(req, 'openings')}
-                                                                    className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
-                                                                    title="Reenviar por Correo"
-                                                                >
-                                                                    <Mail size={16} />
-                                                                </button>
-                                                            </>
-                                                        ) : <span className="text-gray-300">-</span>}
+                                                            <a
+                                                                href={req.pdfUrl && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
+                                                                title="Ver Documento"
+                                                            >
+                                                                <FileText size={16} />
+                                                            </a>
+                                                        ) : (
+                                                            <div className="w-8 h-8 flex items-center justify-center text-gray-200" title="Sin Documento">
+                                                                <FileText size={16} />
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            onClick={() => handleSendEmail(req, 'openings')}
+                                                            className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
+                                                            title="Enviar por Correo"
+                                                        >
+                                                            <Mail size={16} />
+                                                        </button>
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3 text-[11px] font-bold text-gray-600 uppercase bg-gray-50/30 whitespace-normal min-w-[110px]">

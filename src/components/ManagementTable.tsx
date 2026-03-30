@@ -212,20 +212,15 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                                 <UserCheck size={9} /> {req.assignedAdmin}
                                             </div>
                                         )}
-                                        {req.pdfUrls && req.pdfUrls.length > 0 && req.pdfUrls[0] !== 'SIN PACIENTES' && (
-                                            <div className="flex flex-col gap-1">
-                                                {req.pdfUrls.map((url, idx) => (
-                                                    <a
-                                                        key={idx}
-                                                        href={url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"
-                                                    >
-                                                        <FileText size={9} /> PDF {req.pdfUrls!.length > 1 ? idx + 1 : ''}
-                                                    </a>
-                                                ))}
-                                            </div>
+                                        {req.pdfUrl && (
+                                            <a
+                                                href={req.pdfUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"
+                                            >
+                                                <FileText size={9} /> PDF
+                                            </a>
                                         )}
                                     </div>
                                 </td>

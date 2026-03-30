@@ -15,7 +15,7 @@ export interface BlockingRequest {
     endTime: string;
     status: 'Pending' | 'Authorized' | 'Rejected';
     agendaBlockedStatus?: 'Realizado' | 'Sin Agenda' | 'No Corresponde' | 'Desbloqueado';
-    pdfUrls?: string[];
+    pdfUrl?: string;
     assignedAdmin?: string;
     processedAt?: string;
     submitterEmail?: string;
@@ -35,7 +35,7 @@ export interface AgendaOpeningRequest {
     endTime: string;
     selectedDays: string[]; // ISO date strings
     status: 'Pending' | 'Realizado' | 'No Corresponde';
-    pdfUrls?: string[];
+    pdfUrl?: string;
     assignedAdmin?: string;
     processedAt?: string;
     submitterEmail?: string;
@@ -179,7 +179,7 @@ export async function getRequests(): Promise<BlockingRequest[]> {
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as 'Realizado' | 'Sin Agenda' | 'No Corresponde' | undefined,
-            pdfUrls: row.pdf_urls,
+            pdfUrl: row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -204,7 +204,7 @@ export async function saveRequest(request: BlockingRequest): Promise<BlockingReq
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.blockType},
                 ${request.startDate}, ${request.endDate}, ${JSON.stringify(request.selectedDays)}, ${request.startTime}, ${request.endTime}, ${request.status}, ${request.agendaBlockedStatus || null}, 
-                ${request.pdfUrls as any || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, 
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, 
                 ${request.unblockStatus || 'None'}, ${request.unblockReason || null},
                 ${request.createdAt}
             )
@@ -220,7 +220,7 @@ export async function updateRequestStatus(
     id: string, 
     status?: BlockingRequest['status'], 
     agendaBlockedStatus?: BlockingRequest['agendaBlockedStatus'],
-    pdfUrls?: string[],
+    pdfUrl?: string,
     assignedAdmin?: string,
     unblockStatus?: BlockingRequest['unblockStatus'],
     unblockReason?: string
@@ -233,8 +233,8 @@ export async function updateRequestStatus(
         if (agendaBlockedStatus) {
             await sql`UPDATE requests SET agenda_blocked_status = ${agendaBlockedStatus} WHERE id = ${id}`;
         }
-        if (pdfUrls) {
-            await sql`UPDATE requests SET pdf_urls = ${pdfUrls as any} WHERE id = ${id}`;
+        if (pdfUrl) {
+            await sql`UPDATE requests SET pdf_urls = ${pdfUrl} WHERE id = ${id}`;
         }
         if (assignedAdmin) {
             await sql`UPDATE requests SET assigned_admin = ${assignedAdmin}, processed_at = NOW() WHERE id = ${id}`;
@@ -264,7 +264,7 @@ export async function updateRequestStatus(
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as any,
-            pdfUrls: row.pdf_urls,
+            pdfUrl: row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -309,7 +309,7 @@ export async function updateUnblockStatus(
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as any,
-            pdfUrls: row.pdf_urls,
+            pdfUrl: row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -338,7 +338,7 @@ export async function getAgendaOpenings(): Promise<AgendaOpeningRequest[]> {
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
-            pdfUrls: row.pdf_urls,
+            pdfUrl: row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -363,7 +363,7 @@ export async function saveAgendaOpening(request: AgendaOpeningRequest): Promise<
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.performance},
                 ${request.startTime}, ${request.endTime}, ${JSON.stringify(request.selectedDays)}, ${request.status}, 
-                ${request.pdfUrls as any || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, ${request.createdAt},
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, ${request.createdAt},
                 ${request.requestType || 'Apertura'}, ${request.categoryType || null}
             )
         `;
@@ -377,7 +377,7 @@ export async function saveAgendaOpening(request: AgendaOpeningRequest): Promise<
 export async function updateAgendaOpeningStatus(
     id: string, 
     status?: AgendaOpeningRequest['status'],
-    pdfUrls?: string[],
+    pdfUrl?: string,
     assignedAdmin?: string
 ): Promise<AgendaOpeningRequest | null> {
     noStore();
@@ -385,8 +385,8 @@ export async function updateAgendaOpeningStatus(
         if (status) {
             await sql`UPDATE agenda_openings SET status = ${status} WHERE id = ${id}`;
         }
-        if (pdfUrls) {
-            await sql`UPDATE agenda_openings SET pdf_urls = ${pdfUrls as any} WHERE id = ${id}`;
+        if (pdfUrl) {
+            await sql`UPDATE agenda_openings SET pdf_urls = ${pdfUrl} WHERE id = ${id}`;
         }
         if (assignedAdmin) {
             await sql`UPDATE agenda_openings SET assigned_admin = ${assignedAdmin}, processed_at = NOW() WHERE id = ${id}`;
@@ -407,7 +407,7 @@ export async function updateAgendaOpeningStatus(
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
-            pdfUrls: row.pdf_urls,
+            pdfUrl: row.pdf_urls,
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -421,7 +421,7 @@ export async function updateAgendaOpeningStatus(
     }
 }
 
-export async function getPdfById(id: string): Promise<string[] | null> {
+export async function getPdfById(id: string): Promise<string | null> {
     noStore();
     try {
         // Try requests table first
