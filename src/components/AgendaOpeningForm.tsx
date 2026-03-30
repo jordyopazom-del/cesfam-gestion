@@ -10,6 +10,12 @@ import clsx from 'clsx';
 import { Official } from '@/app/admin/personnel/actions';
 
 const PERFORMANCES = [10, 15, 20, 30, 40, 45, 60];
+const REQUEST_TYPES = ['Apertura', 'Desbloqueo'];
+const CATEGORY_TYPES = [
+    'Visitas', 'Morbilidad', 'Control', 'Taller', 'Salud Mental', 
+    'Ingreso', 'EMPA', 'EMP', 'PAP', 'Fondo de Ojo', 'RX Dental', 
+    'RX', 'Cirugia Menor', 'Operativo', 'Kine Motora', 'Kine Respiratoria'
+];
 
 export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess: () => void, personnel: Official[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +31,8 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
         performance: 20,
         startTime: '08:00',
         endTime: '17:00',
+        requestType: 'Apertura',
+        categoryType: '',
     });
 
     // Calendar State
@@ -87,6 +95,8 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                     performance: 20,
                     startTime: '08:00',
                     endTime: '17:00',
+                    requestType: 'Apertura',
+                    categoryType: '',
                 });
                 setSelectedDays([]);
                 onSuccess();
@@ -154,6 +164,36 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                         >
                             <option value="">Seleccione Coordinador</option>
                             {COORDINATORS.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Fila Nueva: Tipo de Solicitud y Tipo */}
+                    <div>
+                        <label htmlFor="requestType" className="block text-sm font-medium text-gray-700 mb-1">Tipo de Solicitud</label>
+                        <select
+                            id="requestType"
+                            name="requestType"
+                            required
+                            value={formData.requestType}
+                            onChange={handleChange}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        >
+                            {REQUEST_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="categoryType" className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+                        <select
+                            id="categoryType"
+                            name="categoryType"
+                            required
+                            value={formData.categoryType}
+                            onChange={handleChange}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                        >
+                            <option value="">Seleccione Tipo</option>
+                            {CATEGORY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                         </select>
                     </div>
 

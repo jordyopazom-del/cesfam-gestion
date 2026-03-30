@@ -99,7 +99,11 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                         {type === 'Bloqueo' ? (
                             <p><strong>Tipo:</strong> {(request as BlockingRequest).blockType}</p>
                         ) : (
-                            <p><strong>Rendimiento:</strong> {(request as AgendaOpeningRequest).performance} min</p>
+                            <>
+                                <p><strong>Tipo:</strong> {(request as AgendaOpeningRequest).requestType || 'Apertura'}</p>
+                                <p><strong>Categoría:</strong> {(request as AgendaOpeningRequest).categoryType || '-'}</p>
+                                <p><strong>Rendimiento:</strong> {(request as AgendaOpeningRequest).performance} min</p>
+                            </>
                         )}
                         <p><strong>Horas:</strong> {request.startTime} - {request.endTime}</p>
                     </div>

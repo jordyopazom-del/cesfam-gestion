@@ -112,6 +112,7 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                             <th className="p-4">Fecha Solicitud</th>
                             <th className="p-4">Solicitante</th>
                             <th className="p-4">Lugar</th>
+                            <th className="p-4">Tipo</th>
                             <th className="p-4">Profesional</th>
                             <th className="p-4">Rendimiento</th>
                             <th className="p-4">Horas</th>
@@ -134,6 +135,17 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                 </td>
                                 <td className="p-4 align-top leading-tight">{req.coordinator}</td>
                                 <td className="p-4 align-top">{req.location || '-'}</td>
+                                <td className="p-4 align-top">
+                                    <div className="flex flex-col gap-1">
+                                        <span className={clsx(
+                                            "inline-block px-1.5 py-0.5 rounded text-[9px] font-bold uppercase w-fit",
+                                            req.requestType === 'Desbloqueo' ? "bg-amber-100 text-amber-700 border border-amber-200" : "bg-blue-100 text-blue-700 border border-blue-200"
+                                        )}>
+                                            {req.requestType || 'Apertura'}
+                                        </span>
+                                        <span className="text-[10px] text-gray-500 font-medium">{req.categoryType || '-'}</span>
+                                    </div>
+                                </td>
                                 <td className="p-4 align-top">
                                     <div className="font-semibold text-gray-900 leading-tight">{req.professionalName}</div>
                                     <div className="text-[10px] text-gray-400 uppercase tracking-tighter">{req.profession}</div>

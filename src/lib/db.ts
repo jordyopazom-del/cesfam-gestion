@@ -40,6 +40,8 @@ export interface AgendaOpeningRequest {
     processedAt?: string;
     submitterEmail?: string;
     createdAt: string;
+    requestType?: string;
+    categoryType?: string;
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -340,7 +342,9 @@ export async function getAgendaOpenings(): Promise<AgendaOpeningRequest[]> {
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
-            createdAt: row.created_at.toISOString()
+            createdAt: row.created_at.toISOString(),
+            requestType: row.request_type,
+            categoryType: row.category_type
         }));
     } catch (error) {
         console.error('Error fetching agenda openings:', error);
@@ -354,11 +358,13 @@ export async function saveAgendaOpening(request: AgendaOpeningRequest): Promise<
         await sql`
             INSERT INTO agenda_openings (
                 id, coordinator, location, profession, professional_name, performance,
-                start_time, end_time, selected_days, status, pdf_url, assigned_admin, processed_at, submitter_email, created_at
+                start_time, end_time, selected_days, status, pdf_url, assigned_admin, processed_at, submitter_email, created_at,
+                request_type, category_type
             ) VALUES (
                 ${request.id}, ${request.coordinator}, ${request.location}, ${request.profession}, ${request.professionalName}, ${request.performance},
                 ${request.startTime}, ${request.endTime}, ${JSON.stringify(request.selectedDays)}, ${request.status}, 
-                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, ${request.createdAt}
+                ${request.pdfUrl || null}, ${request.assignedAdmin || null}, ${request.processedAt || null}, ${request.submitterEmail || null}, ${request.createdAt},
+                ${request.requestType || 'Apertura'}, ${request.categoryType || null}
             )
         `;
         return request;
@@ -405,7 +411,9 @@ export async function updateAgendaOpeningStatus(
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
-            createdAt: row.created_at.toISOString()
+            createdAt: row.created_at.toISOString(),
+            requestType: row.request_type,
+            categoryType: row.category_type
         };
     } catch (error) {
         console.error('Error updating agenda opening status:', error);
