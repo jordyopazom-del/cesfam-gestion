@@ -6,6 +6,8 @@ import { Official } from '@/app/admin/personnel/actions';
 import { X, Upload, User, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
 
+import { uploadFileAction, processUpdateAction } from '@/app/admin/personnel/request-actions';
+
 interface ProcessingModalProps {
     request: BlockingRequest | AgendaOpeningRequest;
     type: 'Bloqueo' | 'Apertura';
@@ -15,7 +17,7 @@ interface ProcessingModalProps {
 }
 
 export default function ProcessingModal({ request, type, personnel, onClose, onSuccess }: ProcessingModalProps) {
-    const [file, setFile] = useState<File | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
     const [assignedAdmin, setAssignedAdmin] = useState('');
     const [isNoPatients, setIsNoPatients] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -24,8 +26,8 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!isNoPatients && (!file || !assignedAdmin)) {
-            setError('Por favor complete todos los campos.');
+        if (!isNoPatients && (files.length === 0 || !assignedAdmin)) {
+            setError('Por favor complete todos los campos y suba al menos un archivo.');
             return;
         }
 
@@ -33,50 +35,40 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
         setError(null);
 
         try {
-            let pdfUrl = 'SIN PACIENTES';
+            let pdfUrl: string[] = isNoPatients ? ['SIN PACIENTES'] : [];
             let adminToSave = 'N/A';
 
-            if (!isNoPatients && file) {
-                // 1. Upload File
-                const formData = new FormData();
-                formData.append('file', file);
+            if (!isNoPatients && files.length > 0) {
+                // 1. Upload All Files (One by one or all at once)
+                // Using Server Action for each file
+                for (const file of files) {
+                    const formData = new FormData();
+                    formData.append('file', file);
 
-                const uploadRes = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!uploadRes.ok) {
-                    const errorData = await uploadRes.json().catch(() => ({}));
-                    throw new Error(errorData.details || errorData.error || 'Error al subir el archivo');
+                    try {
+                        const uploadRes = await uploadFileAction(formData);
+                        pdfUrl.push(uploadRes.url);
+                    } catch (uploadError: any) {
+                        throw new Error(`Error al subir ${file.name}: ${uploadError.message || 'El archivo puede ser demasiado grande'}`);
+                    }
                 }
-                const uploadData = await uploadRes.json();
-                pdfUrl = uploadData.url;
                 adminToSave = assignedAdmin;
             }
 
-            // 2. Update Request
-            const apiUrl = type === 'Bloqueo' ? `/api/requests/${request.id}` : `/api/agenda-openings/${request.id}`;
-            const statusKey = type === 'Bloqueo' ? 'agendaBlockedStatus' : 'status';
-
-            const updateRes = await fetch(apiUrl, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    [statusKey]: 'Realizado',
+            // 2. Update Request using Server Action
+            try {
+                const updatedData = await processUpdateAction(request.id, type, {
+                    status: 'Realizado',
                     pdfUrl,
                     assignedAdmin: adminToSave
-                }),
-            });
+                });
 
-            if (!updateRes.ok) {
-                const errorData = await updateRes.json().catch(() => ({}));
-                throw new Error(errorData.error || 'Error al actualizar la solicitud');
+                onSuccess(updatedData);
+            } catch (updateError: any) {
+                throw new Error(`Error al finalizar la gestión: ${updateError.message || 'Verifique el tamaño de los archivos'}`);
             }
-            const updatedData = await updateRes.json();
-
-            onSuccess(updatedData);
         } catch (err: any) {
+            console.error('Processing modal error:', err);
             setError(err.message || 'Ocurrió un error inesperado');
         } finally {
             setLoading(false);
@@ -140,28 +132,46 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                                 <label htmlFor="file-upload" className="sr-only">Subir archivo PDF</label>
                                 <div className={clsx(
                                     "relative border-2 border-dashed rounded-xl p-6 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer",
-                                    file ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/30"
+                                    files.length > 0 ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/30"
                                 )}>
                                     <input
                                         id="file-upload"
                                         type="file"
                                         accept=".pdf"
+                                        multiple
                                         className="absolute inset-0 opacity-0 cursor-pointer"
-                                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                        onChange={(e) => {
+                                            const newFiles = Array.from(e.target.files || []);
+                                            setFiles(prev => [...prev, ...newFiles]);
+                                        }}
                                     />
-                                    {file ? (
-                                        <>
-                                            <CheckCircle2 size={32} className="text-green-500" />
-                                            <span className="text-sm font-medium text-green-700">{file.name}</span>
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); }} className="text-xs text-red-500 underline">Cambiar archivo</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Upload size={32} className="text-gray-400" />
-                                            <span className="text-sm text-gray-500">Haz clic o arrastra un archivo PDF</span>
-                                        </>
-                                    )}
+                                    <Upload size={32} className="text-gray-400" />
+                                    <span className="text-sm text-gray-500">
+                                        {files.length > 0 ? "Añadir más archivos PDF" : "Haz clic o arrastra archivos PDF"}
+                                    </span>
                                 </div>
+
+                                {files.length > 0 && (
+                                    <div className="space-y-2 max-h-40 overflow-y-auto">
+                                        {files.map((f, i) => (
+                                            <div key={i} className="flex items-center justify-between p-2 bg-white border border-green-100 rounded-lg text-xs">
+                                                <div className="flex items-center gap-2 truncate">
+                                                    <CheckCircle2 size={14} className="text-green-500 flex-shrink-0" />
+                                                    <span className="truncate text-green-700 font-medium">{f.name}</span>
+                                                </div>
+                                                <button 
+                                                    type="button" 
+                                                    title="Eliminar archivo"
+                                                    aria-label="Eliminar archivo"
+                                                    onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))}
+                                                    className="p-1 hover:bg-red-50 text-red-500 rounded transition"
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
 
                             <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
@@ -199,7 +209,7 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || (!isNoPatients && (!file || !assignedAdmin))}
+                            disabled={loading || (!isNoPatients && (files.length === 0 || !assignedAdmin))}
                             className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition disabled:opacity-50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
                         >
                             {loading ? 'Procesando...' : `Finalizar ${type}`}

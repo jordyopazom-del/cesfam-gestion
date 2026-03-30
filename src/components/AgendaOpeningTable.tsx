@@ -201,15 +201,21 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                                 <UserCheck size={9} /> {req.assignedAdmin}
                                             </div>
                                         )}
-                                        {req.pdfUrl && req.pdfUrl !== 'SIN PACIENTES' && (
-                                            <a
-                                                href={req.pdfUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"
-                                            >
-                                                <FileText size={9} /> PDF
-                                            </a>
+                                        {req.pdfUrl && req.pdfUrl.length > 0 && req.pdfUrl[0] !== 'SIN PACIENTES' && (
+                                            <div className="flex flex-wrap gap-1 justify-center">
+                                                {req.pdfUrl.map((url, idx) => (
+                                                    <a
+                                                        key={idx}
+                                                        href={url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"
+                                                        title={`Ver Documento ${idx + 1}`}
+                                                    >
+                                                        <FileText size={9} /> PDF {req.pdfUrl!.length > 1 ? idx + 1 : ''}
+                                                    </a>
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
                                 </td>

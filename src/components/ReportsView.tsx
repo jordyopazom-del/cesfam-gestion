@@ -125,11 +125,21 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
             const admin = personnel.find(p => p.name.toLowerCase() === req.assignedAdmin.toLowerCase());
             if (admin?.email) recipients.push(admin.email);
         }
-
         const isBlock = type === 'blockings';
-        const docLink = req.pdfUrl && typeof req.pdfUrl === 'string' && req.pdfUrl !== 'SIN PACIENTES' 
-            ? `${window.location.origin}/api/pdf/${req.id}` 
-            : 'Sin documento añadido';
+        const pdfUrls = Array.isArray(req.pdfUrl) ? req.pdfUrl : [];
+        const hasDocs = pdfUrls.length > 0 && pdfUrls[0] !== 'SIN PACIENTES';
+        
+        let docLinksText = '';
+        if (hasDocs) {
+            docLinksText = pdfUrls.map((url: string, idx: number) => {
+                const link = url.startsWith('data:') 
+                    ? `${window.location.origin}/api/pdf/${req.id}?index=${idx}` 
+                    : url;
+                return `Documento ${idx + 1}: ${link}`;
+            }).join('\n');
+        } else {
+            docLinksText = 'Sin documento añadido';
+        }
 
         const subject = encodeURIComponent(`Gestión Finalizada: ${isBlock ? 'Bloqueo' : 'Apertura'} - ${req.professionalName}`);
         
@@ -154,7 +164,7 @@ Le informamos que la solicitud de ${isBlock ? 'Bloqueo' : 'Apertura'} ha sido pr
 - Administrativo Asignado: ${req.assignedAdmin || '-'}
 
 📄 Documento Adjunto:
-${docLink}
+${docLinksText}
 
 Saludos cordiales.`;
         
@@ -270,7 +280,9 @@ Saludos cordiales.`;
             'Hora Inicio': req.startTime,
             'Hora Término': req.startTime,
             'Estado Agenda': req.agendaBlockedStatus || 'Pendiente',
-            'Documento Adjunto': req.pdfUrl ? `${window.location.origin}${req.pdfUrl}` : '-',
+            'Documento Adjunto': req.pdfUrl && Array.isArray(req.pdfUrl) && req.pdfUrl.length > 0
+                ? req.pdfUrl.map((url: string, i: number) => url.startsWith('data:') ? `${window.location.origin}/api/pdf/${req.id}?index=${i}` : url).join('\n')
+                : '-',
             'Responsable Contactar': req.assignedAdmin || '-'
         }));
 
@@ -605,16 +617,26 @@ Saludos cordiales.`;
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        {req.pdfUrl ? (
-                                                            <a
-                                                                href={req.pdfUrl && typeof req.pdfUrl === 'string' && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
-                                                                title="Ver Documento"
-                                                            >
-                                                                <FileText size={16} />
-                                                            </a>
+                                                        {req.pdfUrl && req.pdfUrl.length > 0 && req.pdfUrl[0] !== 'SIN PACIENTES' ? (
+                                                            <div className="flex flex-wrap gap-1 justify-center max-w-[80px]">
+                                                                {req.pdfUrl.map((url: string, idx: number) => (
+                                                                    <a
+                                                                        key={idx}
+                                                                        href={url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"
+                                                                        title={`Ver Documento ${idx + 1}`}
+                                                                    >
+                                                                        <FileText size={14} />
+                                                                        {req.pdfUrl!.length > 1 && (
+                                                                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold">
+                                                                                {idx + 1}
+                                                                            </span>
+                                                                        )}
+                                                                    </a>
+                                                                ))}
+                                                            </div>
                                                         ) : (
                                                             <div className="w-8 h-8 flex items-center justify-center text-gray-200" title="Sin Documento">
                                                                 <FileText size={16} />
@@ -701,16 +723,26 @@ Saludos cordiales.`;
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        {req.pdfUrl ? (
-                                                            <a
-                                                                href={req.pdfUrl && typeof req.pdfUrl === 'string' && req.pdfUrl.startsWith('data:') ? `/api/pdf/${req.id}` : req.pdfUrl}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm"
-                                                                title="Ver Documento"
-                                                            >
-                                                                <FileText size={16} />
-                                                            </a>
+                                                        {req.pdfUrl && req.pdfUrl.length > 0 && req.pdfUrl[0] !== 'SIN PACIENTES' ? (
+                                                            <div className="flex flex-wrap gap-1 justify-center max-w-[80px]">
+                                                                {req.pdfUrl.map((url: string, idx: number) => (
+                                                                    <a
+                                                                        key={idx}
+                                                                        href={url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"
+                                                                        title={`Ver Documento ${idx + 1}`}
+                                                                    >
+                                                                        <FileText size={14} />
+                                                                        {req.pdfUrl!.length > 1 && (
+                                                                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold">
+                                                                                {idx + 1}
+                                                                            </span>
+                                                                        )}
+                                                                    </a>
+                                                                ))}
+                                                            </div>
                                                         ) : (
                                                             <div className="w-8 h-8 flex items-center justify-center text-gray-200" title="Sin Documento">
                                                                 <FileText size={16} />

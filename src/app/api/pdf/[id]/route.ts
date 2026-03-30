@@ -7,11 +7,17 @@ export async function GET(
 ) {
     try {
         const { id } = await params;
-        const pdfData = await getPdfById(id);
+        const { searchParams } = new URL(request.url);
+        const indexStr = searchParams.get('index');
+        const index = indexStr ? parseInt(indexStr) : 0;
+        
+        const pdfArray = await getPdfById(id);
 
-        if (!pdfData) {
+        if (!pdfArray || pdfArray.length === 0 || !pdfArray[index]) {
             return new NextResponse('PDF not found', { status: 404 });
         }
+
+        const pdfData = pdfArray[index];
 
         // If it's a data URL, we need to extract the base64 part and the content type
         if (pdfData.startsWith('data:')) {
@@ -27,7 +33,7 @@ export async function GET(
             return new NextResponse(buffer, {
                 headers: {
                     'Content-Type': contentType,
-                    'Content-Disposition': 'inline; filename="documento.pdf"',
+                    'Content-Disposition': `inline; filename="documento-${index + 1}.pdf"`,
                 },
             });
         }
