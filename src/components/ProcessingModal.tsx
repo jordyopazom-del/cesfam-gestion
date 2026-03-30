@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
 import { Official } from '@/app/admin/personnel/actions';
-import { X, Upload, User, CheckCircle2 } from 'lucide-react';
+import { X, Upload, User, CheckCircle2, FileText } from 'lucide-react';
 import clsx from 'clsx';
 
 interface ProcessingModalProps {
@@ -15,7 +15,7 @@ interface ProcessingModalProps {
 }
 
 export default function ProcessingModal({ request, type, personnel, onClose, onSuccess }: ProcessingModalProps) {
-    const [file, setFile] = useState<File | null>(null);
+    const [files, setFiles] = useState<File[]>([]);
     const [assignedAdmin, setAssignedAdmin] = useState('');
     const [isNoPatients, setIsNoPatients] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -24,7 +24,7 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
     const handleUpload = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!isNoPatients && (!file || !assignedAdmin)) {
+        if (!isNoPatients && (files.length === 0 || !assignedAdmin)) {
             setError('Por favor complete todos los campos.');
             return;
         }
@@ -33,25 +33,29 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
         setError(null);
 
         try {
-            let pdfUrl = 'SIN PACIENTES';
+            let pdfUrls: string[] = ['SIN PACIENTES'];
             let adminToSave = 'N/A';
 
-            if (!isNoPatients && file) {
-                // 1. Upload File
-                const formData = new FormData();
-                formData.append('file', file);
+            if (!isNoPatients && files.length > 0) {
+                // 1. Upload All Files
+                const uploadedUrls: string[] = [];
+                for (const file of files) {
+                    const formData = new FormData();
+                    formData.append('file', file);
 
-                const uploadRes = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
+                    const uploadRes = await fetch('/api/upload', {
+                        method: 'POST',
+                        body: formData,
+                    });
 
-                if (!uploadRes.ok) {
-                    const errorData = await uploadRes.json().catch(() => ({}));
-                    throw new Error(errorData.details || errorData.error || 'Error al subir el archivo');
+                    if (!uploadRes.ok) {
+                        const errorData = await uploadRes.json().catch(() => ({}));
+                        throw new Error(errorData.details || errorData.error || `Error al subir el archivo: ${file.name}`);
+                    }
+                    const uploadData = await uploadRes.json();
+                    uploadedUrls.push(uploadData.url);
                 }
-                const uploadData = await uploadRes.json();
-                pdfUrl = uploadData.url;
+                pdfUrls = uploadedUrls;
                 adminToSave = assignedAdmin;
             }
 
@@ -64,7 +68,7 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     [statusKey]: 'Realizado',
-                    pdfUrl,
+                    pdfUrls,
                     assignedAdmin: adminToSave
                 }),
             });
@@ -81,6 +85,17 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const newFiles = Array.from(e.target.files);
+            setFiles(prev => [...prev, ...newFiles]);
+        }
+    };
+
+    const removeFile = (index: number) => {
+        setFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     return (
@@ -135,32 +150,47 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
 
                     {!isNoPatients && (
                         <>
-                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                <label className="block text-sm font-semibold text-gray-700">Subir Respaldo (PDF)</label>
-                                <label htmlFor="file-upload" className="sr-only">Subir archivo PDF</label>
+                            <div className="space-y-3 animate-in slide-in-from-top-2 duration-300">
+                                <label className="block text-sm font-semibold text-gray-700">Subir Respaldos (PDFs)</label>
+                                
+                                {files.length > 0 && (
+                                    <div className="space-y-2">
+                                        {files.map((f, i) => (
+                                            <div key={i} className="flex items-center justify-between p-2 bg-green-50 border border-green-100 rounded-lg text-xs">
+                                                <div className="flex items-center gap-2 text-green-700 font-medium overflow-hidden">
+                                                    <FileText size={14} className="shrink-0" />
+                                                    <span className="truncate">{f.name}</span>
+                                                </div>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => removeFile(i)}
+                                                    aria-label={`Eliminar archivo ${f.name}`}
+                                                    title={`Eliminar archivo ${f.name}`}
+                                                    className="text-red-500 hover:text-red-700 transition"
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
                                 <div className={clsx(
                                     "relative border-2 border-dashed rounded-xl p-6 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer",
-                                    file ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/30"
+                                    "border-gray-300 hover:border-blue-400 hover:bg-blue-50/30"
                                 )}>
                                     <input
                                         id="file-upload"
                                         type="file"
                                         accept=".pdf"
+                                        multiple
+                                        aria-label="Seleccionar uno o más archivos PDF de respaldo"
                                         className="absolute inset-0 opacity-0 cursor-pointer"
-                                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                        onChange={handleFileChange}
                                     />
-                                    {file ? (
-                                        <>
-                                            <CheckCircle2 size={32} className="text-green-500" />
-                                            <span className="text-sm font-medium text-green-700">{file.name}</span>
-                                            <button type="button" onClick={(e) => { e.stopPropagation(); setFile(null); }} className="text-xs text-red-500 underline">Cambiar archivo</button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Upload size={32} className="text-gray-400" />
-                                            <span className="text-sm text-gray-500">Haz clic o arrastra un archivo PDF</span>
-                                        </>
-                                    )}
+                                    <Upload size={32} className="text-gray-400" />
+                                    <span className="text-sm text-gray-500">Haz clic o arrastra uno o más archivos PDF</span>
+                                    <span className="text-[10px] text-gray-400">Puedes seleccionar múltiples archivos</span>
                                 </div>
                             </div>
 
@@ -199,7 +229,7 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || (!isNoPatients && (!file || !assignedAdmin))}
+                            disabled={loading || (!isNoPatients && (files.length === 0 || !assignedAdmin))}
                             className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition disabled:opacity-50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
                         >
                             {loading ? 'Procesando...' : `Finalizar ${type}`}

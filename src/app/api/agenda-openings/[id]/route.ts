@@ -10,13 +10,13 @@ export async function PATCH(
     try {
         const { id } = await params;
         const body = await request.json();
-        const { status, pdfUrl, assignedAdmin } = body;
+        const { status, pdfUrls, assignedAdmin } = body;
 
         if (status && !['Pending', 'Realizado', 'No Corresponde'].includes(status)) {
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
         }
 
-        const updatedRequest = await updateAgendaOpeningStatus(id, status, pdfUrl, assignedAdmin);
+        const updatedRequest = await updateAgendaOpeningStatus(id, status, pdfUrls, assignedAdmin);
 
         if (!updatedRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });
