@@ -22,7 +22,7 @@ export async function GET() {
         };
         
         // 3. Clave secreta (debe estar en .env.local como SSO_SECRET_KEY)
-        const SECRET = process.env.SSO_SECRET_KEY || "someagenda";
+        const SECRET = process.env.SSO_SECRET_KEY || "someagendas";
         
         // 4. Firmar el token (vida de 5 minutos por seguridad)
         const token = jwt.sign(payload, SECRET, { expiresIn: '5m' });
