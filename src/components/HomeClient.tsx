@@ -7,7 +7,7 @@ import ManagementTable from '@/components/ManagementTable';
 import AgendaOpeningTable from '@/components/AgendaOpeningTable';
 import UnblockManagementTable from '@/components/UnblockManagementTable';
 
-import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield, User, Briefcase, RefreshCw, Globe } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield, User, Briefcase, RefreshCw, Globe, LifeBuoy, ExternalLink } from 'lucide-react';
 import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
@@ -32,8 +32,10 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isActivosDropdownOpen, setIsActivosDropdownOpen] = useState(false);
+    const [isApoyoDropdownOpen, setIsApoyoDropdownOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const activosDropdownRef = useRef<HTMLDivElement>(null);
+    const apoyoDropdownRef = useRef<HTMLDivElement>(null);
 
     const handleSuccess = () => {
         setRefreshTrigger(prev => prev + 1);
@@ -47,6 +49,9 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
             }
             if (activosDropdownRef.current && !activosDropdownRef.current.contains(event.target as Node)) {
                 setIsActivosDropdownOpen(false);
+            }
+            if (apoyoDropdownRef.current && !apoyoDropdownRef.current.contains(event.target as Node)) {
+                setIsApoyoDropdownOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -212,6 +217,87 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                             <Globe size={18} />
                             Intranet
                         </a>
+
+                        <div className="relative" ref={apoyoDropdownRef}>
+                            <button
+                                onClick={() => setIsApoyoDropdownOpen(!isApoyoDropdownOpen)}
+                                className={clsx(
+                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                                )}
+                            >
+                                <LifeBuoy size={18} />
+                                Apoyo
+                                <ChevronDown size={14} className={clsx("transition-transform", isApoyoDropdownOpen && "rotate-180")} />
+                            </button>
+
+                            {isApoyoDropdownOpen && (
+                                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
+                                        Enlaces Externos
+                                    </div>
+                                    <a
+                                        href="https://www.hbvaldivia.cl/core/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                            CORE
+                                        </div>
+                                        <ExternalLink size={14} className="text-gray-300" />
+                                    </a>
+                                    <a
+                                        href="http://10.8.102.72/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                            Ras Minsal
+                                        </div>
+                                        <ExternalLink size={14} className="text-gray-300" />
+                                    </a>
+                                    <a
+                                        href="https://contingencia.rasvaldivia.cl/rasvaldivia/index.php"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                            Ras Externo
+                                        </div>
+                                        <ExternalLink size={14} className="text-gray-300" />
+                                    </a>
+                                    <a
+                                        href="https://cesfamfutrono.wiener-lab.com/estudios/login/?next=/estudios/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                            Laboratorio Cesfam
+                                        </div>
+                                        <ExternalLink size={14} className="text-gray-300" />
+                                    </a>
+                                    <a
+                                        href="http://laboratorioloslagos.ddns.net/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                                            Laboratorio Externo
+                                        </div>
+                                        <ExternalLink size={14} className="text-gray-300" />
+                                    </a>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <form action={logout}>
