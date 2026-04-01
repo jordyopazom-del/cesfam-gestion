@@ -16,7 +16,7 @@ import { Official } from '@/app/admin/personnel/actions';
 import { useEffect, useRef } from 'react';
 import PersonnelView from './PersonnelView';
 import UnblockRequestsView from './UnblockRequestsView';
-import { getSsoUrl } from '@/app/actions/sso';
+// import { getSsoUrl } from '@/app/actions/sso'; // No longer using Server Action for this flow
 
 interface HomeClientProps {
     isAdmin: boolean;
@@ -37,18 +37,6 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
 
     const handleSuccess = () => {
         setRefreshTrigger(prev => prev + 1);
-    };
-
-    const handleReprogramacionClick = async () => {
-        if (userEmail) {
-            try {
-                const url = await getSsoUrl(userEmail, isAdmin);
-                window.open(url, '_blank');
-            } catch (error) {
-                console.error("Error al generar token SSO:", error);
-                alert("Error al acceder a Reprogramación. Por favor intente más tarde.");
-            }
-        }
     };
 
     // Close dropdowns when clicking outside
@@ -208,7 +196,7 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                         </button>
 
                         <button 
-                            onClick={handleReprogramacionClick}
+                            onClick={() => window.open('/api/sso', '_blank')}
                             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all"
                         >
                             <RefreshCw size={18} />
