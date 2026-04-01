@@ -15,6 +15,15 @@ export async function login(prevState: any, formData: FormData) {
     const user = await verifyCredentials(email, password);
 
     if (!user) {
+        // Verificamos si el usuario existe pero está pendiente de aprobación
+        const { getUserByEmail } = await import('@/lib/auth-db');
+        const existingUser = await getUserByEmail(email);
+        if (existingUser && existingUser.status === 'pending') {
+            return { error: 'Su cuenta está pendiente de aprobación por un administrador.' };
+        }
+        if (existingUser && existingUser.status === 'rejected') {
+            return { error: 'Su solicitud de acceso ha sido rechazada.' };
+        }
         return { error: 'Credenciales inválidas.' };
     }
 
@@ -104,6 +113,48 @@ export async function fetchUsers() {
         email: u.email,
         name: u.name,
         role: u.role,
+        status: u.status,
         resetRequested: u.resetRequested
     }));
+}
+
+export async function register(prevState: any, formData: FormData) {
+    const name = formData.get('name') as string;
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+    const confirmPassword = formData.get('confirmPassword') as string;
+
+    if (!name || !email || !password || !confirmPassword) {
+        return { error: 'Por favor complete todos los campos.' };
+    }
+
+    if (password !== confirmPassword) {
+        return { error: 'Las contraseñas no coinciden.' };
+    }
+
+    if (password.length < 6) {
+        return { error: 'La contraseña debe tener al menos 6 caracteres.' };
+    }
+
+    const { registerUser, getUserByEmail } = await import('@/lib/auth-db');
+    
+    // Verificar si ya existe
+    const existing = await getUserByEmail(email);
+    if (existing) {
+        return { error: 'Este correo electrónico ya está registrado.' };
+    }
+
+    const success = await registerUser(email, name, password);
+
+    if (success) {
+        return { success: 'Registro exitoso. Su cuenta ha sido enviada para aprobación del administrador.' };
+    } else {
+        return { error: 'Error al procesar el registro.' };
+    }
+}
+
+export async function adminUpdateUser(email: string, status: string, role: string) {
+    const { updateUserStatusAndRole } = await import('@/lib/auth-db');
+    const success = await updateUserStatusAndRole(email, status, role);
+    return success;
 }

@@ -64,16 +64,24 @@ export default function LoginPage() {
                         </div>
                     </div>
 
+                    <div className="flex items-center justify-center pt-2">
+                        <div className="text-sm">
+                            <a href="/register" className="font-bold text-indigo-600 hover:text-indigo-500">
+                                ¿No tienes cuenta? <span className="underline">Solicita acceso aquí</span>
+                            </a>
+                        </div>
+                    </div>
+
                     <div>
                         <button
                             type="submit"
                             disabled={isPending}
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent font-bold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all active:scale-95 shadow-md"
                         >
                             {isPending ? (
                                 <Loader2 className="animate-spin h-5 w-5" />
                             ) : (
-                                'Ingresar'
+                                'INGRESAR'
                             )}
                         </button>
                     </div>

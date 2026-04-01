@@ -9,6 +9,7 @@ interface User {
     email: string;
     name: string;
     role: string;
+    status: 'pending' | 'active' | 'rejected';
     resetRequested?: boolean;
 }
 
@@ -44,6 +45,7 @@ export default function UserManagement() {
         setMessage(null);
 
         try {
+            const { adminResetPassword } = await import('@/app/actions/auth');
             const success = await adminResetPassword(email);
             if (success) {
                 setMessage({ type: 'success', text: `Contraseña restablecida para ${email}` });
@@ -55,6 +57,24 @@ export default function UserManagement() {
             setMessage({ type: 'error', text: 'Error al restablecer la contraseña' });
         } finally {
             setResetting(null);
+            setTimeout(() => setMessage(null), 3000);
+        }
+    };
+
+    const handleUpdateUser = async (email: string, status: string, role: string) => {
+        setMessage(null);
+        try {
+            const { adminUpdateUser } = await import('@/app/actions/auth');
+            const success = await adminUpdateUser(email, status, role);
+            if (success) {
+                setMessage({ type: 'success', text: `Usuario ${email} actualizado correctamente.` });
+                await loadUsers();
+            } else {
+                setMessage({ type: 'error', text: 'Error al actualizar el usuario.' });
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Error al actualizar el usuario.' });
+        } finally {
             setTimeout(() => setMessage(null), 3000);
         }
     };
@@ -132,27 +152,57 @@ export default function UserManagement() {
                                     </td>
                                     <td className="px-8 py-5 font-medium text-gray-600">{user.email}</td>
                                     <td className="px-8 py-5">
-                                        <span className={clsx(
-                                            "px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase",
-                                            user.role === 'Admin' ? "bg-purple-100 text-purple-800 border border-purple-200" :
-                                                user.role === 'Director' ? "bg-indigo-100 text-indigo-800 border border-indigo-200" :
-                                                    "bg-gray-100 text-gray-800 border border-gray-200"
-                                        )}>
-                                            {user.role}
-                                        </span>
+                                        <select
+                                            value={user.role}
+                                            title="Cambiar rol de usuario"
+                                            onChange={(e) => handleUpdateUser(user.email, user.status, e.target.value)}
+                                            className={clsx(
+                                                "px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase outline-none cursor-pointer border",
+                                                user.role === 'Admin' ? "bg-purple-100 text-purple-800 border-purple-200" :
+                                                    user.role === 'Director' ? "bg-indigo-100 text-indigo-800 border-indigo-200" :
+                                                        "bg-gray-100 text-gray-800 border-gray-200"
+                                            )}
+                                        >
+                                            <option value="Admin">Admin</option>
+                                            <option value="Director">Director</option>
+                                            <option value="Coordinator">Coordinator</option>
+                                            <option value="Gestor">Gestor</option>
+                                        </select>
                                     </td>
                                     <td className="px-8 py-5 text-center">
-                                        {user.resetRequested ? (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-bold border border-amber-100 animate-pulse">
-                                                <AlertCircle size={12} />
-                                                PENDIENTE
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[11px] font-bold border border-green-100">
-                                                <CheckCircle size={12} />
-                                                ACTIVO
-                                            </span>
-                                        )}
+                                        <div className="flex flex-col items-center gap-1">
+                                            {user.status === 'pending' ? (
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        onClick={() => handleUpdateUser(user.email, 'active', user.role)}
+                                                        className="px-3 py-1 bg-green-600 text-white rounded-lg text-[10px] font-bold hover:bg-green-700 transition"
+                                                    >
+                                                        APROBAR
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleUpdateUser(user.email, 'rejected', user.role)}
+                                                        className="px-3 py-1 bg-red-600 text-white rounded-lg text-[10px] font-bold hover:bg-red-700 transition"
+                                                    >
+                                                        RECHAZAR
+                                                    </button>
+                                                </div>
+                                            ) : user.status === 'active' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-700 rounded-full text-[11px] font-bold border border-green-100">
+                                                    <CheckCircle size={12} />
+                                                    ACTIVO
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-700 rounded-full text-[11px] font-bold border border-red-100">
+                                                    <AlertCircle size={12} />
+                                                    RECHAZADO
+                                                </span>
+                                            )}
+                                            {user.resetRequested && (
+                                                <span className="text-[9px] text-amber-600 font-bold uppercase animate-pulse">
+                                                    Solicitó Reset
+                                                </span>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-8 py-5 text-right">
                                         <div className="flex items-center justify-end gap-3 transition-opacity duration-200">
