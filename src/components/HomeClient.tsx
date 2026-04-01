@@ -193,6 +193,17 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                             <FileText size={18} />
                             Reportes
                         </button>
+
+                        <a 
+                            href="https://cesfam-gestion-demanda-production.up.railway.app/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all"
+                        >
+                            <RefreshCw size={18} />
+                            Reprogramación
+                        </a>
+
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <form action={logout}>
                             <button
