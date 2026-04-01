@@ -7,7 +7,7 @@ import ManagementTable from '@/components/ManagementTable';
 import AgendaOpeningTable from '@/components/AgendaOpeningTable';
 import UnblockManagementTable from '@/components/UnblockManagementTable';
 
-import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield, User, Briefcase, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield, User, Briefcase, RefreshCw, Globe } from 'lucide-react';
 import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
@@ -202,6 +202,16 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                         >
                             <RefreshCw size={18} />
                             Reprogramación
+                        </a>
+
+                        <a 
+                            href="https://sites.google.com/view/cesfambelarminaparedes?pli=1"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all"
+                        >
+                            <Globe size={18} />
+                            Intranet
                         </a>
 
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
