@@ -6,7 +6,7 @@ import { Filter, FileText, Download, Calendar, Mail, Loader2, Pencil, ChevronLef
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
-import { Official } from '@/app/admin/personnel/actions';
+import { Official, formatToTitleCase } from '@/app/admin/personnel/actions';
 import ProcessingModal from './ProcessingModal';
 
 const MONTHS = [
@@ -183,6 +183,8 @@ Saludos cordiales.`;
         setSelectedProfessional('');
     };
 
+    const normalize = (str: string) => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() || '';
+
     // Filter Logic for View
     const filterData = (data: any[]) => {
         return data.filter(item => {
@@ -205,10 +207,10 @@ Saludos cordiales.`;
             if (itemDate.getFullYear() !== selectedYear) return false;
 
             // Profession Filter
-            if (selectedProfession && item.profession !== selectedProfession) return false;
+            if (selectedProfession && normalize(item.profession) !== normalize(selectedProfession)) return false;
 
             // Professional Filter
-            if (selectedProfessional && item.professionalName !== selectedProfessional) return false;
+            if (selectedProfessional && normalize(item.professionalName) !== normalize(selectedProfessional)) return false;
 
             return true;
         });
@@ -572,8 +574,8 @@ Saludos cordiales.`;
                                                 <td className="px-3 py-3 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
                                                 <td className="px-3 py-3 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
                                                 <td className="px-3 py-3 min-w-[110px]">
-                                                    <div className="font-bold text-gray-900 text-sm leading-tight">{req.professionalName}</div>
-                                                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{req.profession}</div>
+                                                    <div className="font-bold text-gray-900 text-sm leading-tight">{formatToTitleCase(req.professionalName)}</div>
+                                                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{formatToTitleCase(req.profession)}</div>
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <span className="inline-block px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-[10px] font-bold border border-blue-100 uppercase">
@@ -668,8 +670,8 @@ Saludos cordiales.`;
                                                 <td className="px-3 py-3 leading-tight text-xs font-medium text-gray-600">{req.coordinator}</td>
                                                 <td className="px-3 py-3 leading-tight text-xs text-gray-500">{req.location || '-'}</td>
                                                 <td className="px-3 py-3 min-w-[110px]">
-                                                    <div className="font-bold text-gray-900 text-sm leading-tight">{req.professionalName}</div>
-                                                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{req.profession}</div>
+                                                    <div className="font-bold text-gray-900 text-sm leading-tight">{formatToTitleCase(req.professionalName)}</div>
+                                                    <div className="text-[10px] text-blue-600 font-bold uppercase tracking-tight mt-0.5">{formatToTitleCase(req.profession)}</div>
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-100 uppercase">

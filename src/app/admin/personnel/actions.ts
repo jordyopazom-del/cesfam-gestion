@@ -15,7 +15,7 @@ export interface Official {
     email?: string;
 }
 
-function formatToTitleCase(str: string): string {
+export function formatToTitleCase(str: string): string {
     if (!str) return '';
     const upper = str.toUpperCase().trim();
     if (upper === 'TENS' || upper === 'GORE') return upper;
