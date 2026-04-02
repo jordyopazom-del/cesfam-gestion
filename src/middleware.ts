@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { decrypt } from './lib/session';
-import { getUserByEmail } from './lib/auth-db';
 
 // 1. Specify protected and public routes
 const protectedRoutes = ['/', '/dashboard', '/calendar'];
