@@ -6,7 +6,8 @@ import { Filter, FileText, Download, Calendar, Mail, Loader2, Pencil, ChevronLef
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
-import { Official, formatToTitleCase } from '@/app/admin/personnel/actions';
+import { Official } from '@/app/admin/personnel/actions';
+import { formatToTitleCase } from '@/lib/utils';
 import ProcessingModal from './ProcessingModal';
 
 const MONTHS = [
