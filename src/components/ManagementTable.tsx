@@ -17,6 +17,8 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
     const [personnel, setPersonnel] = useState<Official[]>([]);
     const itemsPerPage = 10;
 
+    const normalize = (str: string) => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() || '';
+
     const fetchRequests = async () => {
         setLoading(true);
         try {
@@ -77,9 +79,9 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
             r.agendaBlockedStatus === 'No Corresponde' ||
             r.agendaBlockedStatus === 'Desbloqueado';
 
-        const matchesFilter = r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
-            r.profession.toLowerCase().includes(filter.toLowerCase()) ||
-            r.coordinator.toLowerCase().includes(filter.toLowerCase());
+        const matchesFilter = normalize(r.professionalName).includes(normalize(filter)) ||
+            normalize(r.profession).includes(normalize(filter)) ||
+            normalize(r.coordinator).includes(normalize(filter));
 
         const isUnblockRequested = r.unblockStatus === 'Requested';
         return (!isProcessed || isUnblockRequested) && matchesFilter;

@@ -15,6 +15,8 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
     const [selectedRequest, setSelectedRequest] = useState<AgendaOpeningRequest | null>(null);
     const itemsPerPage = 10;
 
+    const normalize = (str: string) => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() || '';
+
     const fetchRequests = async () => {
         setLoading(true);
         try {
@@ -62,9 +64,9 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
 
     const filteredRequests = requests.filter(r => {
         const isProcessed = r.status === 'Realizado' || r.status === 'No Corresponde';
-        const matchesFilter = r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
-            r.profession.toLowerCase().includes(filter.toLowerCase()) ||
-            r.coordinator.toLowerCase().includes(filter.toLowerCase());
+        const matchesFilter = normalize(r.professionalName).includes(normalize(filter)) ||
+            normalize(r.profession).includes(normalize(filter)) ||
+            normalize(r.coordinator).includes(normalize(filter));
 
         return !isProcessed && matchesFilter;
     });

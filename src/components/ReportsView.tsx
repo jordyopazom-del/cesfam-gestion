@@ -132,7 +132,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
         let docLinksText = '';
         if (hasDocs) {
             docLinksText = pdfUrls.map((url: string, idx: number) => {
-                const link = url === 'INTERNAL_PDF' || url.startsWith('data:') 
+                const link = (url === 'INTERNAL_PDF' || url.startsWith('data:'))
                     ? `${window.location.origin}/api/pdf/${req.id}?index=${idx}` 
                     : url;
                 return `Documento ${idx + 1}: ${link}`;
@@ -283,7 +283,7 @@ Saludos cordiales.`;
             'Hora Término': req.startTime,
             'Estado Agenda': req.agendaBlockedStatus || 'Pendiente',
             'Documento Adjunto': req.pdfUrl && Array.isArray(req.pdfUrl) && req.pdfUrl.length > 0
-                ? req.pdfUrl.map((url: string, i: number) => url.startsWith('data:') ? `${window.location.origin}/api/pdf/${req.id}?index=${i}` : url).join('\n')
+                ? req.pdfUrl.map((url: string, i: number) => (url === 'INTERNAL_PDF' || url.startsWith('data:')) ? `${window.location.origin}/api/pdf/${req.id}?index=${i}` : url).join('\n')
                 : '-',
             'Responsable Contactar': req.assignedAdmin || '-'
         }));
@@ -551,6 +551,8 @@ Saludos cordiales.`;
                                             </>
                                         ) : (
                                             <>
+                                                <th className="px-3 py-3">Tipo</th>
+                                                <th className="px-3 py-3">Categoría</th>
                                                 <th className="px-3 py-3 whitespace-nowrap">Rend.</th>
                                                 <th className="px-3 py-3">Horas</th>
                                                 <th className="px-3 py-3">Días de Apertura</th>
@@ -624,7 +626,7 @@ Saludos cordiales.`;
                                                                 {req.pdfUrl.map((url: string, idx: number) => (
                                                                     <a
                                                                         key={idx}
-                                                                        href={url === 'INTERNAL_PDF' || url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:')) ? `/api/pdf/${req.id}?index=${idx}` : url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"
@@ -730,7 +732,7 @@ Saludos cordiales.`;
                                                                 {req.pdfUrl.map((url: string, idx: number) => (
                                                                     <a
                                                                         key={idx}
-                                                                        href={url === 'INTERNAL_PDF' || url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:')) ? `/api/pdf/${req.id}?index=${idx}` : url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"

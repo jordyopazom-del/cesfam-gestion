@@ -56,12 +56,23 @@ export function generateRequestEmailHtml(request: any, type: 'Bloqueo' | 'Apertu
                     <p style="margin: 5px 0;"><strong>Administrativo Asignado:</strong> ${request.assignedAdmin || (isNoPatients ? 'N/A (Sin Pacientes)' : '-')}</p>
                 </div>
 
-                ${request.pdfUrl && !isNoPatients ? `
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="${process.env.NEXT_PUBLIC_BASE_URL || ''}${request.pdfUrl}" 
-                           style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                           Ver Documento PDF
-                        </a>
+                ${(request.pdfUrl && Array.isArray(request.pdfUrl) && !isNoPatients) ? `
+                    <div style="margin: 20px 0; border-top: 1px solid #eee; padding-top: 15px;">
+                        <p style="font-weight: bold; margin-bottom: 10px;">Documentos Adjuntos:</p>
+                        ${request.pdfUrl.map((url: string, idx: number) => {
+                            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://cesfam-app.vercel.app';
+                            const link = (url === 'INTERNAL_PDF' || url.startsWith('data:'))
+                                ? `${baseUrl}/api/pdf/${request.id}?index=${idx}`
+                                : url;
+                            return `
+                                <div style="margin-bottom: 10px;">
+                                    <a href="${link}" 
+                                       style="display: inline-block; background-color: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px;">
+                                       Ver Documento ${idx + 1}
+                                    </a>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                 ` : isNoPatients ? `
                     <p style="color: #059669; font-weight: bold; text-align: center;">Nota: Esta gestión se realizó sin pacientes en la agenda.</p>
