@@ -10,12 +10,12 @@ export interface Official {
     email?: string;
 }
 
-function formatProfession(prof: string): string {
-    if (!prof) return '';
-    const upper = prof.toUpperCase().trim();
+function formatToTitleCase(str: string): string {
+    if (!str) return '';
+    const upper = str.toUpperCase().trim();
     if (upper === 'TENS' || upper === 'GORE') return upper;
     
-    return prof.toLowerCase().split(' ').map(word => {
+    return str.toLowerCase().split(' ').map(word => {
         if (word.includes('/')) {
             return word.split('/').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('/');
         }
@@ -69,8 +69,8 @@ export async function getPersonnel(): Promise<Official[]> {
 
         const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
         return rows.map(row => ({
-            name: row.name,
-            profession: formatProfession(row.profession),
+            name: formatToTitleCase(row.name),
+            profession: formatToTitleCase(row.profession),
             type: row.type as any,
             email: row.email || ''
         }));
