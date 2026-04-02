@@ -35,7 +35,7 @@ export async function getUsers(): Promise<User[]> {
 export async function getUserByEmail(email: string): Promise<User | undefined> {
     noStore();
     try {
-        const { rows } = await sql`SELECT * FROM users WHERE email = ${email}`;
+        const { rows } = await sql`SELECT * FROM users WHERE LOWER(email) = LOWER(${email})`;
         if (rows.length === 0) return undefined;
         const row = rows[0];
         return {
