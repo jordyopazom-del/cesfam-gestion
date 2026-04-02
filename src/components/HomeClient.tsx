@@ -1,22 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import RequestForm from '@/components/RequestForm';
 import AgendaOpeningForm from '@/components/AgendaOpeningForm';
 import ManagementTable from '@/components/ManagementTable';
 import AgendaOpeningTable from '@/components/AgendaOpeningTable';
 import UnblockManagementTable from '@/components/UnblockManagementTable';
 
-import { LayoutDashboard, PlusCircle, FileText, CalendarPlus, Users, ChevronDown, ListPlus, UsersRound, Shield, User, Briefcase, RefreshCw, Globe, LifeBuoy, ExternalLink } from 'lucide-react';
+import { 
+    LayoutDashboard, PlusCircle, FileText, CalendarPlus, 
+    ChevronDown, User, RefreshCw, Globe, LifeBuoy, 
+    ExternalLink, Calendar, Briefcase, Shield, Users, Truck 
+} from 'lucide-react';
 import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
 import UserManagement from './UserManagement';
 import { Official } from '@/app/admin/personnel/actions';
-import { useEffect, useRef } from 'react';
 import PersonnelView from './PersonnelView';
 import UnblockRequestsView from './UnblockRequestsView';
-// import { getSsoUrl } from '@/app/actions/sso'; // No longer using Server Action for this flow
 
 interface HomeClientProps {
     isAdmin: boolean;
@@ -30,11 +32,9 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isActivosDropdownOpen, setIsActivosDropdownOpen] = useState(false);
+    const [isAgendasDropdownOpen, setIsAgendasDropdownOpen] = useState(false);
     const [isApoyoDropdownOpen, setIsApoyoDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
-    const activosDropdownRef = useRef<HTMLDivElement>(null);
+    const agendasDropdownRef = useRef<HTMLDivElement>(null);
     const apoyoDropdownRef = useRef<HTMLDivElement>(null);
 
     const handleSuccess = () => {
@@ -44,11 +44,8 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
     // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsDropdownOpen(false);
-            }
-            if (activosDropdownRef.current && !activosDropdownRef.current.contains(event.target as Node)) {
-                setIsActivosDropdownOpen(false);
+            if (agendasDropdownRef.current && !agendasDropdownRef.current.contains(event.target as Node)) {
+                setIsAgendasDropdownOpen(false);
             }
             if (apoyoDropdownRef.current && !apoyoDropdownRef.current.contains(event.target as Node)) {
                 setIsApoyoDropdownOpen(false);
@@ -70,26 +67,29 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                     </div>
 
                     <nav className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
-                        {/* Dropdown Solicitudes */}
-                        <div className="relative" ref={dropdownRef}>
+                        {/* Menú Agendas */}
+                        <div className="relative" ref={agendasDropdownRef}>
                             <button
-                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                onClick={() => setIsAgendasDropdownOpen(!isAgendasDropdownOpen)}
                                 className={clsx(
                                     "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all outline-none",
-                                    (activeTab === 'form' || activeTab === 'agenda' || isDropdownOpen) ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                                    (isAgendasDropdownOpen || ['form', 'agenda', 'table', 'reports', 'activos'].includes(activeTab)) ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
                                 )}
                             >
-                                <ListPlus size={18} />
-                                Solicitudes
-                                <ChevronDown size={14} className={clsx("transition-transform", isDropdownOpen && "rotate-180")} />
+                                <Calendar size={18} />
+                                Agendas
+                                <ChevronDown size={14} className={clsx("transition-transform", isAgendasDropdownOpen && "rotate-180")} />
                             </button>
 
-                            {isDropdownOpen && (
-                                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                            {isAgendasDropdownOpen && (
+                                <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
+                                        Solicitudes
+                                    </div>
                                     <button
                                         onClick={() => {
                                             setActiveTab('form');
-                                            setIsDropdownOpen(false);
+                                            setIsAgendasDropdownOpen(false);
                                         }}
                                         className={clsx(
                                             "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
@@ -102,7 +102,7 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                                     <button
                                         onClick={() => {
                                             setActiveTab('agenda');
-                                            setIsDropdownOpen(false);
+                                            setIsAgendasDropdownOpen(false);
                                         }}
                                         className={clsx(
                                             "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
@@ -112,107 +112,76 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                                         <CalendarPlus size={16} />
                                         Apertura Agenda
                                     </button>
-                                </div>
-                            )}
-                        </div>
-                        <div className="relative" ref={activosDropdownRef}>
-                            <button
-                                onClick={() => setIsActivosDropdownOpen(!isActivosDropdownOpen)}
-                                className={clsx(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all outline-none",
-                                    (activeTab === 'activos' || isActivosDropdownOpen) ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
-                                )}
-                            >
-                                <UsersRound size={18} />
-                                Activos
-                                <ChevronDown size={14} className={clsx("transition-transform", isActivosDropdownOpen && "rotate-180")} />
-                            </button>
 
-                            {isActivosDropdownOpen && (
-                                <div className="absolute left-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                    <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mt-2 mb-1">
+                                        Información y Gestión
+                                    </div>
                                     <button
                                         onClick={() => {
                                             setActiveTab('activos');
                                             setActiveSubTab('CLINICO');
-                                            setIsActivosDropdownOpen(false);
+                                            setIsAgendasDropdownOpen(false);
                                         }}
                                         className={clsx(
                                             "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
-                                            (activeTab === 'activos' && activeSubTab === 'CLINICO') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
+                                            activeTab === 'activos' ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
                                         )}
                                     >
-                                        <User size={16} className={clsx((activeTab === 'activos' && activeSubTab === 'CLINICO') ? "text-blue-600" : "text-gray-400")} />
-                                        Clínicos
+                                        <Users size={16} />
+                                        Funcionarios
                                     </button>
+                                    
+                                    {isAdmin && (
+                                        <button
+                                            onClick={() => {
+                                                setActiveTab('table');
+                                                setIsAgendasDropdownOpen(false);
+                                            }}
+                                            className={clsx(
+                                                "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
+                                                activeTab === 'table' ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
+                                            )}
+                                        >
+                                            <LayoutDashboard size={16} />
+                                            Gestión de Agendas
+                                        </button>
+                                    )}
+
                                     <button
                                         onClick={() => {
-                                            setActiveTab('activos');
-                                            setActiveSubTab('ADMINISTRATIVO');
-                                            setIsActivosDropdownOpen(false);
+                                            setActiveTab('reports');
+                                            setIsAgendasDropdownOpen(false);
                                         }}
                                         className={clsx(
                                             "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
-                                            (activeTab === 'activos' && activeSubTab === 'ADMINISTRATIVO') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
+                                            activeTab === 'reports' ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
                                         )}
                                     >
-                                        <Briefcase size={16} className={clsx((activeTab === 'activos' && activeSubTab === 'ADMINISTRATIVO') ? "text-blue-600" : "text-gray-400")} />
-                                        Administrativos
+                                        <FileText size={16} />
+                                        Reportes
                                     </button>
-                                    <button
-                                        onClick={() => {
-                                            setActiveTab('activos');
-                                            setActiveSubTab('COORDINADOR');
-                                            setIsActivosDropdownOpen(false);
-                                        }}
-                                        className={clsx(
-                                            "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
-                                            (activeTab === 'activos' && activeSubTab === 'COORDINADOR') ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
-                                        )}
-                                    >
-                                        <Shield size={16} className={clsx((activeTab === 'activos' && activeSubTab === 'COORDINADOR') ? "text-blue-600" : "text-gray-400")} />
-                                        Solicitantes
-                                    </button>
+
+                                    <div className="border-t border-gray-100 mt-2 pt-2">
+                                        <button 
+                                            onClick={() => {
+                                                window.open('/api/sso', '_blank');
+                                                setIsAgendasDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors font-medium"
+                                        >
+                                            <RefreshCw size={16} />
+                                            Reprogramación (SSO)
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
-
-                        {isAdmin && (
-                            <button
-                                onClick={() => setActiveTab('table')}
-                                className={clsx(
-                                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                                    activeTab === 'table' ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
-                                )}
-                            >
-                                <LayoutDashboard size={18} />
-                                Gestión
-                            </button>
-                        )}
-
-                        <button
-                            onClick={() => setActiveTab('reports')}
-                            className={clsx(
-                                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                                activeTab === 'reports' ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
-                            )}
-                        >
-                            <FileText size={18} />
-                            Reportes
-                        </button>
-
-                        <button 
-                            onClick={() => window.open('/api/sso', '_blank')}
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all"
-                        >
-                            <RefreshCw size={18} />
-                            Reprogramación
-                        </button>
 
                         <a 
                             href="https://sites.google.com/view/cesfambelarminaparedes?pli=1"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all"
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
                         >
                             <Globe size={18} />
                             Intranet
@@ -299,11 +268,20 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                             )}
                         </div>
 
+                        <a 
+                            href="https://logistica-hazel.vercel.app/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
+                        >
+                            <Truck size={18} />
+                            Logística
+                        </a>
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <form action={logout}>
                             <button
                                 type="submit"
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all"
+                                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all font-sans"
                             >
                                 Salir
                             </button>
@@ -349,7 +327,42 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} isAdmin={isAdmin} />}
                     {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} userName={userName} />}
                     {activeTab === 'activos' && (
-                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                        <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
+                                <div className="flex bg-gray-50/50 p-1 rounded-xl inline-flex flex-wrap gap-1">
+                                    <button
+                                        onClick={() => setActiveSubTab('CLINICO')}
+                                        className={clsx(
+                                            "flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all",
+                                            activeSubTab === 'CLINICO' ? "bg-white text-emerald-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                                        )}
+                                    >
+                                        <User size={16} />
+                                        Personal Clínico
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveSubTab('ADMINISTRATIVO')}
+                                        className={clsx(
+                                            "flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all",
+                                            activeSubTab === 'ADMINISTRATIVO' ? "bg-white text-amber-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                                        )}
+                                    >
+                                        <Briefcase size={16} />
+                                        Personal Administrativo
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveSubTab('COORDINADOR')}
+                                        className={clsx(
+                                            "flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all",
+                                            activeSubTab === 'COORDINADOR' ? "bg-white text-blue-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                                        )}
+                                    >
+                                        <Shield size={16} />
+                                        Solicitantes
+                                    </button>
+                                </div>
+                            </div>
+
                             {activeSubTab !== 'COORDINADOR' ? (
                                 <PersonnelView 
                                     subTab={activeSubTab} 

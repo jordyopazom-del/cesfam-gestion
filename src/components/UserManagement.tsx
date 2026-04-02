@@ -129,11 +129,11 @@ export default function UserManagement() {
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="bg-gray-50/50 text-gray-400 text-xs uppercase tracking-widest font-bold border-b border-gray-100">
-                                <th className="px-8 py-5">Nombre de Usuario</th>
-                                <th className="px-8 py-5">Correo / ID</th>
-                                <th className="px-8 py-5">Rol de Acceso</th>
-                                <th className="px-8 py-5 text-center">Estado</th>
-                                <th className="px-8 py-5 text-right">Acciones</th>
+                                <th className="px-8 py-5 whitespace-nowrap">Nombre de Usuario</th>
+                                <th className="px-8 py-5 whitespace-nowrap">Correo / ID</th>
+                                <th className="px-8 py-5 whitespace-nowrap">Rol de Acceso</th>
+                                <th className="px-8 py-5 text-center whitespace-nowrap">Estado</th>
+                                <th className="px-8 py-5 text-right whitespace-nowrap">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -147,10 +147,10 @@ export default function UserManagement() {
                                             <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100 uppercase">
                                                 {user.name.charAt(0)}
                                             </div>
-                                            <span className="font-semibold text-gray-900">{user.name}</span>
+                                            <span className="font-semibold text-gray-900 whitespace-nowrap">{user.name}</span>
                                         </div>
                                     </td>
-                                    <td className="px-8 py-5 font-medium text-gray-600">{user.email}</td>
+                                    <td className="px-8 py-5 font-medium text-gray-600 whitespace-nowrap">{user.email}</td>
                                     <td className="px-8 py-5">
                                         <select
                                             value={user.role}
@@ -209,11 +209,11 @@ export default function UserManagement() {
                                             <button
                                                 onClick={() => handleResetPassword(user.email)}
                                                 disabled={resetting === user.email}
-                                                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 shadow-sm rounded-lg text-xs font-bold text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition disabled:opacity-50"
+                                                className="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-gray-200 rounded-lg text-[10px] font-bold text-gray-600 hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-all disabled:opacity-50"
                                                 title="Restablecer contraseña a valor por defecto"
                                             >
-                                                <RefreshCw size={14} className={clsx(resetting === user.email && "animate-spin")} />
-                                                <span className="hidden lg:inline">RESETEAR CLAVE</span>
+                                                <RefreshCw size={12} className={clsx(resetting === user.email && "animate-spin")} />
+                                                RESETEAR CLAVE
                                             </button>
                                         </div>
                                     </td>

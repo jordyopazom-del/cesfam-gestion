@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Users } from 'lucide-react';
+import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield } from 'lucide-react';
 import clsx from 'clsx';
 
 interface PersonnelViewProps {
@@ -23,22 +23,6 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
         .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                      p.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
                      (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase())));
-
-    const getTitle = () => {
-        switch (subTab) {
-            case 'CLINICO': return 'Personal Clínico';
-            case 'ADMINISTRATIVO': return 'Personal Administrativo';
-            default: return 'Gestión de Personal';
-        }
-    };
-
-    const getIcon = () => {
-        switch (subTab) {
-            case 'CLINICO': return <User className="text-emerald-600" size={28} />;
-            case 'ADMINISTRATIVO': return <Briefcase className="text-amber-600" size={28} />;
-            default: return <Users className="text-blue-600" size={28} />;
-        }
-    };
 
     const handleAdd = async () => {
         if (!newOfficial.name || !newOfficial.profession) return;
@@ -84,10 +68,12 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
             <div className="p-8 border-b border-gray-100 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-gray-50 rounded-xl">
-                        {getIcon()}
+                        {subTab === 'CLINICO' ? <User className="text-emerald-600" size={28} /> : <Briefcase className="text-amber-600" size={28} />}
                     </div>
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">{getTitle()}</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
+                            {subTab === 'CLINICO' ? 'Personal Clínico' : 'Personal Administrativo'}
+                        </h2>
                         <p className="text-gray-500 mt-0.5">Gestión de activos del área {subTab.toLowerCase()}</p>
                     </div>
                 </div>
@@ -162,6 +148,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                             <button
                                 onClick={() => setIsAdding(false)}
                                 className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition-all"
+                                title="Cerrar formulario"
                             >
                                 <X size={20} />
                             </button>
@@ -174,11 +161,11 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="bg-gray-50/50 text-gray-400 text-xs uppercase tracking-widest font-bold border-b border-gray-100">
-                            <th className="px-8 py-5">Identificación / Nombre</th>
-                            <th className="px-8 py-5">Profesión / Función</th>
-                            <th className="px-8 py-5">📧 Contacto</th>
-                            <th className="px-8 py-5">Estado</th>
-                            <th className="px-8 py-5 text-right">Acciones</th>
+                            <th className="px-8 py-5 whitespace-nowrap">Identificación / Nombre</th>
+                            <th className="px-8 py-5 whitespace-nowrap">Profesión / Función</th>
+                            <th className="px-8 py-5 whitespace-nowrap">📧 Contacto</th>
+                            <th className="px-8 py-5 whitespace-nowrap">Área</th>
+                            <th className="px-8 py-5 text-right whitespace-nowrap">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -187,7 +174,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                 <td className="px-8 py-5">
                                     {editingName === p.name ? (
                                         <input
-                                            id={`edit-name-${p.name}`}
+                                            id={`edit-p-name-input-${p.name}`}
                                             type="text"
                                             placeholder="Nombre completo"
                                             title="Editar nombre completo"
@@ -200,14 +187,14 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                             <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100">
                                                 {p.name.charAt(0)}
                                             </div>
-                                            <span className="font-semibold text-gray-900">{p.name}</span>
+                                            <span className="font-semibold text-gray-900 whitespace-nowrap">{p.name}</span>
                                         </div>
                                     )}
                                 </td>
                                 <td className="px-8 py-5">
                                     {editingName === p.name ? (
                                         <input
-                                            id={`edit-profession-${p.name}`}
+                                            id={`edit-p-profession-${p.name}`}
                                             type="text"
                                             placeholder="Profesión o cargo"
                                             title="Editar profesión o cargo"
@@ -216,7 +203,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                             onChange={(e) => setEditForm({ ...editForm, profession: e.target.value.toUpperCase() })}
                                         />
                                     ) : (
-                                        <div className="flex items-center gap-2 text-gray-600">
+                                        <div className="flex items-center gap-2 text-gray-600 whitespace-nowrap">
                                             <div className="p-1.5 bg-gray-100 rounded-md">
                                                 <Briefcase size={12} className="text-gray-500" />
                                             </div>
@@ -227,7 +214,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                 <td className="px-8 py-5">
                                     {editingName === p.name ? (
                                         <input
-                                            id={`edit-email-${p.name}`}
+                                            id={`edit-p-email-${p.name}`}
                                             type="email"
                                             placeholder="Correo electrónico"
                                             title="Editar correo electrónico"
@@ -246,8 +233,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                     <span className={clsx(
                                         "px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase",
                                         p.type === 'CLINICO' ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
-                                            p.type === 'ADMINISTRATIVO' ? "bg-amber-50 text-amber-700 border border-amber-100" :
-                                                "bg-blue-50 text-blue-700 border border-blue-100"
+                                             "bg-amber-50 text-amber-700 border border-amber-100"
                                     )}>
                                         {p.type}
                                     </span>
@@ -285,8 +271,8 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-50 text-gray-300 mb-4">
                             <User size={32} />
                         </div>
-                        <h3 className="text-gray-900 font-medium">No se encontraron activos</h3>
-                        <p className="text-gray-500 text-sm mt-1">Intenta ajustar tu búsqueda o agrega un nuevo registro.</p>
+                        <h3 className="text-gray-900 font-medium">No se encontraron registros</h3>
+                        <p className="text-gray-500 text-sm mt-1">Intenta ajustar tu búsqueda o cambia la categoría arriba.</p>
                     </div>
                 )}
             </div>

@@ -28,17 +28,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <nav className="bg-blue-600 text-white shadow-md">
-          <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-            <Link href="/" className="text-xl font-bold flex items-center gap-2">
-              CESFAM Gestión
-            </Link>
-            <div className="flex gap-6">
-              <Link href="/" className="hover:text-blue-200 transition-colors">Inicio</Link>
-              <Link href="/admin/personnel" className="hover:text-blue-200 transition-colors">Administración</Link>
-            </div>
-          </div>
-        </nav>
         <main className="min-h-screen bg-gray-50">
           {children}
         </main>
