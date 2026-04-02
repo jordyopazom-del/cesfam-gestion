@@ -132,7 +132,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
         let docLinksText = '';
         if (hasDocs) {
             docLinksText = pdfUrls.map((url: string, idx: number) => {
-                const link = url.startsWith('data:') 
+                const link = url === 'INTERNAL_PDF' || url.startsWith('data:') 
                     ? `${window.location.origin}/api/pdf/${req.id}?index=${idx}` 
                     : url;
                 return `Documento ${idx + 1}: ${link}`;
@@ -624,7 +624,7 @@ Saludos cordiales.`;
                                                                 {req.pdfUrl.map((url: string, idx: number) => (
                                                                     <a
                                                                         key={idx}
-                                                                        href={url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        href={url === 'INTERNAL_PDF' || url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"
@@ -730,7 +730,7 @@ Saludos cordiales.`;
                                                                 {req.pdfUrl.map((url: string, idx: number) => (
                                                                     <a
                                                                         key={idx}
-                                                                        href={url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        href={url === 'INTERNAL_PDF' || url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
                                                                         className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"
