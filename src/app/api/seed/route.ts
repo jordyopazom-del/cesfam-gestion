@@ -17,9 +17,14 @@ export async function GET() {
         must_change_password BOOLEAN DEFAULT TRUE,
         reset_requested BOOLEAN DEFAULT FALSE,
         name VARCHAR(255) NOT NULL,
-        role VARCHAR(50) NOT NULL
+        role VARCHAR(50) NOT NULL,
+        status VARCHAR(50) DEFAULT 'active'
       );
     `;
+
+    // Ensure status column exists if the table already existed
+    await client.sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'active'`;
+    await client.sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_requested BOOLEAN DEFAULT FALSE`;
 
     // Requests Table
     await client.sql`
@@ -32,14 +37,29 @@ export async function GET() {
         block_type VARCHAR(255) NOT NULL,
         start_date VARCHAR(50) NOT NULL,
         end_date VARCHAR(50) NOT NULL,
-        selected_days TEXT NOT NULL, -- JSON string
+        selected_days TEXT NOT NULL, 
         start_time VARCHAR(50) NOT NULL,
         end_time VARCHAR(50) NOT NULL,
         status VARCHAR(50) NOT NULL,
         agenda_blocked_status VARCHAR(50),
+        pdf_urls TEXT,
+        assigned_admin VARCHAR(255),
+        processed_at TIMESTAMP WITH TIME ZONE,
+        submitter_email VARCHAR(255),
+        unblock_status VARCHAR(50) DEFAULT 'None',
+        unblock_reason TEXT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
+
+    // Ensure all requests columns exist if table already existed
+    await client.sql`ALTER TABLE requests ADD COLUMN IF NOT EXISTS pdf_urls TEXT`;
+    await client.sql`ALTER TABLE requests ADD COLUMN IF NOT EXISTS assigned_admin VARCHAR(255)`;
+    await client.sql`ALTER TABLE requests ADD COLUMN IF NOT EXISTS processed_at TIMESTAMP WITH TIME ZONE`;
+    await client.sql`ALTER TABLE requests ADD COLUMN IF NOT EXISTS submitter_email VARCHAR(255)`;
+    await client.sql`ALTER TABLE requests ADD COLUMN IF NOT EXISTS unblock_status VARCHAR(50) DEFAULT 'None'`;
+    await client.sql`ALTER TABLE requests ADD COLUMN IF NOT EXISTS unblock_reason TEXT`;
+    await client.sql`ALTER TABLE requests ADD COLUMN IF NOT EXISTS agenda_blocked_status VARCHAR(50)`;
 
     // Agenda Openings Table
     await client.sql`
@@ -90,9 +110,9 @@ export async function GET() {
 
     for (const user of initialUsers) {
       await client.sql`
-            INSERT INTO users (email, password, must_change_password, reset_requested, name, role)
-            VALUES (${user.email}, ${defaultPassword}, TRUE, FALSE, ${user.name}, ${user.role})
-            ON CONFLICT (email) DO NOTHING;
+            INSERT INTO users (email, password, must_change_password, reset_requested, name, role, status)
+            VALUES (${user.email}, ${defaultPassword}, TRUE, FALSE, ${user.name}, ${user.role}, 'active')
+            ON CONFLICT (email) DO UPDATE SET status = 'active';
         `;
     }
 
