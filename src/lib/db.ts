@@ -179,7 +179,8 @@ function parsePdfUrls(val: any): string[] {
  * The full content is still available via getPdfById.
  */
 function sanitizePdfUrls(urls: string[]): string[] {
-    return urls.map(u => u.startsWith('data:') ? 'INTERNAL_PDF' : u);
+    // Temporarily disabled to restore legacy behavior for the user
+    return urls; // urls.map(u => u.startsWith('data:') ? 'INTERNAL_PDF' : u);
 }
 
 export async function getRequests(): Promise<BlockingRequest[]> {
