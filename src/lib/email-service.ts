@@ -60,7 +60,8 @@ export function generateRequestEmailHtml(request: any, type: 'Bloqueo' | 'Apertu
                     <div style="margin: 20px 0; border-top: 1px solid #eee; padding-top: 15px;">
                         <p style="font-weight: bold; margin-bottom: 10px;">Documentos Adjuntos:</p>
                         ${request.pdfUrl.map((url: string, idx: number) => {
-                            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://cesfam-app.vercel.app';
+                            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+                                           (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://cesfam-app.vercel.app');
                             const link = (url === 'INTERNAL_PDF' || url.startsWith('data:'))
                                 ? `${baseUrl}/api/pdf/${request.id}?index=${idx}`
                                 : url;

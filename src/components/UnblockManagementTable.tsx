@@ -13,6 +13,8 @@ export default function UnblockManagementTable({ refreshTrigger, isAdmin }: { re
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
+    const normalize = (str: string) => str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim() || '';
+
     const fetchRequests = async () => {
         setLoading(true);
         try {
@@ -55,9 +57,9 @@ export default function UnblockManagementTable({ refreshTrigger, isAdmin }: { re
 
     const filteredRequests = requests.filter(r => {
         const isUnblockRequested = r.unblockStatus === 'Requested';
-        const matchesFilter = r.professionalName.toLowerCase().includes(filter.toLowerCase()) ||
-            r.profession.toLowerCase().includes(filter.toLowerCase()) ||
-            r.coordinator.toLowerCase().includes(filter.toLowerCase());
+        const matchesFilter = normalize(r.professionalName).includes(normalize(filter)) ||
+            normalize(r.profession).includes(normalize(filter)) ||
+            normalize(r.coordinator).includes(normalize(filter));
 
         return isUnblockRequested && matchesFilter;
     });
