@@ -16,7 +16,7 @@ import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
 import ReportsView from './ReportsView';
 import UserManagement from './UserManagement';
-import { Official } from '@/app/admin/personnel/actions';
+import { Official, getSSOLink } from '@/app/admin/personnel/actions';
 import PersonnelView from './PersonnelView';
 import UnblockRequestsView from './UnblockRequestsView';
 
@@ -268,15 +268,20 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                             )}
                         </div>
 
-                        <a 
-                            href="https://logistica-hazel.vercel.app/"
-                            target="_blank"
-                            rel="noopener noreferrer"
+                        <button 
+                            onClick={async () => {
+                                try {
+                                    const link = await getSSOLink();
+                                    window.open(link, '_blank');
+                                } catch (err) {
+                                    window.open('https://logistica-hazel.vercel.app/', '_blank');
+                                }
+                            }}
                             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
                         >
                             <Truck size={18} />
                             Logística
-                        </a>
+                        </button>
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <form action={logout}>
                             <button

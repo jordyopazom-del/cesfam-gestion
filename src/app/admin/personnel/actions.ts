@@ -2,6 +2,11 @@
 
 import { sql } from '@vercel/postgres';
 import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
+import { SignJWT } from 'jose';
+import { getSession } from '@/lib/session';
+
+const SSO_SECRET_KEY = process.env.SSO_SECRET_KEY || 'someagendas';
+const ssoKey = new TextEncoder().encode(SSO_SECRET_KEY);
 
 export interface Official {
     name: string;
@@ -115,4 +120,22 @@ export async function deleteOfficial(name: string): Promise<void> {
         console.error('Error deleting official:', error);
         throw error;
     }
+}
+
+export async function getSSOLink(): Promise<string> {
+    const session = await getSession();
+    if (!session || !session.email) {
+        throw new Error('No authenticado');
+    }
+    
+    const token = await new SignJWT({ 
+        email: session.email, 
+        timestamp: Date.now() 
+    })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('1m')
+        .sign(ssoKey);
+    
+    return `https://logistica-hazel.vercel.app/api/auth/sso?token=${token}`;
 }
