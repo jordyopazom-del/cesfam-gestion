@@ -217,7 +217,7 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                                 {req.pdfUrl.map((url, idx) => (
                                                     <a
                                                         key={idx}
-                                                        href={url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                        href={url === 'INTERNAL_PDF' || url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"

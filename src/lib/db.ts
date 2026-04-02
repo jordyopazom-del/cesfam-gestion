@@ -174,6 +174,14 @@ function parsePdfUrls(val: any): string[] {
     return [];
 }
 
+/**
+ * Replaces heavy base64 data URLs with a placeholder for the listing functions.
+ * The full content is still available via getPdfById.
+ */
+function sanitizePdfUrls(urls: string[]): string[] {
+    return urls.map(u => u.startsWith('data:') ? 'INTERNAL_PDF' : u);
+}
+
 export async function getRequests(): Promise<BlockingRequest[]> {
     noStore();
     try {
@@ -192,7 +200,7 @@ export async function getRequests(): Promise<BlockingRequest[]> {
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as 'Realizado' | 'Sin Agenda' | 'No Corresponde' | undefined,
-            pdfUrl: parsePdfUrls(row.pdf_urls),
+            pdfUrl: sanitizePdfUrls(parsePdfUrls(row.pdf_urls)),
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -278,7 +286,7 @@ export async function updateRequestStatus(
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as any,
-            pdfUrl: parsePdfUrls(row.pdf_urls),
+            pdfUrl: sanitizePdfUrls(parsePdfUrls(row.pdf_urls)),
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -323,7 +331,7 @@ export async function updateUnblockStatus(
             endTime: row.end_time,
             status: row.status as 'Pending' | 'Authorized' | 'Rejected',
             agendaBlockedStatus: row.agenda_blocked_status as any,
-            pdfUrl: parsePdfUrls(row.pdf_urls),
+            pdfUrl: sanitizePdfUrls(parsePdfUrls(row.pdf_urls)),
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -352,7 +360,7 @@ export async function getAgendaOpenings(): Promise<AgendaOpeningRequest[]> {
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
-            pdfUrl: parsePdfUrls(row.pdf_urls),
+            pdfUrl: sanitizePdfUrls(parsePdfUrls(row.pdf_urls)),
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
@@ -422,7 +430,7 @@ export async function updateAgendaOpeningStatus(
             endTime: row.end_time,
             selectedDays: JSON.parse(row.selected_days),
             status: row.status as 'Pending' | 'Realizado' | 'No Corresponde',
-            pdfUrl: parsePdfUrls(row.pdf_urls),
+            pdfUrl: sanitizePdfUrls(parsePdfUrls(row.pdf_urls)),
             assignedAdmin: row.assigned_admin,
             processedAt: row.processed_at ? row.processed_at.toISOString() : undefined,
             submitterEmail: row.submitter_email,
