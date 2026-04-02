@@ -48,6 +48,10 @@ export async function getPersonnel(): Promise<Official[]> {
         await sql`INSERT INTO personnel (name, profession) VALUES ('NICOLL AVILA', 'ODONTOLOGO') ON CONFLICT (name) DO NOTHING`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('CATALINA DIAZ', 'ODONTOLOGO') ON CONFLICT (name) DO UPDATE SET profession = 'ODONTOLOGO'`;
         await sql`INSERT INTO personnel (name, profession) VALUES ('IGNACIO MONTECINOS', 'ENFERMERA/O') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('JOSEFINA VILLALOBOS', 'TENS') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('PRISCILA FERNANDEZ', 'TENS') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('EVELYN CABEZA', 'TENS') ON CONFLICT (name) DO NOTHING`;
+        await sql`INSERT INTO personnel (name, profession) VALUES ('JIMENA CASTRO', 'TENS') ON CONFLICT (name) DO NOTHING`;
         await sql`UPDATE personnel SET profession = 'ODONTOLOGO' WHERE name = 'CATALINA DIAZ'`;
 
         const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
