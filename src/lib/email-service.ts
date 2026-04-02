@@ -38,7 +38,7 @@ export async function sendEmail({ to, subject, html, fromName, replyTo }: EmailP
 }
 
 export function generateRequestEmailHtml(request: any, type: 'Bloqueo' | 'Apertura') {
-    const isNoPatients = request.pdfUrl === 'SIN PACIENTES';
+    const isNoPatients = Array.isArray(request.pdfUrl) ? request.pdfUrl[0] === 'SIN PACIENTES' : request.pdfUrl === 'SIN PACIENTES';
     
     return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
