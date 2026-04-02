@@ -37,4 +37,6 @@ export const LOCATIONS = [
     "Clinica Dental Municipal",
     "Junaeb",
     "Centro de promoción",
+    "Hueinahue",
+    "Chabranco (sin ras)",
 ];
