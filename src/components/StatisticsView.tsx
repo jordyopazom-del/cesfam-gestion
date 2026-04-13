@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getRequests } from '@/lib/db';
 import { BlockingRequest } from '@/lib/db';
 import { 
     Clock, 
@@ -38,17 +37,23 @@ export default function StatisticsView() {
 
     const fetchData = async () => {
         setLoading(true);
-        const allRequests = await getRequests();
-        
-        // Filter by month/year
-        const filtered = allRequests.filter(req => {
-            const date = new Date(req.createdAt);
-            return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
-        });
+        try {
+            const res = await fetch('/api/requests');
+            const data = await res.json();
+            
+            // Filter by month/year
+            const filtered = data.filter((req: BlockingRequest) => {
+                const date = new Date(req.createdAt);
+                return date.getMonth() === selectedMonth && date.getFullYear() === selectedYear;
+            });
 
-        setRequests(filtered);
-        calculateStats(filtered);
-        setLoading(false);
+            setRequests(filtered);
+            calculateStats(filtered);
+        } catch (error) {
+            console.error('Failed to fetch requests in stats:', error);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const calculateStats = (data: BlockingRequest[]) => {

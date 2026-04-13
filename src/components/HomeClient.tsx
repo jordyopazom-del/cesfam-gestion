@@ -10,7 +10,7 @@ import UnblockManagementTable from '@/components/UnblockManagementTable';
 import { 
     LayoutDashboard, PlusCircle, FileText, CalendarPlus, 
     ChevronDown, User, RefreshCw, Globe, LifeBuoy, 
-    ExternalLink, Calendar, Briefcase, Shield, Users, Truck 
+    ExternalLink, Calendar, Briefcase, Shield, Users, Truck, TrendingUp 
 } from 'lucide-react';
 import clsx from 'clsx';
 import { logout } from '@/app/actions/auth';
