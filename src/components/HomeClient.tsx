@@ -19,6 +19,7 @@ import UserManagement from './UserManagement';
 import { Official, getSSOLink } from '@/app/admin/personnel/actions';
 import PersonnelView from './PersonnelView';
 import UnblockRequestsView from './UnblockRequestsView';
+import StatisticsView from './StatisticsView';
 
 interface HomeClientProps {
     isAdmin: boolean;
@@ -28,7 +29,7 @@ interface HomeClientProps {
 }
 
 export default function HomeClient({ isAdmin, personnel, userEmail, userName }: HomeClientProps) {
-    const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock'>('form');
+    const [activeTab, setActiveTab] = useState<'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock' | 'stats'>('form');
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -159,6 +160,19 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                                     >
                                         <FileText size={16} />
                                         Reportes
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            setActiveTab('stats');
+                                            setIsAgendasDropdownOpen(false);
+                                        }}
+                                        className={clsx(
+                                            "w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm transition-colors",
+                                            activeTab === 'stats' ? "bg-blue-50 text-blue-700 font-semibold" : "text-gray-600 hover:bg-gray-50"
+                                        )}
+                                    >
+                                        <TrendingUp size={16} />
+                                        Estadísticas
                                     </button>
 
                                     <div className="border-t border-gray-100 mt-2 pt-2">
@@ -330,6 +344,8 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                     )}
 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} isAdmin={isAdmin} />}
+                    {activeTab === 'stats' && <StatisticsView />}
+                    {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} userName={userName} />}
                     {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} userName={userName} />}
                     {activeTab === 'activos' && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
