@@ -346,7 +346,6 @@ export default function HomeClient({ isAdmin, personnel, userEmail, userName }: 
                     {activeTab === 'reports' && <ReportsView personnel={personnel} isAdmin={isAdmin} />}
                     {activeTab === 'stats' && <StatisticsView />}
                     {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} userName={userName} />}
-                    {activeTab === 'unblock' && userEmail && <UnblockRequestsView userEmail={userEmail} userName={userName} />}
                     {activeTab === 'activos' && (
                         <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
