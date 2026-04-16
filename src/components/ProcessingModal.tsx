@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
 import { Official } from '@/app/admin/personnel/actions';
-import { X, Upload, User, CheckCircle2 } from 'lucide-react';
+import { X, Upload, User, CheckCircle2, Mail } from 'lucide-react';
+import { getMailtoLink } from '@/lib/mailUtils';
 import clsx from 'clsx';
 
 import { uploadFileAction, processUpdateAction } from '@/app/admin/personnel/request-actions';
@@ -20,6 +21,7 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
     const [files, setFiles] = useState<File[]>([]);
     const [assignedAdmin, setAssignedAdmin] = useState('');
     const [isNoPatients, setIsNoPatients] = useState(false);
+    const [sendEmail, setSendEmail] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -29,6 +31,13 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
         if (!isNoPatients && (files.length === 0 || !assignedAdmin)) {
             setError('Por favor complete todos los campos y suba al menos un archivo.');
             return;
+        }
+
+        // Trick to bypass async popup blocker: 
+        // Open a blank window synchronously during the exact click event cycle.
+        let mailWindow: Window | null = null;
+        if (sendEmail) {
+            mailWindow = window.open('about:blank', '_blank');
         }
 
         setLoading(true);
@@ -63,8 +72,14 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                     assignedAdmin: adminToSave
                 });
 
+                if (sendEmail && mailWindow) {
+                    const mailUrl = getMailtoLink(updatedData, type === 'Bloqueo' ? 'blockings' : 'openings', personnel);
+                    mailWindow.location.href = mailUrl;
+                }
+
                 onSuccess(updatedData);
             } catch (updateError: any) {
+                if (mailWindow) mailWindow.close();
                 throw new Error(`Error al finalizar la gestión: ${updateError.message || 'Verifique el tamaño de los archivos'}`);
             }
         } catch (err: any) {
@@ -198,6 +213,27 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
                             </div>
                         </>
                     )}
+
+                    {/* Checkbox "Enviar Confirmación por Correo" */}
+                    <div 
+                        onClick={() => setSendEmail(!sendEmail)}
+                        className={clsx(
+                            "flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer",
+                            sendEmail 
+                                ? "bg-blue-50 border-blue-200 text-blue-800 ring-2 ring-blue-100" 
+                                : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
+                        )}
+                    >
+                        <div className={clsx(
+                            "w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                            sendEmail ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"
+                        )}>
+                            {sendEmail && <CheckCircle2 size={16} className="text-white" />}
+                        </div>
+                        <Mail size={18} className={sendEmail ? "text-blue-600" : "text-gray-400"} />
+                        <span className="font-semibold text-sm">Enviar confirmación por correo al finalizar</span>
+                    </div>
+
 
                     <div className="pt-4 flex gap-3">
                         <button
