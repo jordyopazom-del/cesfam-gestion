@@ -51,6 +51,25 @@ export default function PersonnelAuditModal({ professionalName, onClose }: Perso
     const blocksAdministrativos = blockings.filter(b => b.blockType === 'Permiso Administrativo').reduce((s, b) => s + (b.selectedDays?.length || 0), 0);
     const blocksKine = blockings.filter(b => b.blockType === 'Capacitacion').reduce((s, b) => s + (b.selectedDays?.length || 0), 0);
 
+    const translateStatus = (status: string) => {
+        switch(status) {
+            case 'Pending': return <span className="text-orange-600">Pendiente</span>;
+            case 'Authorized': return <span className="text-emerald-600">Autorizado</span>;
+            case 'Rejected': return <span className="text-red-600">Rechazado</span>;
+            case 'Realizado': return <span className="text-blue-600">Realizado</span>;
+            default: return <span>{status}</span>;
+        }
+    };
+
+    const formatDate = (dateStr?: string) => {
+        if (!dateStr) return '';
+        try {
+            return new Date(dateStr).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' });
+        } catch {
+            return dateStr.substring(0, 10);
+        }
+    };
+
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
@@ -77,7 +96,7 @@ export default function PersonnelAuditModal({ professionalName, onClose }: Perso
                         {/* KPI Cards */}
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-red-50 p-4 rounded-xl border border-red-100">
-                                <p className="text-xs font-bold text-red-600 uppercase mb-1">Días Ausente YTD</p>
+                                <p className="text-[11px] font-bold text-red-600 uppercase mb-1">Total Días Ausente</p>
                                 <p className="text-3xl font-black text-red-900">{totalBlockedDays}</p>
                             </div>
                             <div className="bg-amber-50 p-4 rounded-xl border border-amber-100">
@@ -109,11 +128,11 @@ export default function PersonnelAuditModal({ professionalName, onClose }: Perso
                                             <div key={b.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1 hover:shadow-sm transition-all">
                                                 <div className="flex justify-between items-start">
                                                     <span className="font-bold text-sm text-gray-900">{b.blockType}</span>
-                                                    <span className="text-xs font-mono text-gray-500 bg-white px-2 py-0.5 rounded border">{b.startDate} al {b.endDate}</span>
+                                                    <span className="text-xs font-mono text-gray-500 bg-white px-2 py-0.5 rounded border">{formatDate(b.startDate)} al {formatDate(b.endDate)}</span>
                                                 </div>
                                                 <div className="text-xs text-gray-500 flex gap-2">
-                                                    <span className="bg-red-100 text-red-700 px-1.5 rounded">{b.selectedDays?.length || 0} Días</span>
-                                                    <span>{b.status}</span>
+                                                    <span className="bg-red-100 text-red-700 px-1.5 rounded font-semibold">{b.selectedDays?.length || 0} Días</span>
+                                                    <span className="font-semibold">{translateStatus(b.status)}</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -133,11 +152,11 @@ export default function PersonnelAuditModal({ professionalName, onClose }: Perso
                                             <div key={o.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1 hover:shadow-sm transition-all">
                                                 <div className="flex justify-between items-start">
                                                     <span className="font-bold text-sm text-gray-900">{o.requestType || 'Apertura'}</span>
-                                                    <span className="text-xs font-mono text-gray-500 bg-white px-2 py-0.5 rounded border">{o.selectedDays?.length ? o.selectedDays[0] : ''}</span>
+                                                    <span className="text-xs font-mono text-gray-500 bg-white px-2 py-0.5 rounded border">{o.selectedDays?.length ? formatDate(o.selectedDays[0]) : ''}</span>
                                                 </div>
                                                 <div className="text-xs text-gray-500 flex gap-2">
-                                                    <span className="bg-emerald-100 text-emerald-700 px-1.5 rounded">{o.startTime} - {o.endTime}</span>
-                                                    <span>{o.status}</span>
+                                                    <span className="bg-emerald-100 text-emerald-700 px-1.5 rounded font-semibold">{o.startTime} - {o.endTime}</span>
+                                                    <span className="font-semibold">{translateStatus(o.status)}</span>
                                                 </div>
                                             </div>
                                         ))}

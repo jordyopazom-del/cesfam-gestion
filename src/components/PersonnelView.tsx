@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield, History } from 'lucide-react';
+import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield, History, Filter } from 'lucide-react';
 import clsx from 'clsx';
 import PersonnelAuditModal from './PersonnelAuditModal';
 
@@ -19,12 +19,17 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
     const [editingName, setEditingName] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Official>({ name: '', profession: '', type: subTab, email: '' });
     const [auditingName, setAuditingName] = useState<string | null>(null);
+    const [selectedProfession, setSelectedProfession] = useState('ALL');
+
+    const uniqueProfessions = Array.from(new Set(personnel.filter(p => p.type === subTab).map(p => p.profession))).sort();
 
     const filteredPersonnel = personnel
         .filter(p => p.type === subTab)
+        .filter(p => selectedProfession === 'ALL' || p.profession === selectedProfession)
         .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                      p.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                     (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase())));
+                     (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase())))
+        .sort((a, b) => a.profession.localeCompare(b.profession));
 
     const handleAdd = async () => {
         if (!newOfficial.name || !newOfficial.profession) return;
@@ -80,8 +85,27 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
+                <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+                    <div className="relative w-full md:w-56">
+                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Filter className="h-4 w-4 text-gray-400" />
+                       </div>
+                       <select
+                           className="w-full pl-9 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 font-medium focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                           value={selectedProfession}
+                           onChange={(e) => setSelectedProfession(e.target.value)}
+                       >
+                           <option value="ALL">Todas las Profesiones</option>
+                           {uniqueProfessions.map(prof => (
+                               <option key={prof} value={prof}>{prof}</option>
+                           ))}
+                       </select>
+                       <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                       </div>
+                    </div>
+
+                    <div className="relative w-full md:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
                         <input
                             type="text"
