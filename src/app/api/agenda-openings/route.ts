@@ -2,6 +2,8 @@ import { NextResponse, NextRequest } from 'next/server';
 import { saveAgendaOpening, getAgendaOpenings, checkAgendaOpeningOverlap, AgendaOpeningRequest } from '@/lib/db';
 import { getSession } from '@/lib/session';
 
+export const dynamic = 'force-dynamic';
+
 function generateId() {
     return crypto.randomUUID();
 }
