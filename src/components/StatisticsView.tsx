@@ -47,6 +47,11 @@ export default function StatisticsView() {
     const [expandedEstamento, setExpandedEstamento] = useState<string | null>(null);
     const [viewType, setViewType] = useState<'blockings' | 'openings'>('blockings');
 
+    const monthsLocal = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+
     useEffect(() => {
         fetchData();
     }, [selectedMonth, selectedYear, showAccumulated, viewType]);
@@ -68,8 +73,16 @@ export default function StatisticsView() {
             // Filter current dataset by month/year (Individual vs Accumulated)
             const currentData = viewType === 'blockings' ? dataRequests : dataOpenings;
             
+            // Helper para obtener fecha confiable (muchos datos antiguos no tienen createdAt)
+            const getRequestDate = (r: any) => {
+                if (r.selectedDays && r.selectedDays.length > 0) return new Date(r.selectedDays[0]);
+                if (r.startDate) return new Date(r.startDate);
+                if (r.createdAt) return new Date(r.createdAt);
+                return new Date();
+            };
+
             const filtered = currentData.filter((req: any) => {
-                const date = new Date(req.createdAt);
+                const date = getRequestDate(req);
                 if (date.getFullYear() !== selectedYear) return false;
                 
                 if (showAccumulated) {
@@ -133,11 +146,6 @@ export default function StatisticsView() {
         setStats(calculatedStats);
     };
 
-    const months = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-
     const currentYear = new Date().getFullYear();
     const years = [currentYear, currentYear - 1];
 
@@ -196,7 +204,7 @@ export default function StatisticsView() {
                         onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
                         className="bg-gray-50 border border-gray-200 text-gray-900 text-sm font-bold rounded-2xl focus:ring-blue-500 focus:border-blue-500 p-2.5 outline-none transition-all cursor-pointer"
                     >
-                        {months.map((m, i) => <option key={i} value={i}>{m}</option>)}
+                        {monthsLocal.map((m, i) => <option key={i} value={i}>{m}</option>)}
                     </select>
                     <select 
                         value={selectedYear} 
@@ -242,7 +250,7 @@ export default function StatisticsView() {
                             isOpening ? "text-emerald-500" : "text-blue-500"
                         )}>
                             <TrendingUp size={12} />
-                            {showAccumulated ? `Acumulado hasta ${months[selectedMonth]}` : `Solo en ${months[selectedMonth]}`}
+                            {showAccumulated ? `Acumulado hasta ${monthsLocal[selectedMonth]}` : `Solo en ${monthsLocal[selectedMonth]}`}
                         </p>
                     </div>
                     <div className={clsx(
@@ -311,7 +319,7 @@ export default function StatisticsView() {
                              "text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-xl border shadow-sm",
                              showAccumulated ? (isOpening ? "bg-emerald-600 text-white border-emerald-700" : "bg-blue-600 text-white border-blue-700") : "bg-white text-gray-400 border-gray-100"
                          )}>
-                            {showAccumulated ? `ACUMULADO: ENERO A ${months[selectedMonth].toUpperCase()}` : `MENSUAL: ${months[selectedMonth].toUpperCase()}`}
+                            {showAccumulated ? `ACUMULADO: ENERO A ${monthsLocal[selectedMonth].toUpperCase()}` : `MENSUAL: ${monthsLocal[selectedMonth].toUpperCase()}`}
                         </span>
                     </div>
                 </div>

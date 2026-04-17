@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield } from 'lucide-react';
+import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield, History } from 'lucide-react';
 import clsx from 'clsx';
+import PersonnelAuditModal from './PersonnelAuditModal';
 
 interface PersonnelViewProps {
     subTab: 'CLINICO' | 'ADMINISTRATIVO';
@@ -17,6 +18,7 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
     const [newOfficial, setNewOfficial] = useState<Official>({ name: '', profession: '', type: subTab, email: '' });
     const [editingName, setEditingName] = useState<string | null>(null);
     const [editForm, setEditForm] = useState<Official>({ name: '', profession: '', type: subTab, email: '' });
+    const [auditingName, setAuditingName] = useState<string | null>(null);
 
     const filteredPersonnel = personnel
         .filter(p => p.type === subTab)
@@ -251,6 +253,9 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                             </>
                                         ) : (
                                             <>
+                                                <button onClick={() => setAuditingName(p.name)} className="p-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-all" title="Historial Clínico">
+                                                    <History size={18} />
+                                                </button>
                                                 <button onClick={() => startEdit(p)} className="p-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all" title="Editar">
                                                     <Edit2 size={18} />
                                                 </button>
@@ -276,6 +281,13 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                     </div>
                 )}
             </div>
+
+            {auditingName && (
+                <PersonnelAuditModal 
+                    professionalName={auditingName} 
+                    onClose={() => setAuditingName(null)} 
+                />
+            )}
         </div>
     );
 }
