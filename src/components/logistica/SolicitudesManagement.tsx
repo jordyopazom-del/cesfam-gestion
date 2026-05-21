@@ -136,6 +136,7 @@ const SolicitudesManagement: React.FC<Props> = ({ onApprove }) => {
             } else {
                 await addSolicitudFirebase({
                     ...form,
+                    id: Math.random().toString(36).substring(2, 11),
                     fechaSolicitud: new Date().toISOString().split('T')[0],
                 });
                 showToast('Solicitud creada');
