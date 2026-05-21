@@ -1,6 +1,6 @@
 'use server';
 
-import { sql } from '@vercel/postgres';
+import { prisma } from '@/lib/prisma';
 import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { SignJWT } from 'jose';
 import { getSession } from '@/lib/session';
@@ -10,67 +10,50 @@ const SSO_SECRET_KEY = process.env.SSO_SECRET_KEY || 'someagendas';
 const ssoKey = new TextEncoder().encode(SSO_SECRET_KEY);
 
 export interface Official {
+    id?: number;
     name: string;
     profession: string;
     type?: 'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR';
     email?: string;
+    birthDate?: string;
 }
-
 
 export async function getPersonnel(): Promise<Official[]> {
     noStore();
     try {
-        // Migration: Add columns if they don't exist
-        await sql`ALTER TABLE personnel ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'CLINICO'`;
-        await sql`ALTER TABLE personnel ADD COLUMN IF NOT EXISTS email VARCHAR(255)`;
+        const personnel = await prisma.personnel.findMany({
+            orderBy: { name: 'asc' }
+        });
         
-        // Migration: Unify professions
-        await sql`UPDATE personnel SET profession = 'FONOAUDIÓLOGA/O' WHERE profession = 'FONOAUDIOLOGO'`;
-        await sql`UPDATE personnel SET profession = 'TRABAJADORA/O SOCIAL' WHERE profession LIKE '%TRABAJADOR%SOCIAL%' OR profession LIKE '%TRABAJADORA/O SOCIAL%'`;
-        await sql`UPDATE personnel SET profession = 'ODONTOLOGO' WHERE profession ILIKE 'ODONTOLOGA%' OR profession ILIKE 'ODONTÓLOGA%'`;
-        // await sql`UPDATE personnel SET name = UPPER(TRIM(name)), profession = UPPER(TRIM(profession))`;
-        await sql`UPDATE personnel SET profession = 'ODONTOLOGO' WHERE name ILIKE 'CATALINA%DIAZ%'`;
-
-        // Migration: Assign types based on profession or name
-        await sql`UPDATE personnel SET type = 'ADMINISTRATIVO' WHERE profession IN ('ADMINISTRATIVO', 'SECRETARIA', 'TECNICO')`;
-        await sql`UPDATE personnel SET type = 'COORDINADOR' WHERE profession LIKE '%COORDINADOR%' OR name IN ('ANDRES', 'CLAUDIO ALVARADO', 'GESTION DEMANDA FUTRONO', 'PROYECTO GORE AD', 'CONVENIOS CESFAM', 'DIRECTORA CESFAM FUTRONO')`;
-        // Defaults to CLINICO as per column definition
-
-        // Migration: Remove inactive personnel
-        await sql`DELETE FROM personnel WHERE name = 'VALERIA SOLIS' OR name = 'CAROLINA OSES'`;
-
-        // Migration: Add new psychologists
-        await sql`INSERT INTO personnel (name, profession) VALUES ('BARBARA CORTEZ', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('ELISABETH REYES', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('CATALINA ROMERO', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('ALVARO PEREIRA', 'ORTODONCISTA') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('JACQUELINE RAUQUE', 'TERAPEUTA OCUPACIONAL') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('YOSETT SANDOVAL', 'MATRONA/ÓN') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('JOAQUIN VELASQUEZ', 'PSICOLOGA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('VICTORIA SALDIVIA', 'ENFERMERA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('NICOL RIVAS', 'KINESIOLOGA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('KATHERINE ZUÑIGA', 'TRABAJADORA/O SOCIAL') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('ANDRES FLANDEZ', 'KINESIOLOGA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('KATHERINE ROMERO', 'MEDICO') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('NICOLL AVILA', 'ODONTOLOGO') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('CATALINA DIAZ', 'ODONTOLOGO') ON CONFLICT (name) DO UPDATE SET profession = 'ODONTOLOGO'`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('IGNACIO MONTECINOS', 'ENFERMERA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('JOSEFINA VILLALOBOS', 'TENS') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('PRISCILA FERNANDEZ', 'TENS') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('EVELYN CABEZA', 'TENS') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('JIMENA CASTRO', 'TENS') ON CONFLICT (name) DO NOTHING`;
-        await sql`UPDATE personnel SET profession = 'ODONTOLOGO' WHERE name = 'CATALINA DIAZ'`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('NORA TOLOZA', 'FONOAUDIÓLOGA/O') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('EVELYN MUÑOZ', 'TENS') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('ISIDORA PALMA', 'MEDICO') ON CONFLICT (name) DO NOTHING`;
-        await sql`INSERT INTO personnel (name, profession) VALUES ('CARLOS PULGAR', 'MEDICO') ON CONFLICT (name) DO NOTHING`;
-
-        const { rows } = await sql`SELECT * FROM personnel ORDER BY name ASC`;
-        return rows.map(row => ({
+        // Auto-sync: Ensure all master officials from Personnel exist in PersonalLogistica
+        try {
+            const logisticaPersonnel = await prisma.personalLogistica.findMany();
+            const logisticaNames = new Set(logisticaPersonnel.map(p => p.nombre.toLowerCase().trim()));
+            
+            for (const p of personnel) {
+                const nameKey = p.name.toLowerCase().trim();
+                if (!logisticaNames.has(nameKey)) {
+                    await prisma.personalLogistica.create({
+                        data: {
+                            nombre: p.name,
+                            especialidad: p.profession,
+                            correo: p.email || null,
+                            disponibilidad: true
+                        }
+                    });
+                }
+            }
+        } catch (syncError) {
+            console.error('Error auto-syncing Personnel to Logistica:', syncError);
+        }
+        
+        return personnel.map(row => ({
+            id: row.id,
             name: formatToTitleCase(row.name),
             profession: formatToTitleCase(row.profession),
             type: row.type as any,
-            email: row.email || ''
+            email: row.email || '',
+            birthDate: row.birthDate || ''
         }));
     } catch (error) {
         console.error('Error reading personnel data:', error);
@@ -80,10 +63,35 @@ export async function getPersonnel(): Promise<Official[]> {
 
 export async function addOfficial(official: Official): Promise<void> {
     try {
-        await sql`
-            INSERT INTO personnel (name, profession, type, email)
-            VALUES (${official.name}, ${official.profession}, ${official.type || 'CLINICO'}, ${official.email || ''})
-        `;
+        const fullName = official.name.trim();
+        const cleanCargo = official.profession.trim();
+        const cleanEmail = (official.email || '').trim().toLowerCase();
+
+        // 1. Create in master Personnel
+        await prisma.personnel.create({
+            data: {
+                name: fullName,
+                profession: cleanCargo.toUpperCase(),
+                type: official.type || 'CLINICO',
+                email: cleanEmail,
+                birthDate: official.birthDate || ''
+            }
+        });
+
+        // 2. Sync to PersonalLogistica (Logística)
+        const existingLogistica = await prisma.personalLogistica.findFirst({
+            where: { nombre: fullName }
+        });
+        if (!existingLogistica) {
+            await prisma.personalLogistica.create({
+                data: {
+                    nombre: fullName,
+                    especialidad: cleanCargo,
+                    correo: cleanEmail || null,
+                    disponibilidad: true
+                }
+            });
+        }
         revalidatePath('/admin/personnel');
     } catch (error) {
         console.error('Error adding official:', error);
@@ -91,13 +99,55 @@ export async function addOfficial(official: Official): Promise<void> {
     }
 }
 
-export async function updateOfficial(oldName: string, updatedOfficial: Official): Promise<void> {
+export async function updateOfficial(id: number, updatedOfficial: Official): Promise<void> {
     try {
-        await sql`
-            UPDATE personnel 
-            SET name = ${updatedOfficial.name}, profession = ${updatedOfficial.profession}, type = ${updatedOfficial.type}, email = ${updatedOfficial.email}
-            WHERE name = ${oldName}
-        `;
+        const fullName = updatedOfficial.name.trim();
+        const cleanCargo = updatedOfficial.profession.trim();
+        const cleanEmail = (updatedOfficial.email || '').trim().toLowerCase();
+
+        // 1. Get old official record to find them in Logística by their old name
+        const oldOfficial = await prisma.personnel.findUnique({
+            where: { id }
+        });
+
+        // 2. Update master Personnel
+        await prisma.personnel.update({
+            where: { id },
+            data: {
+                name: fullName,
+                profession: cleanCargo.toUpperCase(),
+                type: updatedOfficial.type,
+                email: cleanEmail,
+                birthDate: updatedOfficial.birthDate || ''
+            }
+        });
+
+        // 3. Sync to PersonalLogistica using the old name
+        if (oldOfficial) {
+            const existingLogistica = await prisma.personalLogistica.findFirst({
+                where: { nombre: oldOfficial.name }
+            });
+            if (existingLogistica) {
+                await prisma.personalLogistica.update({
+                    where: { id: existingLogistica.id },
+                    data: {
+                        nombre: fullName,
+                        especialidad: cleanCargo,
+                        correo: cleanEmail || null,
+                    }
+                });
+            } else {
+                // If they didn't exist in Logística for some reason, create them now!
+                await prisma.personalLogistica.create({
+                    data: {
+                        nombre: fullName,
+                        especialidad: cleanCargo,
+                        correo: cleanEmail || null,
+                        disponibilidad: true
+                    }
+                });
+            }
+        }
         revalidatePath('/admin/personnel');
     } catch (error) {
         console.error('Error updating official:', error);
@@ -105,9 +155,59 @@ export async function updateOfficial(oldName: string, updatedOfficial: Official)
     }
 }
 
-export async function deleteOfficial(name: string): Promise<void> {
+export async function deleteOfficial(id: number): Promise<void> {
     try {
-        await sql`DELETE FROM personnel WHERE name = ${name}`;
+        // 1. Get official record to find them in Logística by name
+        const official = await prisma.personnel.findUnique({
+            where: { id }
+        });
+
+        if (!official) {
+            console.log(`Official with ID ${id} already deleted.`);
+            revalidatePath('/admin/personnel');
+            return;
+        }
+
+        // 2. Delete master Personnel
+        try {
+            await prisma.personnel.delete({
+                where: { id }
+            });
+        } catch (err: any) {
+            console.warn(`Personnel record with ID ${id} could not be deleted (might have been deleted already):`, err.message);
+        }
+
+        // 3. Delete in PersonalLogistica
+        const existingLogistica = await prisma.personalLogistica.findFirst({
+            where: { nombre: official.name }
+        });
+        if (existingLogistica) {
+            try {
+                await prisma.personalLogistica.delete({
+                    where: { id: existingLogistica.id }
+                });
+            } catch (err: any) {
+                console.warn(`PersonalLogistica record could not be deleted:`, err.message);
+            }
+        }
+
+        // 4. Delete corresponding User account in Solicitantes if registered
+        if (official.email) {
+            const emailLower = official.email.trim().toLowerCase();
+            const existingUser = await prisma.user.findUnique({
+                where: { email: emailLower }
+            });
+            if (existingUser) {
+                try {
+                    await prisma.user.delete({
+                        where: { email: emailLower }
+                    });
+                } catch (err: any) {
+                    console.warn(`User record could not be deleted:`, err.message);
+                }
+            }
+        }
+
         revalidatePath('/admin/personnel');
     } catch (error) {
         console.error('Error deleting official:', error);
@@ -131,4 +231,105 @@ export async function getSSOLink(): Promise<string> {
         .sign(ssoKey);
     
     return `https://logistica-hazel.vercel.app/api/auth/sso?token=${token}`;
+}
+
+export async function importCsvAction(csvText: string, separator: string = ';'): Promise<{ success: boolean; count: number; error?: string }> {
+    try {
+        const lines = csvText.split('\n');
+        let count = 0;
+        
+        for (const line of lines) {
+            const cleanLine = line.trim();
+            if (!cleanLine) continue;
+            
+            // Split by separator
+            const columns = cleanLine.split(separator).map(c => c.replace(/^["']|["']$/g, '').trim());
+            
+            // Skip header row if matches common words
+            const firstCol = columns[0]?.toUpperCase() || '';
+            if (firstCol.includes('PATERNO') || firstCol.includes('P. APELLIDO') || firstCol.includes('APELLIDO') || firstCol.includes('NOMBRE') || firstCol === 'A.') {
+                continue;
+            }
+            
+            if (columns.length < 3) continue; // Needs at least A. Paterno, A. Materno, Nombres
+            
+            const paterno = columns[0] || '';
+            const materno = columns[1] || '';
+            const nombres = columns[2] || '';
+            const rut = columns[3] || '';
+            const nacimiento = columns[4] || '';
+            const email = columns[5] || '';
+            const cargo = columns[6] || '';
+            
+            const fullName = `${nombres} ${paterno} ${materno}`.trim().replace(/\s+/g, ' ').toUpperCase();
+            if (!fullName) continue;
+            
+            const cleanEmail = email.trim().toLowerCase() || null;
+            const cleanCargo = cargo.trim();
+            
+            // Determine type ('CLINICO' or 'ADMINISTRATIVO')
+            const c = cleanCargo.toUpperCase();
+            let areaType: 'CLINICO' | 'ADMINISTRATIVO' = 'CLINICO';
+            if (
+                c.includes('CONDUCTOR') ||
+                c.includes('ADMINISTRATIVO') ||
+                c.includes('INFORMATICO') ||
+                c.includes('SERVICIO') ||
+                c.includes('AUXILIAR')
+            ) {
+                areaType = 'ADMINISTRATIVO';
+            }
+            
+            // 1. Upsert into Personnel (Agendas)
+            await prisma.personnel.upsert({
+                where: { name: fullName },
+                update: {
+                    profession: cleanCargo.toUpperCase(),
+                    email: cleanEmail,
+                    type: areaType,
+                    birthDate: nacimiento
+                },
+                create: {
+                    name: fullName,
+                    profession: cleanCargo.toUpperCase(),
+                    email: cleanEmail,
+                    type: areaType,
+                    birthDate: nacimiento
+                }
+            });
+            
+            // 2. Upsert into PersonalLogistica (Logística)
+            const existingLogistica = await prisma.personalLogistica.findFirst({
+                where: { nombre: fullName }
+            });
+            
+            if (existingLogistica) {
+                await prisma.personalLogistica.update({
+                    where: { id: existingLogistica.id },
+                    data: {
+                        especialidad: cleanCargo,
+                        correo: cleanEmail,
+                        disponibilidad: true
+                    }
+                });
+            } else {
+                await prisma.personalLogistica.create({
+                    data: {
+                        nombre: fullName,
+                        especialidad: cleanCargo,
+                        correo: cleanEmail,
+                        disponibilidad: true
+                    }
+                });
+            }
+            
+            count++;
+        }
+        
+        revalidatePath('/admin/personnel');
+        return { success: true, count };
+    } catch (error: any) {
+        console.error('Error during CSV import:', error);
+        return { success: false, count: 0, error: error?.message || 'Error desconocido' };
+    }
 }

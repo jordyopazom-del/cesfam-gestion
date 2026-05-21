@@ -1,0 +1,337 @@
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 1. NextAuth & Unified Users
+// ==========================================
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?
+  role          String    @default("USUARIO") // ADMIN, SOLICITANTE, USUARIO, COORDINADOR
+  status        String    @default("active")
+  resetRequested Boolean  @default(false)
+  contractedHours Int     @default(44)
+  accessLogistica Boolean  @default(false)
+  accessSolicitudes Boolean @default(false)
+  accessReservas Boolean   @default(false)
+  accessAgendas Boolean    @default(false)
+  
+  accounts      Account[]
+  sessions      Session[]
+
+  // Relations
+  requests      SolicitudAdministrativa[]
+  balances      Balance[]
+  reservations  Reservation[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// 2. Cesfam Gestion (Agendas & Personal)
+// ==========================================
+model Personnel {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  profession String
+  type       String?  @default("CLINICO")
+  email      String?
+  birthDate  String?
+}
+
+model AgendaBlockRequest {
+  id                    String   @id @default(cuid())
+  coordinator           String
+  location              String
+  profession            String
+  professional_name     String
+  block_type            String
+  start_date            String
+  end_date              String
+  selected_days         String   // JSON string
+  start_time            String
+  end_time              String
+  status                String
+  agenda_blocked_status String?
+  pdf_urls              String?
+  assigned_admin        String?
+  processed_at          DateTime?
+  submitter_email       String?
+  unblock_status        String   @default("None")
+  unblock_reason        String?
+  created_at            DateTime @default(now())
+}
+
+model AgendaOpening {
+  id                String   @id @default(cuid())
+  coordinator       String
+  location          String
+  profession        String
+  professional_name String
+  performance       Int
+  start_time        String
+  end_time          String
+  selected_days     String   // JSON string
+  status            String
+  created_at        DateTime @default(now())
+}
+
+// ==========================================
+// 3. Solicitudes (Feriados, Cometidos, etc.)
+// ==========================================
+model SolicitudAdministrativa {
+  id             String   @id @default(cuid())
+  type           String   // ADMINISTRATIVO, COMETIDO, FERIADO, ETC.
+  status         String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  startDate      DateTime
+  endDate        DateTime
+  days           Float
+  halfDayPeriod  String?  // AM or PM
+  description    String?
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Balance {
+  id        String   @id @default(cuid())
+  year      Int
+  type      String
+  total     Float
+  used      Float
+  remaining Float
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, type, year])
+}
+
+// ==========================================
+// 4. Sistema de Reserva (Salas, Activos)
+// ==========================================
+model Room {
+  id             String         @id @default(cuid())
+  name           String
+  description    String?
+  reservations   Reservation[]
+  schedules      RoomSchedule[]
+}
+
+model Asset {
+  id           String             @id @default(cuid())
+  name         String             @unique // Data, Telón, Computador
+  description  String?
+  reservations ReservationAsset[]
+}
+
+model Reservation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  roomId    String
+  room      Room     @relation(fields: [roomId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+  reason    String?
+  status    String   @default("PENDING")
+  assets    ReservationAsset[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ReservationAsset {
+  id            String      @id @default(cuid())
+  reservationId String
+  reservation   Reservation @relation(fields: [reservationId], references: [id], onDelete: Cascade)
+  assetId       String
+  asset         Asset       @relation(fields: [assetId], references: [id])
+}
+
+model RoomSchedule {
+  id        String  @id @default(cuid())
+  roomId    String
+  room      Room    @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+  startTime String
+  endTime   String
+}
+
+// ==========================================
+// 5. Logística (Vehículos, Rondas, Postas)
+// ==========================================
+model Posta {
+  id          String   @id @default(cuid())
+  nombre      String
+  distanciaKm Float
+  coordX      Float?
+  coordY      Float?
+}
+
+model Vehiculo {
+  id             String   @id @default(cuid())
+  marcaModelo    String
+  patente        String
+  capacidadTotal Int
+  estado         String   // Disponible, En Mantención
+}
+
+model PersonalLogistica {
+  id             String   @id @default(cuid())
+  nombre         String
+  especialidad   String
+  disponibilidad Boolean
+  correo         String?
+}
+
+model Ronda {
+  id                    String   @id @default(cuid())
+  fecha                 String
+  tipoSalida            String
+  postaId               String
+  vehiculoId            String
+  conductorId           String
+  indicaciones          String?
+  horaSalida            String?
+  horaRetorno           String?
+  accionRetorno         String?
+  viaticos              String?  // JSON string
+  paradasIntermediasIds String?  // JSON array
+  pasajerosIds          String?  // JSON array
+  solicitudesIds        String?  // JSON array
+}
+
+model SolicitudSalida {
+  id                    String   @id @default(cuid())
+  fechaSolicitud        String
+  fechaViaje            String
+  solicitante           String
+  tipoSalida            String
+  destinoId             String
+  descripcion           String
+  estado                String   @default("Pendiente")
+  rondaId               String?
+  motivoRechazo         String?
+  paradasIntermediasIds String?  // JSON array
+  funcionariosIds       String?  // JSON array
+  pacientesIds          String?  // JSON array
+}
+
+model PacienteLogistica {
+  id                String   @id @default(cuid())
+  rut               String
+  nombre            String
+  fechaNacimiento   String
+  sexo              String
+  calle             String
+  numeroDomicilio   String
+  telefonos         String?  // JSON array
+  sector            String
+  establecimientoId String
+  urbanoRural       String
+  dependencia       String
+}
+
+// ==========================================
+// 6. SSO — Reprogramación RAS
+// ==========================================
+model AgendaBlock {
+  id               Int              @id @default(autoincrement())
+  professionalName String
+  professionalRut  String?
+  startDate        String?
+  reason           String?
+  uploadedBy       String?
+  uploadDate       DateTime         @default(now())
+  patients         BlockedPatient[]
+}
+
+model BlockedPatient {
+  id             Int          @id @default(autoincrement())
+  blockId        Int
+  block          AgendaBlock  @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  rut            String
+  fullName       String
+  attentionType  String?
+  attentionDate  String?
+  contactPhones  String?
+  status         String       @default("Pendiente")
+  solution       String?
+  updatedBy      String?
+  updatedAt      DateTime     @default(now()) @updatedAt
+}
+
+// ==========================================
+// 7. SSO — Gestión de Demanda (Rechazos / Derivaciones / Dashboard)
+// ==========================================
+model DemandRequest {
+  id          Int              @id @default(autoincrement())
+  rut         String
+  fullName    String
+  age         Int?
+  requestDate String?
+  origin      String?
+  policlinic  String?
+  priority    String           @default("Baja")
+  status      String           @default("📋 Pendiente")
+  pregnancy   String?
+  updatedAt   DateTime         @default(now()) @updatedAt
+  auditLogs   DemandAuditLog[]
+}
+
+model DemandAuditLog {
+  id              Int           @id @default(autoincrement())
+  demandRequestId Int
+  demand          DemandRequest @relation(fields: [demandRequestId], references: [id], onDelete: Cascade)
+  timestamp       DateTime      @default(now())
+  newValue        String?
+  changedBy       String?
+}

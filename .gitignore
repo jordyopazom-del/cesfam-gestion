@@ -40,3 +40,18 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+/src/generated/prisma
+
+# local SQLite databases
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# temporary migration/helper scripts and log files
+/add_use_client.js
+/final_fixes.js
+/fix_*.js
+/refactor.js
+*.log

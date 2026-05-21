@@ -1,0 +1,849 @@
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../../context/logistica/AuthContext';
+import {
+    getSolicitudesFirebase,
+    addSolicitudFirebase,
+    updateSolicitudFirebase,
+    deleteSolicitudFirebase,
+    getPersonalFirebase,
+    getPostasFirebase,
+    getPacientesFirebase
+} from '@/app/logistica/actions';
+import type { SolicitudSalida, TipoSolicitud, EstadoSolicitud, Personal, Posta, Paciente } from '../../data/logistica/types';
+import { POSTAS } from '../../data/logistica/mockData';
+
+import { TIPO_CONFIG, ESTADO_CONFIG } from '../../data/logistica/config';
+
+
+const TIPOS: TipoSolicitud[] = [
+    'Visitas Domiciliarias',
+    'Traslado de Pacientes',
+    'Toma de Muestras',
+    'Procedimiento en Domicilio',
+    'Ronda Rural',
+];
+
+const EMPTY_FORM = {
+    solicitante: '',
+    tipoSalida: 'Visitas Domiciliarias' as TipoSolicitud,
+    destinoId: '',
+    paradasIntermediasIds: [] as string[],
+    descripcion: '',
+    estado: 'Pendiente' as EstadoSolicitud,
+    funcionariosIds: [] as string[],
+    pacientesIds: [] as string[],
+    fechaViaje: new Date().toISOString().split('T')[0]
+};
+
+interface Props {
+    onApprove?: (s: SolicitudSalida) => void;
+}
+
+const SolicitudesManagement: React.FC<Props> = ({ onApprove }) => {
+    const { usuario } = useAuth();
+    const isAdmin = usuario?.rol === 'admin';
+    const [solicitudes, setSolicitudes] = useState<SolicitudSalida[]>([]);
+    const [allPersonal, setAllPersonal] = useState<Personal[]>([]);
+    const [allPostas, setAllPostas] = useState<Posta[]>([]);
+    const [allPacientes, setAllPacientes] = useState<Paciente[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [editing, setEditing] = useState<SolicitudSalida | null>(null);
+    const [form, setForm] = useState(EMPTY_FORM);
+    const [filterEstado, setFilterEstado] = useState<EstadoSolicitud | 'Todas'>('Todas');
+    const [filterTipo, setFilterTipo] = useState<TipoSolicitud | 'Todos'>('Todos');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchPaciente, setSearchPaciente] = useState('');
+    const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+    const [rejectionTarget, setRejectionTarget] = useState<SolicitudSalida | null>(null);
+
+    const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
+    const formatDescByPatients = (pIds: string[]) => {
+        const selected = allPacientes.filter(px => pIds.includes(px.id));
+        return selected.map((px, idx) => 
+            `${idx + 1}. ${px.nombre} (${px.rut})\r\n   DEP: ${px.dependencia} | DIR: ${px.calle} ${px.numeroDomicilio}\r\n   TEL: ${px.telefonos.join(' / ')}`
+        ).join('\r\n\r\n');
+    };
+
+    const load = async () => {
+        setLoading(true);
+
+        const [solicitudesData, personalData, postasData, pacientesData] = await Promise.all([
+            getSolicitudesFirebase(),
+            getPersonalFirebase(),
+            getPostasFirebase(),
+            getPacientesFirebase()
+        ]);
+        
+        // Sort newest first
+        solicitudesData.sort((a, b) => b.fechaSolicitud.localeCompare(a.fechaSolicitud));
+        setSolicitudes(solicitudesData);
+        setAllPersonal(personalData);
+        setAllPostas(postasData && postasData.length > 0 ? postasData : POSTAS);
+        setAllPacientes(pacientesData);
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        const init = async () => {
+            await load();
+        };
+        init();
+    }, []);
+
+    const openNew = () => {
+        setEditing(null);
+        setForm({
+            ...EMPTY_FORM,
+            solicitante: usuario?.nombre || usuario?.email || '',
+        });
+        setShowForm(true);
+    };
+
+    const openEdit = (s: SolicitudSalida) => {
+        setEditing(s);
+        setForm({
+            solicitante: s.solicitante,
+            tipoSalida: s.tipoSalida,
+            destinoId: s.destinoId || '',
+            paradasIntermediasIds: s.paradasIntermediasIds || [],
+            descripcion: s.descripcion,
+            estado: s.estado,
+            funcionariosIds: s.funcionariosIds || [],
+            pacientesIds: s.pacientesIds || [],
+            fechaViaje: s.fechaViaje || s.fechaSolicitud
+        });
+        setShowForm(true);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!form.solicitante.trim() || !form.destinoId || !form.descripcion.trim()) {
+            showToast('Complete todos los campos requeridos', 'error');
+            return;
+        }
+        try {
+            if (editing) {
+                await updateSolicitudFirebase({
+                    ...editing,
+                    ...form,
+                });
+                showToast('Solicitud actualizada');
+            } else {
+                await addSolicitudFirebase({
+                    ...form,
+                    fechaSolicitud: new Date().toISOString().split('T')[0],
+                });
+                showToast('Solicitud creada');
+            }
+            setShowForm(false);
+            load();
+        } catch {
+            showToast('Error al guardar', 'error');
+        }
+    };
+
+    const handleChangeEstado = async (s: SolicitudSalida, estado: EstadoSolicitud) => {
+        if (estado === 'Rechazada') {
+            setRejectionTarget(s);
+            return;
+        }
+
+        try {
+            await updateSolicitudFirebase({ ...s, estado });
+            setSolicitudes(prev => prev.map(x => x.id === s.id ? { ...x, estado } : x));
+            // Ya no llamamos a onApprove aquí automáticamente
+            showToast(`Solicitud ${estado.toLowerCase()} correctamente`);
+        } catch {
+            showToast('Error al cambiar estado', 'error');
+        }
+    };
+
+    const handleConfirmRejection = async (motivo: string) => {
+        if (!rejectionTarget) return;
+        try {
+            const updated = { ...rejectionTarget, estado: 'Rechazada' as EstadoSolicitud, motivoRechazo: motivo };
+            await updateSolicitudFirebase(updated);
+            setSolicitudes(prev => prev.map(x => x.id === updated.id ? updated : x));
+            setRejectionTarget(null);
+            showToast('Solicitud rechazada');
+        } catch {
+            showToast('Error al rechazar', 'error');
+        }
+    };
+
+    const handleDelete = async (id: string) => {
+        if (!window.confirm('¿Eliminar esta solicitud?')) return;
+        try {
+            await deleteSolicitudFirebase(id);
+            showToast('Solicitud eliminada');
+            load();
+        } catch {
+            showToast('Error al eliminar', 'error');
+        }
+    };
+
+    /* stats */
+    const stats = {
+        total:     solicitudes.length,
+        pendiente: solicitudes.filter(s => s.estado === 'Pendiente').length,
+        aprobada:  solicitudes.filter(s => s.estado === 'Aprobada' && !s.rondaId).length,
+        rechazada: solicitudes.filter(s => s.estado === 'Rechazada' && !s.motivoRechazo).length,
+    };
+
+    const filtered = solicitudes.filter(s => {
+        // Mostramos las pendientes O las aprobadas que no tienen ronda asignada
+        const visible = s.estado === 'Pendiente' || (s.estado === 'Aprobada' && !s.rondaId);
+        if (!visible) return false;
+
+        return (filterEstado === 'Todas' || s.estado === filterEstado) &&
+               (filterTipo   === 'Todos' || s.tipoSalida === filterTipo);
+    });
+
+    return (
+        <div>
+            {/* Toast */}
+            {toast && (
+                <div style={{
+                    position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999,
+                    padding: '0.875rem 1.25rem', borderRadius: '10px',
+                    background: toast.type === 'success' ? '#d1fae5' : '#fee2e2',
+                    color: toast.type === 'success' ? '#065f46' : '#991b1b',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    display: 'flex', alignItems: 'center', gap: '0.5rem',
+                    fontWeight: 600, fontSize: '0.875rem',
+                    borderLeft: `5px solid ${toast.type === 'success' ? '#10b981' : '#ef4444'}`
+                }}>
+                    {toast.type === 'success' ? '✅' : '❌'} {toast.msg}
+                </div>
+            )}
+
+            {/* Header / Stats */}
+            <div className="dashboard-grid no-print" style={{ marginBottom: '1.5rem' }}>
+                <div className="card stats-card" style={{ borderLeft: '4px solid #3b82f6' }}>
+                    <div className="stats-value" style={{ color: '#3b82f6' }}>{stats.total}</div>
+                    <div className="stats-label">Total</div>
+                </div>
+                <div className="card stats-card" style={{ borderLeft: '4px solid #f59e0b' }}>
+                    <div className="stats-value" style={{ color: '#f59e0b' }}>{stats.pendiente}</div>
+                    <div className="stats-label">Pendientes</div>
+                </div>
+                <div className="card stats-card" style={{ borderLeft: '4px solid #10b981' }}>
+                    <div className="stats-value" style={{ color: '#10b981' }}>{stats.aprobada}</div>
+                    <div className="stats-label">Aprobadas</div>
+                </div>
+                <div className="card stats-card" style={{ borderLeft: '4px solid #ef4444' }}>
+                    <div className="stats-value" style={{ color: '#ef4444' }}>{stats.rechazada}</div>
+                    <div className="stats-label">Rechazadas</div>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="card no-print">
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button className="btn btn-primary" onClick={openNew}>+ Nueva Solicitud</button>
+                        <select
+                            value={filterEstado}
+                            onChange={e => setFilterEstado(e.target.value as any)}
+                            style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }}
+                        >
+                            <option value="Todas">Todos los estados</option>
+                            <option value="Pendiente">Pendientes</option>
+                            <option value="Aprobada">Aprobadas</option>
+                            <option value="Rechazada">Rechazadas</option>
+                        </select>
+                        <select
+                            value={filterTipo}
+                            onChange={e => setFilterTipo(e.target.value as any)}
+                            style={{ padding: '8px 16px', borderRadius: '10px', border: '1px solid #e2e8f0', fontSize: '0.85rem' }}
+                        >
+                            <option value="Todos">Todos los tipos</option>
+                            {TIPOS.map(t => <option key={t} value={t}>{t}</option>)}
+                        </select>
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: '#64748b', alignSelf: 'center' }}>
+                        {filtered.length} solicitud{filtered.length !== 1 ? 'es' : ''}
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+                    {TIPOS.map(t => (
+                        <span key={t} style={{
+                            fontSize: '0.72rem', fontWeight: 700,
+                            padding: '4px 12px', borderRadius: '999px',
+                            background: TIPO_CONFIG[t].bg, color: TIPO_CONFIG[t].color,
+                            opacity: filterTipo === 'Todos' || filterTipo === t ? 1 : 0.4
+                        }}>
+                            {TIPO_CONFIG[t].icon} {t}
+                        </span>
+                    ))}
+                </div>
+
+                {loading ? (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>Cargando solicitudes...</div>
+                ) : filtered.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '3rem', color: '#94a3b8' }}>
+                        <p style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🎫</p>
+                        <p>No hay solicitudes que mostrar</p>
+                    </div>
+                ) : (
+                    <table style={{ minWidth: '1000px' }}>
+                        <thead>
+                            <tr>
+                                <th>F. SOLICITUD</th>
+                                <th>F. VIAJE</th>
+                                <th>SOLICITANTE</th>
+                                <th>ACOMPAÑANTES</th>
+                                <th>TIPO</th>
+                                <th>DESTINO / PARADAS</th>
+                                <th>DESCRIPCIÓN</th>
+                                <th>ESTADO</th>
+                                <th>ESTADO DE SOLICITUD</th>
+                                <th className="col-actions">ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filtered.map(s => {
+                                const tipoCfg   = TIPO_CONFIG[s.tipoSalida];
+                                const estadoCfg = ESTADO_CONFIG[s.estado];
+                                return (
+                                    <tr key={s.id}>
+                                        <td style={{ whiteSpace: 'nowrap', fontSize: '0.82rem', color: '#64748b' }}>
+                                            {s.fechaSolicitud.split('-').reverse().join('/')}
+                                        </td>
+                                        <td style={{ whiteSpace: 'nowrap', fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>
+                                            {s.fechaViaje ? s.fechaViaje.split('-').reverse().join('/') : '–'}
+                                        </td>
+                                        <td style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                            {s.solicitante}
+                                        </td>
+                                        <td>
+                                            {s.funcionariosIds && s.funcionariosIds.length > 0 ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                    {s.funcionariosIds.map(fid => {
+                                                        const pf = allPersonal.find(x => x.id === fid);
+                                                        return (
+                                                            <span key={fid} style={{ 
+                                                                fontSize: '0.72rem', 
+                                                                color: '#475569',
+                                                                fontWeight: 600,
+                                                                whiteSpace: 'nowrap'
+                                                            }}>
+                                                                👤 {pf?.nombre || '–'}
+                                                            </span>
+                                                        );
+                                                    })}
+                                                </div>
+                                            ) : (
+                                                <span style={{ color: '#cbd5e1', fontSize: '0.75rem' }}>Solo</span>
+                                            )}
+                                        </td>
+                                        <td>
+                                            <span style={{
+                                                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                                                padding: '4px 10px', borderRadius: '999px',
+                                                background: tipoCfg.bg, color: tipoCfg.color,
+                                                fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap'
+                                            }}>
+                                                {tipoCfg.icon} {s.tipoSalida}
+                                            </span>
+                                        </td>
+                                        <td style={{ fontSize: '0.83rem', color: '#1e293b', fontWeight: 600 }}>
+                                            {allPostas.find(p => p.id === s.destinoId)?.nombre || '–'}
+                                            {s.paradasIntermediasIds && s.paradasIntermediasIds.length > 0 && (
+                                                <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: '2px', fontWeight: 400 }}>
+                                                    Paradas: {s.paradasIntermediasIds.map(id => allPostas.find(p => p.id === id)?.nombre).join(', ')}
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td style={{ maxWidth: '300px', fontSize: '0.8rem', color: '#475569', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                                            {s.descripcion}
+                                        </td>
+                                        <td>
+                                            {isAdmin ? (
+                                                <select
+                                                    value={s.estado}
+                                                    onChange={e => handleChangeEstado(s, e.target.value as EstadoSolicitud)}
+                                                    style={{
+                                                        padding: '4px 8px', fontSize: '0.78rem', borderRadius: '8px',
+                                                        border: `1.5px solid ${estadoCfg.color}66`,
+                                                        background: estadoCfg.bg, color: estadoCfg.color,
+                                                        fontWeight: 700, cursor: 'pointer'
+                                                    }}
+                                                >
+                                                    <option value="Pendiente">Pendiente</option>
+                                                    <option value="Aprobada">Aprobada</option>
+                                                    <option value="Rechazada">Rechazada</option>
+                                                </select>
+                                            ) : (
+                                                <span style={{
+                                                    display: 'inline-block', padding: '4px 10px',
+                                                    borderRadius: '8px', fontSize: '0.78rem', fontWeight: 700,
+                                                    background: estadoCfg.bg, color: estadoCfg.color
+                                                }}>
+                                                    {s.estado}
+                                                </span>
+                                            )}
+                                        </td>
+                                        {isAdmin && (
+                                            <td style={{ fontSize: '0.78rem', color: (s.rondaId || s.motivoRechazo) ? (s.estado === 'Rechazada' ? '#991b1b' : '#065f46') : '#94a3b8' }}>
+                                                {s.rondaId ? `✅ Asignada` : (s.motivoRechazo ? `❌ ${s.motivoRechazo}` : '–')}
+                                            </td>
+                                        )}
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '6px' }}>
+                                                {isAdmin && s.estado === 'Aprobada' && !s.rondaId && (
+                                                    <button
+                                                        className="btn"
+                                                        style={{ padding: '5px 10px', fontSize: '0.78rem', background: '#dcfce7', color: '#166534', fontWeight: 600 }}
+                                                        onClick={() => onApprove && onApprove(s)}
+                                                        title="Programar salida para esta solicitud"
+                                                    >🗓️ Programar</button>
+                                                )}
+                                                {(isAdmin || s.solicitante === usuario?.nombre || s.solicitante === usuario?.email) && (
+                                                    <button
+                                                        className="btn"
+                                                        style={{ padding: '5px 10px', fontSize: '0.78rem', background: '#e0f2fe', color: '#0369a1' }}
+                                                        onClick={() => openEdit(s)}
+                                                    >✏️</button>
+                                                )}
+                                                {isAdmin && (
+                                                    <button
+                                                        className="btn"
+                                                        style={{ padding: '5px 10px', fontSize: '0.78rem', background: '#fee2e2', color: '#991b1b' }}
+                                                        onClick={() => handleDelete(s.id)}
+                                                    >🗑️</button>
+                                                )}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                )}
+            </div>
+
+            {/* Modal Form */}
+            {showForm && (
+                <div style={{
+                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)',
+                    zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem'
+                }}>
+                    <div className="card" style={{ width: '100%', maxWidth: '800px', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                        <h3 className="card-title" style={{ marginBottom: '1.5rem' }}>
+                            {editing ? '✏️ Editar Solicitud' : '➕ Nueva Solicitud de Salida'}
+                        </h3>
+                        <form onSubmit={handleSubmit}>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Solicitante *</label>
+                                    <input
+                                        type="text"
+                                        value={form.solicitante}
+                                        onChange={e => setForm({ ...form, solicitante: e.target.value })}
+                                        readOnly={!!(usuario?.nombre || usuario?.email)}
+                                        style={{ 
+                                            background: (usuario?.nombre || usuario?.email) ? '#f8fafc' : 'white', 
+                                            color: (usuario?.nombre || usuario?.email) ? '#64748b' : 'inherit' 
+                                        }}
+                                        placeholder="Tu nombre completo"
+                                    />
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Fecha para el viaje *</label>
+                                    <input
+                                        type="date"
+                                        value={form.fechaViaje}
+                                        onChange={e => setForm({ ...form, fechaViaje: e.target.value })}
+                                        required
+                                    />
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Tipo de Salida *</label>
+                                    <select
+                                        value={form.tipoSalida}
+                                        onChange={e => setForm({ ...form, tipoSalida: e.target.value as TipoSolicitud })}
+                                    >
+                                        {TIPOS.map(t => (
+                                            <option key={t} value={t}>{TIPO_CONFIG[t].icon} {t}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                                {(form.tipoSalida === 'Visitas Domiciliarias' || form.tipoSalida === 'Ronda Rural' || form.tipoSalida === 'Procedimiento en Domicilio') && (
+                                    <div style={{ marginTop: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                        {(() => {
+                                            const maxPax = form.tipoSalida === 'Ronda Rural' ? 12 : (form.tipoSalida === 'Procedimiento en Domicilio' ? 2 : 4);
+                                            return (
+                                                <>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#475569', display: 'block', marginBottom: '0.5rem' }}>
+                                                        Personal Acompañante ({form.funcionariosIds.length}/{maxPax})
+                                                    </label>
+                                                    
+                                                    {form.funcionariosIds.length < maxPax && (
+                                            <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+                                                <input
+                                                    type="text"
+                                                    value={searchTerm}
+                                                    onChange={e => setSearchTerm(e.target.value)}
+                                                    placeholder="🔍 Buscar funcionario por nombre o especialidad..."
+                                                    style={{ 
+                                                        width: '100%', padding: '0.625rem 0.75rem', 
+                                                        fontSize: '0.875rem', border: '1px solid #e2e8f0', 
+                                                        borderRadius: '8px', background: 'white' 
+                                                    }}
+                                                />
+                                                {searchTerm.trim() !== '' && (
+                                                    <div style={{
+                                                        position: 'absolute', top: '100%', left: 0, right: 0, 
+                                                        background: 'white', border: '1px solid #e2e8f0', 
+                                                        borderRadius: '8px', marginTop: '4px', zIndex: 10,
+                                                        maxHeight: '200px', overflowY: 'auto', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+                                                    }}>
+                                                        {allPersonal
+                                                            .filter(p => !form.funcionariosIds.includes(p.id))
+                                                            .filter(p => 
+                                                                p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                                                p.especialidad.toLowerCase().includes(searchTerm.toLowerCase())
+                                                            )
+                                                            .map(p => (
+                                                                <div 
+                                                                    key={p.id} 
+                                                                    onClick={() => {
+                                                                        setForm({ ...form, funcionariosIds: [...form.funcionariosIds, p.id] });
+                                                                        setSearchTerm('');
+                                                                    }}
+                                                                    style={{
+                                                                        padding: '0.625rem 1rem', cursor: 'pointer',
+                                                                        display: 'flex', flexDirection: 'column',
+                                                                        borderBottom: '1px solid #f1f5f9'
+                                                                    }}
+                                                                    className="search-item-hover"
+                                                                >
+                                                                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.nombre}</span>
+                                                                    <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.especialidad}</span>
+                                                                </div>
+                                                            ))
+                                                        }
+                                                        {allPersonal
+                                                            .filter(p => !form.funcionariosIds.includes(p.id))
+                                                            .filter(p => 
+                                                                p.nombre.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                                                p.especialidad.toLowerCase().includes(searchTerm.toLowerCase())
+                                                            ).length === 0 && (
+                                                                <div style={{ padding: '0.75rem', textAlign: 'center', fontSize: '0.85rem', color: '#94a3b8' }}>
+                                                                    No se encontraron resultados
+                                                                </div>
+                                                            )
+                                                        }
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        <div style={{ 
+                                            display: 'grid', 
+                                            gridTemplateColumns: '1fr 1fr', 
+                                            gap: '0.5rem' 
+                                        }}>
+                                            {form.funcionariosIds.map(fid => {
+                                                const p = allPersonal.find(x => x.id === fid);
+                                                if (!p) return null;
+                                                return (
+                                                    <div key={fid} style={{
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        padding: '0.4rem 0.75rem', background: 'white', borderRadius: '8px',
+                                                        border: '1px solid #e2e8f0', fontSize: '0.8rem', height: '36px'
+                                                    }}>
+                                                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                            {p.nombre}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setForm({ ...form, funcionariosIds: form.funcionariosIds.filter(x => x !== fid) })}
+                                                            style={{
+                                                                background: 'none', border: 'none', color: '#ef4444',
+                                                                cursor: 'pointer', padding: '0 4px', fontSize: '1rem',
+                                                                lineHeight: 1
+                                                            }}
+                                                        >✕</button>
+                                                    </div>
+                                                );
+                                            })}
+                                            {form.funcionariosIds.length === 0 && (
+                                                <div style={{ gridColumn: 'span 2', fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', padding: '0.5rem' }}>
+                                                    Ningún acompañante seleccionado
+                                                </div>
+                                            )}
+                                        </div>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                )}
+
+                                {(form.tipoSalida === 'Visitas Domiciliarias' || form.tipoSalida === 'Procedimiento en Domicilio') && (
+                                    <div style={{ marginTop: '1rem', padding: '1rem', background: '#f0f9ff', borderRadius: '12px', border: '1px solid #bae6fd' }}>
+                                        {(() => {
+                                            const isProc = form.tipoSalida === 'Procedimiento en Domicilio';
+                                            const maxPatients = isProc ? 15 : 8;
+                                            return (
+                                                <>
+                                                    <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0369a1', display: 'block', marginBottom: '0.5rem' }}>
+                                                        Pacientes a Visitar ({form.pacientesIds.length}/{maxPatients})
+                                                    </label>
+
+                                                    {form.pacientesIds.length < maxPatients && (
+                                                        <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+                                                            <input
+                                                                type="text"
+                                                                value={searchPaciente}
+                                                                onChange={e => setSearchPaciente(e.target.value)}
+                                                                placeholder="🔍 Buscar paciente por nombre o RUT..."
+                                                                style={{ 
+                                                                    width: '100%', padding: '0.625rem 0.75rem', 
+                                                                    fontSize: '0.875rem', border: '1px solid #bae6fd', 
+                                                                    borderRadius: '8px', background: 'white' 
+                                                                }}
+                                                            />
+                                                            {searchPaciente.trim() !== '' && (
+                                                                <div style={{
+                                                                    position: 'absolute', top: '100%', left: 0, right: 0, 
+                                                                    background: 'white', border: '1px solid #bae6fd', 
+                                                                    borderRadius: '8px', marginTop: '4px', zIndex: 11,
+                                                                    maxHeight: '200px', overflowY: 'auto', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)'
+                                                                }}>
+                                                                    {allPacientes
+                                                                        .filter(p => !form.pacientesIds.includes(p.id))
+                                                                        .filter(p => 
+                                                                            p.nombre.toLowerCase().includes(searchPaciente.toLowerCase()) || 
+                                                                            p.rut.toLowerCase().includes(searchPaciente.toLowerCase())
+                                                                        )
+                                                                        .slice(0, 10)
+                                                                        .map(p => (
+                                                                            <div 
+                                                                                key={p.id} 
+                                                                                onClick={() => {
+                                                                                    const newPacientesIds = [...form.pacientesIds, p.id];
+                                                                                    setForm({ 
+                                                                                        ...form, 
+                                                                                        pacientesIds: newPacientesIds,
+                                                                                        descripcion: formatDescByPatients(newPacientesIds)
+                                                                                    });
+                                                                                    setSearchPaciente('');
+                                                                                }}
+                                                                                style={{
+                                                                                    padding: '0.625rem 1rem', cursor: 'pointer',
+                                                                                    display: 'flex', flexDirection: 'column',
+                                                                                    borderBottom: '1px solid #f1f5f9'
+                                                                                }}
+                                                                                className="search-item-hover"
+                                                                            >
+                                                                                <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{p.nombre}</span>
+                                                                                <span style={{ fontSize: '0.75rem', color: '#64748b' }}>{p.rut} - {p.dependencia}</span>
+                                                                            </div>
+                                                                        ))
+                                                                    }
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+
+                                                    <div style={{ 
+                                                        display: 'grid', 
+                                                        gridTemplateColumns: isProc ? '1fr 1fr 1fr' : '1fr 1fr', 
+                                                        gap: '0.5rem' 
+                                                    }}>
+                                                        {form.pacientesIds.map(pid => {
+                                                            const p = allPacientes.find(x => x.id === pid);
+                                                            if (!p) return null;
+                                                            return (
+                                                                <div key={pid} style={{
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                                    padding: '0.4rem 0.75rem', background: 'white', borderRadius: '8px',
+                                                                    border: '1px solid #bae6fd', fontSize: isProc ? '0.7rem' : '0.78rem'
+                                                                }}>
+                                                                    <div style={{ overflow: 'hidden' }}>
+                                                                        <div style={{ fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.nombre}</div>
+                                                                        <div style={{ fontSize: '0.6rem', color: '#64748b', whiteSpace: 'nowrap' }}>{p.rut} • {p.telefonos[0] || 'Sin Tel'}</div>
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const newPacientesIds = form.pacientesIds.filter(x => x !== pid);
+                                                                            setForm({ 
+                                                                                ...form, 
+                                                                                pacientesIds: newPacientesIds,
+                                                                                descripcion: formatDescByPatients(newPacientesIds)
+                                                                            });
+                                                                        }}
+                                                                        style={{
+                                                                            background: 'none', border: 'none', color: '#ef4444',
+                                                                            cursor: 'pointer', padding: '0 4px', fontSize: '1rem',
+                                                                            marginLeft: '4px'
+                                                                        }}
+                                                                    >✕</button>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                        {form.pacientesIds.length === 0 && (
+                                                            <div style={{ gridColumn: isProc ? 'span 3' : 'span 2', fontSize: '0.8rem', color: '#94a3b8', fontStyle: 'italic', textAlign: 'center', padding: '0.5rem' }}>
+                                                                Sin pacientes seleccionados
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                )}
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem', marginTop: '1rem' }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Destino *</label>
+                                    <select
+                                        value={form.destinoId}
+                                        onChange={e => setForm({ 
+                                            ...form, 
+                                            destinoId: e.target.value,
+                                            paradasIntermediasIds: form.paradasIntermediasIds.filter(id => id !== e.target.value)
+                                        })}
+                                        required
+                                        style={{ width: '100%', padding: '0.625rem 0.75rem', fontSize: '0.875rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                    >
+                                        <option value="">Seleccionar destino...</option>
+                                        {allPostas.map(p => (
+                                            <option key={p.id} value={p.id}>{p.nombre}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label>Paradas Intermedias (Máx 3)</label>
+                                    <select
+                                        value=""
+                                        onChange={e => {
+                                            const id = e.target.value;
+                                            if (id && !form.paradasIntermediasIds.includes(id) && form.paradasIntermediasIds.length < 3) {
+                                                setForm({ ...form, paradasIntermediasIds: [...form.paradasIntermediasIds, id] });
+                                            }
+                                        }}
+                                        disabled={form.paradasIntermediasIds.length >= 3}
+                                        style={{ width: '100%', padding: '0.625rem 0.75rem', fontSize: '0.875rem', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                                    >
+                                        <option value="">Añadir parada...</option>
+                                        {allPostas
+                                            .filter(p => p.id !== form.destinoId && !form.paradasIntermediasIds.includes(p.id))
+                                            .map(p => (
+                                                <option key={p.id} value={p.id}>{p.nombre}</option>
+                                            ))
+                                        }
+                                    </select>
+                                    <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '8px' }}>
+                                        {form.paradasIntermediasIds.map(id => (
+                                            <span key={id} style={{ 
+                                                fontSize: '0.7rem', background: '#f1f5f9', padding: '2px 8px', 
+                                                borderRadius: '6px', color: '#475569', display: 'flex', alignItems: 'center', gap: '4px' 
+                                            }}>
+                                                {allPostas.find(p => p.id === id)?.nombre}
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setForm({ ...form, paradasIntermediasIds: form.paradasIntermediasIds.filter(x => x !== id) })}
+                                                    style={{ border: 'none', background: 'none', color: '#ef4444', padding: 0, cursor: 'pointer', fontWeight: 'bold' }}
+                                                >✕</button>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label>Descripción *</label>
+                                <textarea
+                                    value={form.descripcion}
+                                    onChange={e => setForm({ ...form, descripcion: e.target.value })}
+                                    placeholder="Describir el motivo y detalles de la solicitud..."
+                                    rows={4}
+                                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #e2e8f0', borderRadius: '8px', resize: 'vertical', fontFamily: 'inherit', fontSize: '0.875rem' }}
+                                />
+                            </div>
+
+                            {editing && (
+                                <div className="form-group">
+                                    <label>Estado</label>
+                                    <select
+                                        value={form.estado}
+                                        onChange={e => setForm({ ...form, estado: e.target.value as EstadoSolicitud })}
+                                    >
+                                        <option value="Pendiente">Pendiente</option>
+                                        <option value="Aprobada">Aprobada</option>
+                                        <option value="Rechazada">Rechazada</option>
+                                    </select>
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                                <button type="button" className="btn" style={{ background: '#f1f5f9', color: '#475569' }} onClick={() => setShowForm(false)}>
+                                    Cancelar
+                                </button>
+                                <button type="submit" className="btn btn-primary">
+                                    {editing ? 'Guardar Cambios' : 'Crear Solicitud'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Rejection Modal */}
+            {rejectionTarget && (
+                <div className="modal-overlay" style={{ background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)' }}>
+                    <div className="card" style={{ maxWidth: '400px', width: '90%', padding: '2rem' }}>
+                        <h3 style={{ marginBottom: '1rem', color: '#991b1b' }}>Motivo de Rechazo</h3>
+                        <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1.5rem' }}>
+                            Seleccione el motivo por el cual no se puede realizar el viaje:
+                        </p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                            {[
+                                'Sin móvil disponible',
+                                'Sin conductor disponible',
+                                'Sin personal clínico disponible',
+                                'Otros'
+                            ].map(reason => (
+                                <button
+                                    key={reason}
+                                    className="btn"
+                                    onClick={() => handleConfirmRejection(reason)}
+                                    style={{ 
+                                        justifyContent: 'flex-start', padding: '0.75rem 1rem', 
+                                        textAlign: 'left', background: '#fef2f2', color: '#991b1b',
+                                        border: '1px solid #fee2e2'
+                                    }}
+                                >
+                                    {reason}
+                                </button>
+                            ))}
+                            <button 
+                                className="btn" 
+                                style={{ marginTop: '0.5rem', background: '#f1f5f9', color: '#475569' }}
+                                onClick={() => setRejectionTarget(null)}
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default SolicitudesManagement;

@@ -18,18 +18,17 @@ export async function processUpdateAction(
         let updatedRequest;
         if (type === 'Bloqueo') {
             updatedRequest = await updateRequestStatus(
-                id, 
-                undefined, 
-                payload.status, 
-                payload.pdfUrl as any, 
-                payload.assignedAdmin
+                id,
+                payload.status,
+                {
+                    assignedAdmin: payload.assignedAdmin,
+                    pdfUrl: payload.pdfUrl
+                }
             );
         } else {
             updatedRequest = await updateAgendaOpeningStatus(
-                id, 
-                payload.status, 
-                payload.pdfUrl as any, 
-                payload.assignedAdmin
+                id,
+                payload.status
             );
         }
 

@@ -3,6 +3,7 @@ import HomeClient from '@/components/HomeClient';
 import { redirect } from 'next/navigation';
 import { getPersonnel } from '@/app/admin/personnel/actions';
 import { getUserByEmail } from '@/lib/auth-db';
+import { prisma } from '@/lib/prisma';
 
 export default async function Home() {
   const session = await getSession();
@@ -12,8 +13,26 @@ export default async function Home() {
   }
 
   const user = await getUserByEmail(session.email);
-  const isAdmin = user?.role === 'Admin' || session.email === 'kkoandres@gmail.com';
+  const isAdmin = user?.role === 'ADMIN' || user?.role === 'Admin' || session.email === 'kkoandres@gmail.com';
   const personnel = await getPersonnel();
 
-  return <HomeClient isAdmin={isAdmin} personnel={personnel} userEmail={session.email} userName={user?.name} />;
+  // Get count of pending users awaiting admin activation
+  const pendingUsersCount = isAdmin
+    ? await prisma.user.count({ where: { status: 'pending' } })
+    : 0;
+
+  return (
+    <HomeClient
+      isAdmin={isAdmin}
+      userRole={user?.role || 'USUARIO'}
+      personnel={personnel}
+      userEmail={session?.email || undefined}
+      userName={user?.name || undefined}
+      accessLogistica={isAdmin || (user?.accessLogistica ?? false)}
+      accessSolicitudes={isAdmin || (user?.accessSolicitudes ?? false)}
+      accessReservas={isAdmin || (user?.accessReservas ?? false)}
+      accessAgendas={isAdmin || (user?.accessAgendas ?? false)}
+      pendingUsersCount={pendingUsersCount}
+    />
+  );
 }

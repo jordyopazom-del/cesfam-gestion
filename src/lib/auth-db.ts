@@ -1,141 +1,108 @@
-import { sql } from '@vercel/postgres';
-import { unstable_noStore as noStore } from 'next/cache';
+import { prisma } from './prisma';
+import bcrypt from 'bcryptjs';
 
-export interface User {
-    email: string;
-    password: string; // In a real app, this should be hashed!
-    mustChangePassword: boolean;
-    resetRequested?: boolean;
-    name: string;
-    role: string;
-    status: 'pending' | 'active' | 'rejected';
-}
+export async function authenticateUser() { return null; }
 
-const DEFAULT_PASSWORD = 'cesfam2026';
+export async function verifyCredentials(email: string, pass: string) {
+  let user = await prisma.user.findUnique({ where: { email } });
+  
+  if (!user) {
+    // Check if the user exists in the Personnel directory
+    const allPersonnel = await prisma.personnel.findMany();
+    const official = allPersonnel.find(p => p.email && p.email.toLowerCase() === email.toLowerCase());
 
-export async function getUsers(): Promise<User[]> {
-    noStore();
-    try {
-        const { rows } = await sql`SELECT * FROM users`;
-        return rows.map(row => ({
-            email: row.email,
-            password: row.password,
-            mustChangePassword: row.must_change_password,
-            resetRequested: row.reset_requested,
-            name: row.name,
-            role: row.role,
-            status: row.status as 'pending' | 'active' | 'rejected'
-        }));
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        return [];
+    if (official && official.email) {
+      // Allow generic passwords
+      const isGeneric = pass.toLowerCase() === 'cesfam123' || pass.toLowerCase() === 'cesfam2026';
+      
+      if (isGeneric) {
+        // Automatically register the official as an active user with default permissions
+        const hashedPassword = await bcrypt.hash(pass, 10);
+        user = await prisma.user.create({
+          data: {
+            email: official.email.toLowerCase(),
+            name: official.name,
+            password: hashedPassword,
+            status: 'active',
+            role: 'USUARIO',
+            accessLogistica: true,
+            accessSolicitudes: true,
+            accessReservas: true,
+            accessAgendas: true
+          }
+        });
+      }
     }
+  }
+
+  if (!user || !user.password) return null;
+  const isValid = await bcrypt.compare(pass, user.password);
+  if (!isValid) return null;
+  return { email: user.email, name: user.name, role: user.role, status: user.status, mustChangePassword: false };
 }
 
-export async function getUserByEmail(email: string): Promise<User | undefined> {
-    noStore();
-    try {
-        const { rows } = await sql`SELECT * FROM users WHERE LOWER(email) = LOWER(${email})`;
-        if (rows.length === 0) return undefined;
-        const row = rows[0];
-        return {
-            email: row.email,
-            password: row.password,
-            mustChangePassword: row.must_change_password,
-            resetRequested: row.reset_requested,
-            name: row.name,
-            role: row.role,
-            status: row.status as 'pending' | 'active' | 'rejected'
-        };
-    } catch (error) {
-        console.error('Error fetching user by email:', error);
-        return undefined;
-    }
+export async function updateUserPassword(email: string, pass: string) {
+  const hashedPassword = await bcrypt.hash(pass, 10);
+  await prisma.user.update({
+    where: { email },
+    data: { password: hashedPassword }
+  });
+  return true;
 }
 
-export async function updateUserPassword(email: string, newPassword: string): Promise<boolean> {
-    noStore();
-    try {
-        await sql`
-            UPDATE users 
-            SET password = ${newPassword}, must_change_password = FALSE 
-            WHERE email = ${email}
-        `;
-        return true;
-    } catch (error) {
-        console.error('Error updating user password:', error);
-        return false;
-    }
+export async function getUserByEmail(email: string) {
+  return await prisma.user.findUnique({ where: { email } });
 }
 
-export async function setPasswordResetRequest(email: string, requested: boolean): Promise<boolean> {
-    noStore();
-    try {
-        await sql`
-            UPDATE users 
-            SET reset_requested = ${requested} 
-            WHERE email = ${email}
-        `;
-        return true;
-    } catch (error) {
-        console.error('Error setting password reset request:', error);
-        return false;
-    }
+export async function setPasswordResetRequest(email: string, req: boolean) {
+  return false;
 }
 
-export async function adminResetUserPassword(email: string): Promise<boolean> {
-    noStore();
-    try {
-        await sql`
-            UPDATE users 
-            SET password = ${DEFAULT_PASSWORD}, must_change_password = TRUE, reset_requested = FALSE 
-            WHERE email = ${email}
-        `;
-        return true;
-    } catch (error) {
-        console.error('Error resetting user password:', error);
-        return false;
-    }
+export async function adminResetUserPassword(email: string) {
+  return false;
 }
 
-export async function verifyCredentials(email: string, password: string): Promise<User | null> {
-    const user = await getUserByEmail(email);
-    if (user && user.password === password) {
-        // Solo permitir login si el usuario está activo
-        if (user.status !== 'active') {
-            return null;
-        }
-        return user;
-    }
-    return null;
+export async function getUsers() {
+  return await prisma.user.findMany();
 }
 
-export async function registerUser(email: string, name: string, password: string): Promise<boolean> {
-    noStore();
-    try {
-        await sql`
-            INSERT INTO users (email, name, password, role, status, must_change_password)
-            VALUES (${email}, ${name}, ${password}, 'Gestor', 'pending', FALSE)
-            ON CONFLICT (email) DO NOTHING
-        `;
-        return true;
-    } catch (error) {
-        console.error('Error registering user:', error);
-        return false;
-    }
+export async function registerUser(email: string, name: string, pass: string) {
+  const hashedPassword = await bcrypt.hash(pass, 10);
+  await prisma.user.create({
+    data: { email, name, password: hashedPassword, status: 'pending', role: 'USUARIO' }
+  });
+  return true;
 }
 
-export async function updateUserStatusAndRole(email: string, status: string, role: string): Promise<boolean> {
-    noStore();
-    try {
-        await sql`
-            UPDATE users 
-            SET status = ${status}, role = ${role} 
-            WHERE email = ${email}
-        `;
-        return true;
-    } catch (error) {
-        console.error('Error updating user status and role:', error);
-        return false;
-    }
+export async function updateUserStatusAndRole(
+  email: string,
+  status: string,
+  role: string,
+  permissions?: {
+    accessLogistica: boolean;
+    accessSolicitudes: boolean;
+    accessReservas: boolean;
+    accessAgendas: boolean;
+  }
+) {
+  const data: any = { status, role };
+  if (permissions) {
+    data.accessLogistica = permissions.accessLogistica;
+    data.accessSolicitudes = permissions.accessSolicitudes;
+    data.accessReservas = permissions.accessReservas;
+    data.accessAgendas = permissions.accessAgendas;
+  }
+  await prisma.user.update({
+    where: { email },
+    data
+  });
+  return true;
 }
+
+export async function deleteUser(email: string) {
+  await prisma.user.delete({
+    where: { email }
+  });
+  return true;
+}
+

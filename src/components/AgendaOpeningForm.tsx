@@ -39,7 +39,18 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDays, setSelectedDays] = useState<Date[]>([]);
 
-    const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)));
+    const EXCLUDED_PROFESSIONS = [
+        'administrativo',
+        'auxiliar de servicio',
+        'conductor',
+        'coordinador',
+        'informatico',
+        'informático',
+        'tecnico administrativo nivel superior',
+        'técnico administrativo nivel superior'
+    ];
+    const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)))
+        .filter(p => !EXCLUDED_PROFESSIONS.includes(p.toLowerCase().trim()));
     const filteredNames = personnel.filter(p => p.profession === formData.profession);
 
     // Calendar Logic
@@ -257,7 +268,7 @@ export default function AgendaOpeningForm({ onSuccess, personnel }: { onSuccess:
                             className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition disabled:bg-gray-100 disabled:text-gray-400"
                         >
                             <option value="">Seleccione Nombre</option>
-                            {filteredNames.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                            {filteredNames.map(p => <option key={p.id || p.name} value={p.name}>{p.name}</option>)}
                         </select>
                     </div>
 

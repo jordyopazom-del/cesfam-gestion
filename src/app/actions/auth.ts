@@ -27,7 +27,7 @@ export async function login(prevState: any, formData: FormData) {
         return { error: 'Credenciales inválidas.' };
     }
 
-    await createSession(user.email, user.mustChangePassword);
+    await createSession(user.email!, user.mustChangePassword);
 
     if (user.mustChangePassword) {
         redirect('/change-password');
@@ -114,7 +114,11 @@ export async function fetchUsers() {
         name: u.name,
         role: u.role,
         status: u.status,
-        resetRequested: u.resetRequested
+        resetRequested: u.resetRequested,
+        accessLogistica: u.accessLogistica,
+        accessSolicitudes: u.accessSolicitudes,
+        accessReservas: u.accessReservas,
+        accessAgendas: u.accessAgendas
     }));
 }
 
@@ -153,8 +157,25 @@ export async function register(prevState: any, formData: FormData) {
     }
 }
 
-export async function adminUpdateUser(email: string, status: string, role: string) {
+export async function adminUpdateUser(
+    email: string,
+    status: string,
+    role: string,
+    permissions?: {
+        accessLogistica: boolean;
+        accessSolicitudes: boolean;
+        accessReservas: boolean;
+        accessAgendas: boolean;
+    }
+) {
     const { updateUserStatusAndRole } = await import('@/lib/auth-db');
-    const success = await updateUserStatusAndRole(email, status, role);
+    const success = await updateUserStatusAndRole(email, status, role, permissions);
     return success;
 }
+
+export async function adminDeleteUser(email: string) {
+    const { deleteUser } = await import('@/lib/auth-db');
+    const success = await deleteUser(email);
+    return success;
+}
+

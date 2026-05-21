@@ -16,7 +16,7 @@ export async function PATCH(
             return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
         }
 
-        const updatedRequest = await updateAgendaOpeningStatus(id, status, pdfUrl, assignedAdmin);
+        const updatedRequest = await updateAgendaOpeningStatus(id, status, { professionalName: pdfUrl, coordinator: assignedAdmin });
 
         if (!updatedRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });

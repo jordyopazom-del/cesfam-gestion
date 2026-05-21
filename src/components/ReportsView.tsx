@@ -405,7 +405,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                 >
                                     <option value="">Todos</option>
                                     {filteredProfessionals.map(p => (
-                                        <option key={p.name} value={p.name}>{p.name}</option>
+                                        <option key={p.id || p.name} value={p.name}>{p.name}</option>
                                     ))}
                                 </select>
                             </div>

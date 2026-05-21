@@ -1,50 +1,45 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { decrypt } from './lib/session';
+import { decrypt } from './lib/session-crypto';
 
-// 1. Specify protected and public routes
-const protectedRoutes = ['/', '/dashboard', '/calendar'];
-const publicRoutes = ['/login'];
+// 1. Rutas que requieren sesión activa
+const protectedRoutes = ['/', '/dashboard', '/calendar', '/logistica', '/reservas', '/solicitudes', '/sso'];
+const publicRoutes = ['/login', '/register', '/forgot-password'];
 
 export default async function middleware(req: NextRequest) {
-    // 2. Check if the current route is protected or public
     const path = req.nextUrl.pathname;
-    const isProtectedRoute = protectedRoutes.includes(path) || path.startsWith('/dashboard');
-    const isPublicRoute = publicRoutes.includes(path);
 
-    // 3. Decrypt the session from the cookie
+    const isProtectedRoute = protectedRoutes.some(r => path === r || path.startsWith(r + '/'));
+    const isPublicRoute = publicRoutes.some(r => path === r || path.startsWith(r + '/'));
+
+    // 2. Decrypt the session from the cookie
     const cookie = req.cookies.get('cesfam_session')?.value;
     const session = cookie ? await decrypt(cookie) : null;
 
-    // 4. Redirect to /login if the user is not authenticated
+    // 3. Si no está autenticado y quiere entrar a una ruta protegida → Login
     if (isProtectedRoute && !session?.email) {
         return NextResponse.redirect(new URL('/login', req.nextUrl));
     }
 
-    // 5. Redirect to /dashboard if the user is authenticated
-    if (
-        isPublicRoute &&
-        session?.email &&
-        !req.nextUrl.pathname.startsWith('/dashboard') &&
-        req.nextUrl.pathname !== '/' // Allow root if authenticated (will handle root redirect below)
-    ) {
+    // 4. Si ya está autenticado y quiere ir al login → Redirigir al home
+    if (isPublicRoute && session?.email && path !== '/forgot-password') {
         return NextResponse.redirect(new URL('/', req.nextUrl));
     }
 
-    // 6. Check for forced password change
-    if (session?.email && session?.mustChangePassword && req.nextUrl.pathname !== '/change-password') {
+    // 5. Forzar cambio de contraseña
+    if (session?.email && session?.mustChangePassword && path !== '/change-password') {
         return NextResponse.redirect(new URL('/change-password', req.nextUrl));
     }
 
-    // 7. Prevent access to change-password if not needed
-    if (session?.email && !session?.mustChangePassword && req.nextUrl.pathname === '/change-password') {
+    // 6. Evitar acceso a change-password si no es necesario
+    if (session?.email && !session?.mustChangePassword && path === '/change-password') {
         return NextResponse.redirect(new URL('/', req.nextUrl));
     }
 
     return NextResponse.next();
 }
 
-// Routes Middleware should not run on
+// No aplicar middleware en assets, imágenes ni APIs internas
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$|.*\\.ico$).*)'],
 };
