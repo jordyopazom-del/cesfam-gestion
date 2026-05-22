@@ -335,3 +335,6 @@ model DemandAuditLog {
   newValue        String?
   changedBy       String?
 }
+
+// Rebuild trigger for staging deployment
+
