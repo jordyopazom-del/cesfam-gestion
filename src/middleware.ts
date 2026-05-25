@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { decrypt } from './lib/session-crypto';
 
 // 1. Rutas que requieren sesión activa
-const protectedRoutes = ['/', '/dashboard', '/calendar', '/logistica', '/reservas', '/solicitudes', '/sso'];
+const protectedRoutes = ['/', '/dashboard', '/calendar', '/logistica', '/reservas', '/solicitudes', '/sso', '/change-password'];
 const publicRoutes = ['/login', '/register', '/forgot-password'];
 
 export default async function middleware(req: NextRequest) {
@@ -29,11 +29,6 @@ export default async function middleware(req: NextRequest) {
     // 5. Forzar cambio de contraseña
     if (session?.email && session?.mustChangePassword && path !== '/change-password') {
         return NextResponse.redirect(new URL('/change-password', req.nextUrl));
-    }
-
-    // 6. Evitar acceso a change-password si no es necesario
-    if (session?.email && !session?.mustChangePassword && path === '/change-password') {
-        return NextResponse.redirect(new URL('/', req.nextUrl));
     }
 
     return NextResponse.next();
