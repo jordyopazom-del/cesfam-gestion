@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import RequestForm from '@/components/RequestForm';
 import AgendaOpeningForm from '@/components/AgendaOpeningForm';
 import ManagementTable from '@/components/ManagementTable';
@@ -48,6 +49,7 @@ export default function HomeClient({
     accessAgendas = false,
     pendingUsersCount = 0
 }: HomeClientProps) {
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock' | 'stats' | 'calendar'>('dashboard');
     const canRequestAgendas = isAdmin || userRole === 'SOLICITANTE';
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
@@ -254,7 +256,7 @@ export default function HomeClient({
 
                         {accessReservas && (
                             <button
-                                onClick={() => { window.location.href = '/reservas'; }}
+                                onClick={() => { router.push('/reservas'); }}
                                 className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
                             >
                                 <Calendar size={16} />
@@ -263,7 +265,7 @@ export default function HomeClient({
                         )}
                         {accessLogistica && (
                             <button
-                                onClick={() => { window.location.href = '/logistica'; }}
+                                onClick={() => { router.push('/logistica'); }}
                                 className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
                             >
                                 <Truck size={16} />
@@ -347,7 +349,7 @@ export default function HomeClient({
                                             </div>
                                             <button
                                                 onClick={() => {
-                                                    window.location.href = '/sso/admin/carga';
+                                                    router.push('/sso/admin/carga');
                                                     setIsSsoDropdownOpen(false);
                                                 }}
                                                 className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -357,7 +359,7 @@ export default function HomeClient({
                                             </button>
                                             <button
                                                 onClick={() => {
-                                                    window.location.href = '/sso/admin/panel';
+                                                    router.push('/sso/admin/panel');
                                                     setIsSsoDropdownOpen(false);
                                                 }}
                                                 className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -485,7 +487,7 @@ export default function HomeClient({
 
                         <div className="w-px h-6 bg-gray-300 mx-1"></div>
                         <button
-                            onClick={() => window.location.href = '/change-password'}
+                            onClick={() => router.push('/change-password')}
                             className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all font-sans"
                             title="Cambiar mi contraseña"
                         >
@@ -639,7 +641,7 @@ export default function HomeClient({
                                         <div className="pt-6">
                                              {accessLogistica ? (
                                                   <button 
-                                                       onClick={() => { window.location.href = '/logistica'; }}
+                                                       onClick={() => { router.push('/logistica'); }}
                                                        className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
                                                   >
                                                        Entrar al Módulo
@@ -679,7 +681,7 @@ export default function HomeClient({
                                         <div className="pt-6">
                                              {accessReservas ? (
                                                   <button 
-                                                       onClick={() => { window.location.href = '/reservas'; }}
+                                                       onClick={() => { router.push('/reservas'); }}
                                                        className="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
                                                   >
                                                        Ver Calendario
@@ -712,7 +714,7 @@ export default function HomeClient({
                                         </div>
                                         <div className="pt-6">
                                              <button 
-                                                  onClick={() => { window.location.href = '/sso/dashboard'; }}
+                                                  onClick={() => { router.push('/sso/dashboard'); }}
                                                   className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
                                              >
                                                   Entrar al Módulo
@@ -765,7 +767,7 @@ export default function HomeClient({
                                                       <p className="text-xs font-semibold text-purple-700 mt-2">Revisión de solicitudes comunes y activos solicitados.</p>
                                                  </div>
                                                  <span 
-                                                      onClick={() => { window.location.href = '/reservas/admin'; }}
+                                                      onClick={() => { router.push('/reservas/admin'); }}
                                                       className="text-[10px] font-bold text-purple-600 hover:underline cursor-pointer"
                                                  >
                                                       Ver Solicitudes de Salas →
