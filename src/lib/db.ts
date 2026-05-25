@@ -151,7 +151,11 @@ export async function checkBlockingOverlap(
 export async function updateRequestStatus(id: string, status: string, additionalData: any = {}) {
     const dataToUpdate: any = { status };
     if (additionalData.assignedAdmin) dataToUpdate.assigned_admin = additionalData.assignedAdmin;
-    if (additionalData.agendaBlockedStatus) dataToUpdate.agenda_blocked_status = additionalData.agendaBlockedStatus;
+    if (additionalData.agendaBlockedStatus) {
+        dataToUpdate.agenda_blocked_status = additionalData.agendaBlockedStatus;
+    } else if (status === 'Realizado') {
+        dataToUpdate.agenda_blocked_status = 'Realizado';
+    }
     if (additionalData.processedAt) {
         dataToUpdate.processed_at = new Date(additionalData.processedAt);
     } else if (status === 'Realizado') {

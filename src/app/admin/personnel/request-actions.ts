@@ -22,7 +22,8 @@ export async function processUpdateAction(
                 payload.status,
                 {
                     assignedAdmin: payload.assignedAdmin,
-                    pdfUrl: payload.pdfUrl
+                    pdfUrl: payload.pdfUrl,
+                    agendaBlockedStatus: 'Realizado'
                 }
             );
         } else {
