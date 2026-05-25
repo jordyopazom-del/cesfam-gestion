@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/context/logistica/AuthContext';
 import UserMenu from './UserMenu';
 import Dashboard from './Dashboard';
@@ -168,13 +169,13 @@ export default function AppContent() {
         <header className="bg-white border-b border-gray-100 shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-4">
             {/* Botón volver al menú principal */}
-            <a
+            <Link
               href="/"
               className="flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 hover:bg-gray-100 px-3 py-1.5 rounded-lg transition-all"
             >
               <ArrowLeft size={16} />
               Menú Principal
-            </a>
+            </Link>
             <div className="w-px h-5 bg-gray-200" />
             <div>
               <h1 className="text-xl font-extrabold text-gray-900 tracking-tight leading-none">

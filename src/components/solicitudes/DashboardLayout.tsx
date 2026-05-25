@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import {
     LayoutDashboard,
@@ -49,13 +50,13 @@ export default function DashboardLayout({ children, balances = [], activeView = 
         <div className={styles.layout}>
             <aside className={`glass-panel ${styles.sidebar}`}>
                 <div className="flex flex-col gap-2 mb-4">
-                    <a
+                    <Link
                         href="/"
                         className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-blue-600 transition-colors py-1 px-2 rounded-lg hover:bg-blue-50/50 w-fit"
                     >
                         <ArrowLeft size={14} />
                         <span>Menú Principal</span>
-                    </a>
+                    </Link>
                     <div className={styles.logo}>
                         <FileText />
                         <span>APS Solicitudes</span>
