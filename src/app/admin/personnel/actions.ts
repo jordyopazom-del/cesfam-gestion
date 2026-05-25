@@ -79,9 +79,17 @@ export async function getPersonnel(): Promise<Official[]> {
         
         // Auto-sync to User: Ensure all master officials with emails exist as Users
         try {
+            const allUsers = await prisma.user.findMany({
+                select: { email: true }
+            });
+            const existingEmails = new Set(allUsers.map(u => u.email?.toLowerCase().trim()).filter(Boolean));
+
             for (const p of personnel) {
                 if (p.email) {
-                    await syncPersonnelToUser(p.name, p.email);
+                    const cleanEmail = p.email.toLowerCase().trim();
+                    if (!existingEmails.has(cleanEmail)) {
+                        await syncPersonnelToUser(p.name, p.email);
+                    }
                 }
             }
         } catch (syncUserError) {
