@@ -37,6 +37,26 @@ export async function processUpdateAction(
             throw new Error('Request not found');
         }
 
+        // Procesar automáticamente reportes RAS para reprogramación SOME (Gestión de Demanda)
+        if (type === 'Bloqueo' && payload.status === 'Realizado' && payload.pdfUrl && payload.pdfUrl.length > 0) {
+            try {
+                const { processRASPdfBuffer } = await import('@/lib/ras-parser');
+                for (const url of payload.pdfUrl) {
+                    if (url.startsWith('data:application/pdf;base64,')) {
+                        const base64Data = url.substring('data:application/pdf;base64,'.length);
+                        const buffer = Buffer.from(base64Data, 'base64');
+                        const gestor = payload.assignedAdmin || 'Admin Agendas';
+                        console.log(`[RAS Auto-Import] Procesando PDF en base64 de bloqueo, gestor: ${gestor}`);
+                        const res = await processRASPdfBuffer(buffer, gestor);
+                        console.log(`[RAS Auto-Import] Resultado de procesamiento:`, res);
+                    }
+                }
+                revalidatePath('/sso/reprogramacion');
+            } catch (rasError) {
+                console.error('[RAS Auto-Import] Error parseando PDF automáticamente:', rasError);
+            }
+        }
+
         // Email Notification Logic
         if (payload.status === 'Realizado') {
             try {
