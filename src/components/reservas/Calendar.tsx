@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, startOfWeek, endOfWeek, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -39,6 +39,24 @@ export function Calendar({ reservations, onDateSelect }: CalendarProps) {
     setSelectedDate(day);
     if (onDateSelect) onDateSelect(day);
   };
+
+  // Group reservations by date string once to achieve O(1) lookup inside the grid loop
+  const reservationsByDate = useMemo(() => {
+    const group = new Map<string, Reservation[]>();
+    reservations.forEach(r => {
+      try {
+        const parsedDate = new Date(r.date);
+        const dateStr = format(parsedDate, "yyyy-MM-dd");
+        if (!group.has(dateStr)) {
+          group.set(dateStr, []);
+        }
+        group.get(dateStr)!.push(r);
+      } catch (e) {
+        console.error("Error parsing reservation date:", e);
+      }
+    });
+    return group;
+  }, [reservations]);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 overflow-hidden">
@@ -81,8 +99,9 @@ export function Calendar({ reservations, onDateSelect }: CalendarProps) {
           const isCurrentMonth = isSameMonth(day, monthStart);
           const isTodayDate = isToday(day);
           
-          // Check for reservations on this day
-          const dayReservations = reservations.filter(r => isSameDay(new Date(r.date), day));
+          // Check for reservations on this day using optimized O(1) map lookup
+          const dateStr = format(day, "yyyy-MM-dd");
+          const dayReservations = reservationsByDate.get(dateStr) || [];
           const hasApproved = dayReservations.some(r => r.status === "APPROVED");
           const hasPending = dayReservations.some(r => r.status === "PENDING");
 

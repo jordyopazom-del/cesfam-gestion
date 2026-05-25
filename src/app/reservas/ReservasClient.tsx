@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Calendar } from "@/components/reservas/Calendar";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
@@ -108,6 +108,15 @@ export function ReservasClient({ rooms, assets, initialReservations, userId, can
     }
   }, [selectedRoom, selectedDate, rooms]);
 
+  // Pre-calculate reservation timestamps to avoid creating Date objects repeatedly in loops
+  const parsedReservations = useMemo(() => {
+    return initialReservations.map((r: any) => ({
+      ...r,
+      startTimeMs: new Date(r.startTime).getTime(),
+      endTimeMs: new Date(r.endTime).getTime()
+    }));
+  }, [initialReservations]);
+
   useEffect(() => {
     if (!selectedDate || !startTime || !endTime) {
       setBusyAssetIds([]);
@@ -127,13 +136,11 @@ export function ReservasClient({ rooms, assets, initialReservations, userId, can
 
     const busy = new Set<string>();
 
-    initialReservations.forEach((r: any) => {
+    parsedReservations.forEach((r: any) => {
       if (r.status === 'REJECTED') return;
-      const rStart = new Date(r.startTime).getTime();
-      const rEnd = new Date(r.endTime).getTime();
 
-      // Check overlap
-      if (rStart < endMs && rEnd > startMs) {
+      // Check overlap using pre-calculated numerical timestamps (extremely fast)
+      if (r.startTimeMs < endMs && r.endTimeMs > startMs) {
         if (r.assetIds) {
           r.assetIds.forEach((id: string) => busy.add(id));
         }
@@ -141,7 +148,7 @@ export function ReservasClient({ rooms, assets, initialReservations, userId, can
     });
 
     setBusyAssetIds(Array.from(busy));
-  }, [selectedDate, startTime, endTime, initialReservations]);
+  }, [selectedDate, startTime, endTime, parsedReservations]);
 
   const filteredReservations = initialReservations.filter((r: any) => r.roomId === selectedRoom);
 
