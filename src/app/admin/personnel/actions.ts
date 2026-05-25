@@ -9,6 +9,36 @@ import { formatToTitleCase } from '@/lib/utils';
 const SSO_SECRET_KEY = process.env.SSO_SECRET_KEY || 'someagendas';
 const ssoKey = new TextEncoder().encode(SSO_SECRET_KEY);
 
+async function syncPersonnelToUser(name: string, email: string) {
+    if (!email) return;
+    const cleanEmail = email.trim().toLowerCase();
+    
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({
+        where: { email: cleanEmail }
+    });
+    
+    if (!existingUser) {
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash('cesfam2026', 10);
+        
+        await prisma.user.create({
+            data: {
+                email: cleanEmail,
+                name: name.trim(),
+                password: hashedPassword,
+                status: 'active',
+                role: 'USUARIO',
+                accessLogistica: true,
+                accessSolicitudes: true,
+                accessReservas: true,
+                accessAgendas: true
+            }
+        });
+        console.log(`Synced personnel ${name} as User with email ${cleanEmail}`);
+    }
+}
+
 export interface Official {
     id?: number;
     name: string;
@@ -45,6 +75,17 @@ export async function getPersonnel(): Promise<Official[]> {
             }
         } catch (syncError) {
             console.error('Error auto-syncing Personnel to Logistica:', syncError);
+        }
+        
+        // Auto-sync to User: Ensure all master officials with emails exist as Users
+        try {
+            for (const p of personnel) {
+                if (p.email) {
+                    await syncPersonnelToUser(p.name, p.email);
+                }
+            }
+        } catch (syncUserError) {
+            console.error('Error auto-syncing Personnel to User:', syncUserError);
         }
         
         return personnel.map(row => ({
@@ -92,6 +133,12 @@ export async function addOfficial(official: Official): Promise<void> {
                 }
             });
         }
+        
+        // 3. Sync to User (Gestión de Usuarios / Solicitantes)
+        if (cleanEmail) {
+            await syncPersonnelToUser(fullName, cleanEmail);
+        }
+
         revalidatePath('/admin/personnel');
     } catch (error) {
         console.error('Error adding official:', error);
@@ -148,6 +195,12 @@ export async function updateOfficial(id: number, updatedOfficial: Official): Pro
                 });
             }
         }
+        
+        // 4. Sync to User (Gestión de Usuarios / Solicitantes)
+        if (cleanEmail) {
+            await syncPersonnelToUser(fullName, cleanEmail);
+        }
+
         revalidatePath('/admin/personnel');
     } catch (error) {
         console.error('Error updating official:', error);
@@ -321,6 +374,11 @@ export async function importCsvAction(csvText: string, separator: string = ';'):
                         disponibilidad: true
                     }
                 });
+            }
+            
+            // Auto-create User account
+            if (cleanEmail) {
+                await syncPersonnelToUser(fullName, cleanEmail);
             }
             
             count++;
