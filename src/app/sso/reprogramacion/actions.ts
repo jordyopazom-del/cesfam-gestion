@@ -3,8 +3,6 @@
 import { prisma } from "@/lib/prisma";
 import { getSSOUser } from "@/lib/sso-session";
 import { revalidatePath } from "next/cache";
-import * as pdfParseModule from "pdf-parse";
-const pdfParse = (pdfParseModule as any).default || pdfParseModule;
 
 function formatDate(dtStr: string): string | null {
   if (!dtStr) return null;
@@ -28,9 +26,12 @@ export async function uploadRASPdf(formData: FormData) {
     const buffer = Buffer.from(await file.arrayBuffer());
     let textFull = "";
     try {
+      const pdfParseModule = await import("pdf-parse");
+      const pdfParse = (pdfParseModule as any).default || pdfParseModule;
       const data = await pdfParse(buffer);
       textFull = data.text;
     } catch (e: any) {
+
       return { success: false, error: "Error al leer el PDF: " + e.message };
     }
 
