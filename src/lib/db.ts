@@ -234,8 +234,12 @@ export async function updateAgendaOpeningStatus(id: string, status: string, addi
 export async function getPdfById(id: string) {
     const req = await prisma.agendaBlockRequest.findUnique({ where: { id } });
     if (req && req.pdf_urls) {
-        const urls = JSON.parse(req.pdf_urls);
-        return urls[0] || null;
+        try {
+            const urls = JSON.parse(req.pdf_urls);
+            return Array.isArray(urls) ? urls : [urls];
+        } catch {
+            return [req.pdf_urls];
+        }
     }
     return null;
 }
