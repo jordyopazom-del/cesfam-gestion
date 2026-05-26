@@ -293,7 +293,7 @@ export default function HomeClient({
                                     </div>
                                     <button
                                         onClick={() => {
-                                            window.location.href = '/sso/dashboard';
+                                            router.push('/sso/dashboard');
                                             setIsSsoDropdownOpen(false);
                                         }}
                                         className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -303,7 +303,7 @@ export default function HomeClient({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            window.location.href = '/sso/rechazos';
+                                            router.push('/sso/rechazos');
                                             setIsSsoDropdownOpen(false);
                                         }}
                                         className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -313,7 +313,7 @@ export default function HomeClient({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            window.location.href = '/sso/derivaciones';
+                                            router.push('/sso/derivaciones');
                                             setIsSsoDropdownOpen(false);
                                         }}
                                         className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -323,7 +323,7 @@ export default function HomeClient({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            window.location.href = '/sso/reprogramacion';
+                                            router.push('/sso/reprogramacion');
                                             setIsSsoDropdownOpen(false);
                                         }}
                                         className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
@@ -333,7 +333,7 @@ export default function HomeClient({
                                     </button>
                                     <button
                                         onClick={() => {
-                                            window.location.href = '/sso/horas';
+                                            router.push('/sso/horas');
                                             setIsSsoDropdownOpen(false);
                                         }}
                                         className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"

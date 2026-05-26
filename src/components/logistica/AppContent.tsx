@@ -4,16 +4,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/logistica/AuthContext';
 import UserMenu from './UserMenu';
-import Dashboard from './Dashboard';
-import RondasManagement from './RondasManagement';
-import PostasManagement from './PostasManagement';
-import VehiculosManagement from './VehiculosManagement';
-import PersonalManagement from './PersonalManagement';
 import AuthGuard from './AuthGuard';
-import SolicitudesManagement from './SolicitudesManagement';
-import SolicitudesReport from './SolicitudesReport';
-import PacienteManagement from './PacienteManagement';
 import type { Ronda, SolicitudSalida } from '@/data/logistica/types';
+import dynamic from 'next/dynamic';
+
+const Dashboard = dynamic(() => import('./Dashboard'), { ssr: false });
+const RondasManagement = dynamic(() => import('./RondasManagement'), { ssr: false });
+const PostasManagement = dynamic(() => import('./PostasManagement'), { ssr: false });
+const VehiculosManagement = dynamic(() => import('./VehiculosManagement'), { ssr: false });
+const PersonalManagement = dynamic(() => import('./PersonalManagement'), { ssr: false });
+const SolicitudesManagement = dynamic(() => import('./SolicitudesManagement'), { ssr: false });
+const SolicitudesReport = dynamic(() => import('./SolicitudesReport'), { ssr: false });
+const PacienteManagement = dynamic(() => import('./PacienteManagement'), { ssr: false });
 import {
   LayoutDashboard, TrendingUp, FileText, ClipboardList,
   MapPin, Truck, Users, UserSquare, ChevronDown, ArrowLeft, LogOut
