@@ -41,33 +41,34 @@ export async function GET(req: Request) {
         const startOfMonth = new Date(currentYear, currentMonth, 1);
         const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59);
 
-        const allPendingRequests = await prisma.solicitudAdministrativa.findMany({
-            where: { status: 'PENDING' },
-            include: { user: true },
-            orderBy: { createdAt: 'desc' }
-        });
-
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-        const todayAbsencesCount = await prisma.solicitudAdministrativa.count({
-            where: {
-                status: 'APPROVED',
-                startDate: { lte: endOfDay },
-                endDate: { gte: startOfDay }
-            }
-        });
 
-        const approvedRequests = await prisma.solicitudAdministrativa.findMany({
-            where: {
-                status: 'APPROVED',
-                OR: [
-                    { startDate: { gte: startOfMonth, lte: endOfMonth } },
-                    { endDate: { gte: startOfMonth, lte: endOfMonth } },
-                    { startDate: { lte: startOfMonth }, endDate: { gte: endOfMonth } }
-                ]
-            },
-            include: { user: true }
-        });
+        const [allPendingRequests, todayAbsencesCount, approvedRequests] = await Promise.all([
+            prisma.solicitudAdministrativa.findMany({
+                where: { status: 'PENDING' },
+                include: { user: true },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.solicitudAdministrativa.count({
+                where: {
+                    status: 'APPROVED',
+                    startDate: { lte: endOfDay },
+                    endDate: { gte: startOfDay }
+                }
+            }),
+            prisma.solicitudAdministrativa.findMany({
+                where: {
+                    status: 'APPROVED',
+                    OR: [
+                        { startDate: { gte: startOfMonth, lte: endOfMonth } },
+                        { endDate: { gte: startOfMonth, lte: endOfMonth } },
+                        { startDate: { lte: startOfMonth }, endDate: { gte: endOfMonth } }
+                    ]
+                },
+                include: { user: true }
+            })
+        ]);
 
         const monthAbsences: Record<number, string[]> = {};
         approvedRequests.forEach(req => {

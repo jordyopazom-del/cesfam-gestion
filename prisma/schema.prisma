@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -139,6 +139,9 @@ model SolicitudAdministrativa {
   user           User     @relation(fields: [userId], references: [id])
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status, startDate, endDate])
 }
 
 model Balance {
@@ -186,6 +189,10 @@ model Reservation {
   assets    ReservationAsset[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([roomId])
+  @@index([startTime])
 }
 
 model ReservationAsset {
@@ -307,6 +314,9 @@ model BlockedPatient {
   solution       String?
   updatedBy      String?
   updatedAt      DateTime     @default(now()) @updatedAt
+
+  @@index([blockId])
+  @@index([rut])
 }
 
 // ==========================================
@@ -334,6 +344,8 @@ model DemandAuditLog {
   timestamp       DateTime      @default(now())
   newValue        String?
   changedBy       String?
+
+  @@index([demandRequestId])
 }
 
 // Rebuild trigger for staging deployment

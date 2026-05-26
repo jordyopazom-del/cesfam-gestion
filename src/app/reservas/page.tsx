@@ -21,25 +21,26 @@ export default async function ReservasPage() {
 
   const isAdmin = user.role === "ADMIN" || user.role === "Admin" || session.email === "kkoandres@gmail.com";
 
-  // Fetch initial data
-  const rooms = await prisma.room.findMany({ include: { schedules: true }});
-  const assets = await prisma.asset.findMany();
-  
   const today = new Date();
   today.setHours(0,0,0,0);
-  
-  const reservations = await prisma.reservation.findMany({
-    where: {
-      startTime: {
-        gte: today
+
+  // Fetch initial data in parallel
+  const [rooms, assets, reservations] = await Promise.all([
+    prisma.room.findMany({ include: { schedules: true } }),
+    prisma.asset.findMany(),
+    prisma.reservation.findMany({
+      where: {
+        startTime: {
+          gte: today
+        }
+      },
+      include: {
+        user: { select: { name: true, email: true } },
+        room: { select: { name: true } },
+        assets: { include: { asset: true } }
       }
-    },
-    include: {
-      user: { select: { name: true, email: true } },
-      room: { select: { name: true } },
-      assets: { include: { asset: true } }
-    }
-  });
+    })
+  ]);
 
   // Serialize dates for Client Component
   const serializedReservations = reservations.map(r => ({
