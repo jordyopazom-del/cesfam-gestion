@@ -29,7 +29,7 @@
     "next": "15.1.9",
     "next-auth": "^4.24.14",
     "nodemailer": "^8.0.4",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "^1.1.1",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-hot-toast": "^2.6.0",

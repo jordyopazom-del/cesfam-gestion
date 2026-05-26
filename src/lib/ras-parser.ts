@@ -1,12 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
-if (typeof globalThis.DOMMatrix === "undefined") {
-  (globalThis as any).DOMMatrix = class DOMMatrix {
-    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
-    constructor() {}
-  };
-}
-
 function formatDate(dtStr: string): string | null {
   if (!dtStr) return null;
   const match = dtStr.match(/(\d{2})[\/\-](\d{2})[\/\-](\d{4})(?:.*?(\d{2}):(\d{2}))?/);
@@ -21,36 +14,33 @@ export async function processRASPdfBuffer(buffer: Buffer, uploadedBy: string) {
   try {
     let textFull = "";
     try {
-      const pdfParseModule = await import("pdf-parse");
-      const { PDFParse } = pdfParseModule;
-      const parser = new PDFParse({ data: buffer });
-      const data = await parser.getText();
+      const pdf = (await import("pdf-parse")).default;
+      const data = await pdf(buffer);
       textFull = data.text;
-      await parser.destroy();
     } catch (e: any) {
       console.error("Error inside processRASPdfBuffer dynamic pdf-parse import:", e);
       return { success: false, error: "Error al leer el PDF: " + e.message };
     }
 
-    const profMatch = textFull.match(/Nombre Profesional:\s*(.*?)\n/);
+    const profMatch = textFull.match(/Nombre Profesional:\s*(.*?)\r?\n/);
     const professionalName = profMatch ? profMatch[1].trim() : "Desconocido";
     const rutMatch = textFull.match(/Rut:\s*([\d\.\-Kk]+)/);
     const profRut = rutMatch ? rutMatch[1].trim() : "";
-    const reasonMatch = textFull.match(/Motivo Bloqueo:\s*(.*?)\n/);
+    const reasonMatch = textFull.match(/Motivo Bloqueo:\s*(.*?)\r?\n/);
     const reason = reasonMatch ? reasonMatch[1].trim() : "Motivo No Especificado";
     const startMatch = textFull.match(/Fecha Inicio:\s*([\d\/\s:]+)/);
     const startDate = startMatch ? startMatch[1].trim() : "";
     const startDateDb = formatDate(startDate) || startDate;
 
-    const blocks = textFull.split(/Tipo Atenci[oó]n\s/i);
+    const blocks = textFull.split(/Tipo Atenci[oó]n\s*/i);
     const patients = [];
 
     for (let i = 1; i < blocks.length; i++) {
       const block = "Tipo Atención " + blocks[i];
       const rutPacMatch = block.match(/Rut:\s*([\d\.\-Kk]+)/i);
-      const nombrePacMatch = block.match(/Nombre Paciente:\s*(.*?)(?:\n|Fono)/i);
+      const nombrePacMatch = block.match(/Nombre Paciente:\s*(.*?)(?:\r?\n|Fono)/i);
       const tipoAtenMatch = block.match(/Tipo Atenci[oó]n\s*(.*?)\s*Fecha/i);
-      const fechaAtenMatch = block.match(/Fecha Atenci[oó]n\s*(.*?)(?:\n|Hrs|Comuna)/i);
+      const fechaAtenMatch = block.match(/Fecha Atenci[oó]n\s*(.*?)(?:\r?\n|Hrs|Comuna)/i);
       const fonoMovMatch = block.match(/Fono M[oó]vil.*?([\d+]+)/i);
       const fonoCasaMatch = block.match(/Fono Casa.*?([\d+]+)/i);
       const fonoContMatch = block.match(/Fono Contacto.*?([\d+]+)/i);
@@ -102,3 +92,4 @@ export async function processRASPdfBuffer(buffer: Buffer, uploadedBy: string) {
     return { success: false, error: err.message };
   }
 }
+
