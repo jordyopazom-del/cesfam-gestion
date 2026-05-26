@@ -93,8 +93,8 @@ function mapAgendaOpening(req: any): AgendaOpeningRequest {
         selectedDays,
         status: req.status,
         createdAt: req.created_at,
-        requestType: 'agenda_opening',
-        categoryType: 'agenda_opening'
+        requestType: 'Apertura',
+        categoryType: 'Apertura'
     };
 }
 
