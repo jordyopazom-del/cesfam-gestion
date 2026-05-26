@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb'
     }
   },
+  serverExternalPackages: ["pdf-parse", "pdfjs-dist", "@napi-rs/canvas"],
   eslint: {
     ignoreDuringBuilds: true
   }
