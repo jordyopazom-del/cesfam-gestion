@@ -99,12 +99,15 @@ export async function processUpdateAction(
 
                 if (recipients.length > 0) {
                     const html = generateRequestEmailHtml(updatedRequest as any, type);
-                    await sendEmail({
+                    // Dispatched asynchronously in the background so the user doesn't wait for SMTP network response
+                    sendEmail({
                         to: Array.from(new Set(recipients)),
                         subject: `Gestión Finalizada: ${type} - ${profName}`,
                         html,
                         fromName: adminName,
                         replyTo: adminEmail
+                    }).catch(emailError => {
+                        console.error('Error enviando notificación por correo en segundo plano:', emailError);
                     });
                 }
             } catch (emailError) {

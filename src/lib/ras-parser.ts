@@ -74,16 +74,45 @@ export async function processRASPdfBuffer(buffer: Buffer, uploadedBy: string) {
     let addedCount = 0;
     let ignoredCount = 0;
 
-    for (const p of patients) {
-      const existing = await prisma.blockedPatient.findFirst({
-        where: { blockId: agendaBlock.id, rut: p.rut, attentionDate: p.attentionDate },
+    if (patients.length > 0) {
+      // 1. Fetch all existing patients for this block in a single query using 'in'
+      const existing = await prisma.blockedPatient.findMany({
+        where: {
+          blockId: agendaBlock.id,
+          rut: { in: patients.map(p => p.rut) }
+        }
       });
-      if (existing) { ignoredCount++; continue; }
 
-      await prisma.blockedPatient.create({
-        data: { blockId: agendaBlock.id, rut: p.rut, fullName: p.fullName, attentionType: p.attentionType, attentionDate: p.attentionDate, contactPhones: p.contactPhones },
-      });
-      addedCount++;
+      // Create a set of existing identifiers (rut + attentionDate) to check duplicates in memory
+      const existingSet = new Set(
+        existing.map(e => `${e.rut}_${e.attentionDate || ''}`)
+      );
+
+      const newPatientsData = [];
+
+      for (const p of patients) {
+        const key = `${p.rut}_${p.attentionDate || ''}`;
+        if (existingSet.has(key)) {
+          ignoredCount++;
+        } else {
+          newPatientsData.push({
+            blockId: agendaBlock.id,
+            rut: p.rut,
+            fullName: p.fullName,
+            attentionType: p.attentionType,
+            attentionDate: p.attentionDate,
+            contactPhones: p.contactPhones
+          });
+          addedCount++;
+        }
+      }
+
+      // 2. Perform a single batch insert for all new patients
+      if (newPatientsData.length > 0) {
+        await prisma.blockedPatient.createMany({
+          data: newPatientsData
+        });
+      }
     }
 
     return { success: true, professionalName, patientCount: patients.length, addedCount, ignoredCount };
