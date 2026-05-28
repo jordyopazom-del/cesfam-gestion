@@ -80,7 +80,7 @@ ${docLinksText}
 Saludos cordiales.`;
     
     const uniqueRecipients = Array.from(new Set(recipients)).filter(Boolean);
-    const mailtoLink = `https://mail.google.com/mail/u/calvarado@munifutrono.cl/?view=cm&fs=1&to=${uniqueRecipients.join(',')}&su=${subject}&body=${encodeURIComponent(bodyText)}`;
+    const mailtoLink = `https://mail.google.com/mail/?view=cm&fs=1&to=${uniqueRecipients.join(',')}&su=${subject}&body=${encodeURIComponent(bodyText)}`;
     
     return mailtoLink;
 };

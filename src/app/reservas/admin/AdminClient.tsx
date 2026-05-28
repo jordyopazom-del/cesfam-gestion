@@ -57,7 +57,7 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
           ];
           
           const body = encodeURIComponent(bodyLines.join("\n"));
-          window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, "_blank");
+          window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`, "_blank");
         }
         
         setReservations(prev => prev.filter(r => r.id !== id));
