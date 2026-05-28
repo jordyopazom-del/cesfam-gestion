@@ -69,7 +69,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       await sendEmail({
         to: [reservation.user.email],
         subject: `Reserva Aprobada: ${reservation.room.name}`,
-        html: emailHtml
+        html: emailHtml,
+        fromName: user.name || undefined,
+        replyTo: user.email || undefined
       });
     }
 
