@@ -57,63 +57,7 @@ export async function processUpdateAction(
             }
         }
 
-        // Email Notification Logic
-        if (payload.status === 'Realizado') {
-            try {
-                const personnel = await getPersonnel();
-                const recipients = ['gestiondemandafutrono@munifutrono.cl'];
-
-                if (updatedRequest.submitterEmail) {
-                    recipients.push(updatedRequest.submitterEmail);
-                } else if ((updatedRequest as any).coordinator) {
-                    const fallbackMap: Record<string, string> = {
-                        "Directora": "direccioncesfam@munifutrono.cl",
-                        "Coordinadora Técnica": "coordinaciontecnica@munifutrono.cl",
-                        "Coordinador Rural Cordillera": "coordinacionsaludrural@munifutrono.cl",
-                        "Coordinador Rural Valle": "coordinacionsaludrural@munifutrono.cl",
-                        "Coordinador Sector 1": "coordinacions1@munifutrono.cl",
-                        "Coordinador Sector 2": "coordinacions2@munifutrono.cl",
-                        "Coordinador Convenios": "convenioscesfam@munifutrono.cl",
-                        "Coordinador Some": "some.cesfam@munifutrono.cl",
-                        "Coordinador Gore": "proyectogoread@munifutrono.cl",
-                        "Encargado Agendas": "kkoandres@gmail.com",
-                    };
-                    const mappedEmail = fallbackMap[(updatedRequest as any).coordinator];
-                    if (mappedEmail) recipients.push(mappedEmail);
-                }
-
-                const profName = (updatedRequest as any).professionalName;
-                const professional = personnel.find(p => p.name.toLowerCase() === profName?.toLowerCase());
-                if (professional?.email) recipients.push(professional.email);
-
-                let adminName = undefined;
-                let adminEmail = undefined;
-                if (updatedRequest.assignedAdmin && updatedRequest.assignedAdmin !== 'N/A') {
-                    const admin = personnel.find(p => p.name.toLowerCase() === updatedRequest.assignedAdmin!.toLowerCase());
-                    if (admin?.email) {
-                        recipients.push(admin.email);
-                        adminName = admin.name;
-                        adminEmail = admin.email;
-                    }
-                }
-
-                if (recipients.length > 0) {
-                    const html = generateRequestEmailHtml(updatedRequest as any, type);
-                    // Dispatched asynchronously in the background so the user doesn't wait for SMTP network response
-                    sendEmail({
-                        to: Array.from(new Set(recipients)),
-                        subject: `Gestión Finalizada: ${type} - ${profName}`,
-                        html,
-                        fromName: adminName,
-                        replyTo: adminEmail
-                    }).catch(emailError => {
-                        console.error('Error enviando notificación por correo en segundo plano:', emailError);
-                    });
-                }
-            } catch (emailError) {
-                console.error('Error al enviar notificación:', emailError);
-            }
-        }
+        // Server-side email notification removed in favor of client-side mailto popup
 
         revalidatePath('/admin/personnel');
         return updatedRequest;

@@ -41,41 +41,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       }
     });
 
-    if (status === "APPROVED" && reservation.user.email) {
-      const emailHtml = `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-            <div style="background-color: #2563eb; color: white; padding: 20px; text-align: center;">
-                <h1 style="margin: 0; font-size: 20px;">Reserva de Sala Aprobada</h1>
-            </div>
-            <div style="padding: 20px; color: #374151; line-height: 1.6;">
-                <p>Estimado/a ${reservation.user.name || "Usuario"},</p>
-                <p>Nos complace informarle que su solicitud de reserva ha sido <strong>APROBADA</strong>.</p>
-                
-                <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 5px 0;"><strong>Sala:</strong> ${reservation.room.name}</p>
-                    <p style="margin: 5px 0;"><strong>Fecha:</strong> ${format(reservation.startTime, "dd/MM/yyyy")}</p>
-                    <p style="margin: 5px 0;"><strong>Horario:</strong> ${format(reservation.startTime, "HH:mm")} a ${format(reservation.endTime, "HH:mm")}</p>
-                    <p style="margin: 5px 0;"><strong>Motivo:</strong> ${reservation.reason || "-"}</p>
-                    <p style="margin: 5px 0;"><strong>Activos Adicionales:</strong> ${reservation.assets.map((a: any) => a.asset.name).join(", ") || "Ninguno"}</p>
-                </div>
-
-                <p style="font-size: 14px; color: #6b7280; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px;">
-                    Este es un correo automático del Sistema CESFAM Gestión. Por favor no responder.
-                </p>
-            </div>
-        </div>
-      `;
-
-      await sendEmail({
-        to: [reservation.user.email],
-        subject: `Reserva Aprobada: ${reservation.room.name}`,
-        html: emailHtml,
-        fromName: user.name || undefined,
-        replyTo: user.email || undefined
-      });
-    }
-
-    return NextResponse.json({ message: "Solicitud procesada" }, { status: 200 });
+    return NextResponse.json({ message: "Solicitud procesada", reservation }, { status: 200 });
   } catch (error) {
     console.error("Error processing reservation", error);
     return NextResponse.json({ message: "Error interno del servidor" }, { status: 500 });

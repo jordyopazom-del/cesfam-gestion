@@ -22,6 +22,44 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
       });
 
       if (res.ok) {
+        const data = await res.json();
+        const reservation = data.reservation;
+        
+        if (action === "APPROVED" && reservation) {
+          const startTime = new Date(reservation.startTime);
+          const endTime = new Date(reservation.endTime);
+          
+          const formattedDate = format(startTime, "dd-MM-yyyy");
+          const formattedStartTime = format(startTime, "HH:mm");
+          const formattedEndTime = format(endTime, "HH:mm");
+          
+          const recipient = reservation.user.email || "";
+          const subject = encodeURIComponent(`Reserva Aprobada: ${reservation.room.name}`);
+          
+          const assetsList = reservation.assets && reservation.assets.length > 0
+            ? reservation.assets.map((a: any) => a.asset.name).join(", ")
+            : "Ninguno";
+          
+          const bodyLines = [
+            `Estimado/a,`,
+            ``,
+            `Le informamos que la solicitud de Reserva de Sala ha sido procesada y finalizada con éxito.`,
+            ``,
+            `📋 Detalles de la Gestión:`,
+            `- Sala: ${reservation.room.name}`,
+            `- Solicitante: ${reservation.user.name || "Usuario"}`,
+            `- Fechas Reservadas: ${formattedDate}`,
+            `- Horario: ${formattedStartTime} - ${formattedEndTime}`,
+            `- Motivo: ${reservation.reason || "Sin motivo"}`,
+            `- Activos Adicionales: ${assetsList}`,
+            ``,
+            `Saludos cordiales.`
+          ];
+          
+          const body = encodeURIComponent(bodyLines.join("\n"));
+          window.open(`mailto:${recipient}?subject=${subject}&body=${body}`, "_blank");
+        }
+        
         setReservations(prev => prev.filter(r => r.id !== id));
       } else {
         alert("Error procesando solicitud.");
