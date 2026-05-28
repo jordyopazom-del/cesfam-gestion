@@ -157,7 +157,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                         onBlur={(e) => {
                           if (e.target.value !== (p.Solucion || "")) onUpdatePatient(p.id, p.Estado, e.target.value);
                         }}
-                        className="w-full px-2 py-1 text-sm border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:ring-0 bg-transparent"
+                        className="w-full px-2 py-1 text-sm text-slate-800 font-semibold border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:ring-0 bg-transparent"
                         placeholder="Añadir nota..."
                       />
                     </td>
