@@ -120,6 +120,8 @@ model AgendaOpening {
   end_time          String
   selected_days     String   // JSON string
   status            String
+  request_type      String   @default("Apertura")
+  category_type     String?
   created_at        DateTime @default(now())
 }
 

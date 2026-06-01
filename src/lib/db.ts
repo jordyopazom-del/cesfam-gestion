@@ -93,8 +93,8 @@ function mapAgendaOpening(req: any): AgendaOpeningRequest {
         selectedDays,
         status: req.status,
         createdAt: req.created_at,
-        requestType: 'Apertura',
-        categoryType: 'Apertura'
+        requestType: req.request_type || 'Apertura',
+        categoryType: req.category_type || '-',
     };
 }
 
@@ -205,6 +205,8 @@ export async function saveAgendaOpening(request: any): Promise<AgendaOpeningRequ
             end_time: request.endTime,
             selected_days: JSON.stringify(request.selectedDays || []),
             status: request.status,
+            request_type: request.requestType || 'Apertura',
+            category_type: request.categoryType || null,
         },
     });
     return mapAgendaOpening(newReq);
