@@ -9,7 +9,7 @@ import { es } from 'date-fns/locale';
 import clsx from 'clsx';
 import { Official } from '@/app/admin/personnel/actions';
 
-const PERFORMANCES = [10, 15, 20, 30, 40, 45, 60];
+const PERFORMANCES = [10, 15, 20, 30, 40, 45, 60, 90];
 const REQUEST_TYPES = ['Apertura', 'Desbloqueo'];
 const CATEGORY_TYPES = [
     'Visitas', 'Morbilidad', 'Control', 'Taller', 'Salud Mental', 
