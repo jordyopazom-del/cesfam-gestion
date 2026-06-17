@@ -44,8 +44,6 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
     const filteredNames = personnel.filter(p => p.profession === formData.profession);
 
     const toggleDay = (day: Date) => {
-        if (day.getDay() === 0) return; // Disable only Sunday (0) if desired, but Saturday (6) is now allowed
-
         const exists = selectedDays.find(d => isSameDay(d, day));
         if (exists) {
             setSelectedDays(prev => prev.filter(d => !isSameDay(d, day)));
