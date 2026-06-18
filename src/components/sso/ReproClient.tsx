@@ -294,7 +294,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
         <p className="text-sm text-slate-600">Todos los bloqueos procesados y sus resoluciones.</p>
       </div>
       <div className="overflow-x-auto rounded-xl border border-slate-200">
-        <table className="w-full text-left text-sm whitespace-nowrap">
+        <table className="w-full text-left text-xs whitespace-nowrap">
           <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
             <tr>
               <th className="px-4 py-3">Fecha Carga</th>
@@ -311,10 +311,16 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
               return (
                 <tr key={b.id} className="hover:bg-slate-50">
                   <td className="px-4 py-3 text-slate-600">{b["Fecha Subida"]}</td>
-                  <td className="px-4 py-3 text-slate-600 font-medium">{b["Subido Por"]}</td>
-                  <td className="px-4 py-3 font-bold text-slate-800">{b.Profesional}</td>
+                  <td className="px-4 py-3 text-slate-600 font-medium truncate max-w-[140px]" title={b["Subido Por"]}>
+                    {b["Subido Por"]}
+                  </td>
+                  <td className="px-4 py-3 font-bold text-slate-800 truncate max-w-[150px]" title={b.Profesional}>
+                    {b.Profesional}
+                  </td>
                   <td className="px-4 py-3 text-slate-600">{b["Fecha Bloqueo"]}</td>
-                  <td className="px-4 py-3 text-slate-500 truncate max-w-[200px]">{b.Motivo}</td>
+                  <td className="px-4 py-3 text-slate-500 truncate max-w-[160px]" title={b.Motivo}>
+                    {b.Motivo}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={cn("px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md",
                       isDone ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700")}>
