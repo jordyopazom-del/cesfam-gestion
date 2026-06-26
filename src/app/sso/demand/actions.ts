@@ -48,3 +48,17 @@ export async function updateDemandStatus(id: number, status: string) {
     return { success: false, error: err.message };
   }
 }
+
+export async function updateDemandNotes(id: number, notes: string) {
+  try {
+    await prisma.demandRequest.update({
+      where: { id },
+      data: { notes },
+    });
+    revalidatePath("/sso/rechazos");
+    revalidatePath("/sso/derivaciones");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}

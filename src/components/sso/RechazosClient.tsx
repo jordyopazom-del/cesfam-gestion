@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { updateDemandStatus } from "@/app/sso/demand/actions";
+import { updateDemandStatus, updateDemandNotes } from "@/app/sso/demand/actions";
 import toast from "react-hot-toast";
+import * as XLSX from "xlsx";
 import {
   ChevronDown, ChevronUp, MessageSquare, History, Phone, Calendar,
   Stethoscope, Search, Filter, Eye, EyeOff, FileEdit, Download,
@@ -62,6 +63,20 @@ export default function RechazosClient({ data }: { data: any[] }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [selectedAge, setSelectedAge] = useState("Todos");
   const [pregnancyOnly, setPregnancyOnly] = useState(false);
+  const [activeTab, setActiveTab] = useState("CESFAM FUTRONO");
+
+  // Tab counts based on establishment (empty/null defaults to Futrono)
+  const futronoCount = useMemo(() => data.filter(d => {
+    const est = d.establishment?.trim().toUpperCase() || "";
+    return est === "" || est.includes("FUTRONO");
+  }).length, [data]);
+
+  const nontuelaCount = useMemo(() => data.filter(d => {
+    const est = d.establishment?.trim().toUpperCase() || "";
+    return est.includes("NONTUELA");
+  }).length, [data]);
+
+  const totalCount = data.length;
 
   const policlinicos = useMemo(
     () => ["Todos", ...Array.from(new Set(data.map((d) => normalizePoli(d.policlinic)).filter(Boolean)))],
@@ -69,6 +84,14 @@ export default function RechazosClient({ data }: { data: any[] }) {
   );
 
   const filteredData = data.filter((row) => {
+    // Filter by Active Tab (empty/null defaults to Futrono)
+    const est = row.establishment?.trim().toUpperCase() || "";
+    if (activeTab === "CESFAM FUTRONO") {
+      if (est !== "" && !est.includes("FUTRONO")) return false;
+    } else if (activeTab === "CECOSF NONTUELA") {
+      if (!est.includes("NONTUELA")) return false;
+    }
+
     const isResolved = RESOLVED_STATUSES.includes(row.status);
     if (!showResolved && isResolved) return false;
     if (searchTerm && !row.rut?.toLowerCase().includes(searchTerm.toLowerCase()) && !row.fullName?.toLowerCase().includes(searchTerm.toLowerCase())) return false;
@@ -87,8 +110,64 @@ export default function RechazosClient({ data }: { data: any[] }) {
     return true;
   });
 
+  const handleExportExcel = () => {
+    if (filteredData.length === 0) {
+      toast.error("No hay registros para exportar");
+      return;
+    }
+    const exportData = filteredData.map((row) => ({
+      Prioridad: calculateDynamicPriority(row.requestDate),
+      Estado: row.status,
+      RUT: row.rut,
+      Paciente: row.fullName,
+      Edad: row.age || "",
+      Ingreso: row.requestDate ? new Date(row.requestDate).toLocaleDateString("es-CL") : "",
+      Plazo: row.plazo || "",
+      Atención: row.attentionType || "CONTROL",
+      Policlínico: normalizePoli(row.policlinic),
+      Establecimiento: row.establishment || "",
+      Observaciones: row.observation || "",
+      Notas: row.notes || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Rechazos");
+    XLSX.writeFile(workbook, `Rechazos_${activeTab.replace(/\s+/g, "_")}.xlsx`);
+    toast.success("Excel exportado correctamente");
+  };
+
   return (
     <div className="space-y-6">
+      {/* Pestañas (Tabs) superiores de Establecimiento */}
+      <div className="flex border-b border-slate-200 gap-6">
+        {[
+          { key: "CESFAM FUTRONO", label: "CESFAM FUTRONO", count: futronoCount },
+          { key: "CECOSF NONTUELA", label: "CECOSF NONTUELA", count: nontuelaCount },
+          { key: "Todos", label: "Todos", count: totalCount }
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`pb-3 text-xs font-bold transition-all relative flex items-center gap-1.5 ${
+              activeTab === tab.key
+                ? "text-blue-600"
+                : "text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            <span className="uppercase tracking-wider">{tab.label}</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+              activeTab === tab.key ? "bg-blue-100 text-blue-700" : "bg-slate-100 text-slate-600"
+            }`}>
+              {tab.count}
+            </span>
+            {activeTab === tab.key && (
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full" />
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* Toolbar */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-end">
         <div className="relative flex-1 w-full">
@@ -129,8 +208,33 @@ export default function RechazosClient({ data }: { data: any[] }) {
           <button onClick={() => setShowAdvanced(!showAdvanced)} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border shadow-sm transition-all ${showAdvanced ? "bg-blue-600 text-white border-blue-600" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"}`}>
             <Filter className="h-4 w-4" /> Avanzados
           </button>
+          <button onClick={handleExportExcel} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold bg-emerald-600 text-white border border-emerald-600 shadow-sm hover:bg-emerald-700 transition-all">
+            <Download className="h-4 w-4" /> Excel
+          </button>
         </div>
       </div>
+
+      {/* Advanced Filters */}
+      {showAdvanced && (
+        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-4 duration-300">
+          <div>
+            <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block ml-1">Grupo de Edad</label>
+            <select className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-bold" value={selectedAge} onChange={(e) => setSelectedAge(e.target.value)}>
+              <option value="Todos">Todos</option>
+              <option value="Infantil">Lactante / Preescolar (&lt; 5 años)</option>
+              <option value="Pediatrico">Escolar / Adolescente (5 - 14 años)</option>
+              <option value="Adulto">Adulto (15 - 64 años)</option>
+              <option value="AdultoMayor">Adulto Mayor (&gt;= 65 años)</option>
+            </select>
+          </div>
+          <div className="flex items-center h-full pt-5 pl-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-600 cursor-pointer select-none">
+              <input type="checkbox" checked={pregnancyOnly} onChange={(e) => setPregnancyOnly(e.target.checked)} className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4" />
+              <span>Solo Pacientes en Gestación / Embarazo</span>
+            </label>
+          </div>
+        </div>
+      )}
 
       {/* Contador */}
       <div className="flex items-center gap-3 px-1">
@@ -148,11 +252,14 @@ export default function RechazosClient({ data }: { data: any[] }) {
           <table className="w-full text-left border-collapse text-[13px]">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-semibold text-[11px] tracking-wider uppercase">
-                <th className="py-4 px-4 w-32">Prioridad</th>
-                <th className="py-4 px-4 w-40">Estado</th>
-                <th className="py-4 px-4">Paciente</th>
-                <th className="py-4 px-4 w-32">Ingreso</th>
-                <th className="py-4 px-4">Policlínico</th>
+                <th className="py-4 px-4 w-28">Prioridad</th>
+                <th className="py-4 px-4 w-36">Estado</th>
+                <th className="py-4 px-4 w-48">Paciente</th>
+                <th className="py-4 px-4 w-32">Ingreso / Plazo</th>
+                <th className="py-4 px-4 w-40">Atención / Establecimiento</th>
+                <th className="py-4 px-4">Teléfono/Observaciones</th>
+                <th className="py-4 px-4 w-48">Notas</th>
+                <th className="py-4 px-4 w-12"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -160,7 +267,7 @@ export default function RechazosClient({ data }: { data: any[] }) {
                 <TableRow key={row.id} row={row} showResolved={showResolved} />
               ))}
               {filteredData.length === 0 && (
-                <tr><td colSpan={5} className="py-12 text-center text-slate-500 font-medium">No hay casos que mostrar con los filtros actuales.</td></tr>
+                <tr><td colSpan={8} className="py-12 text-center text-slate-500 font-medium">No hay casos que mostrar con los filtros actuales.</td></tr>
               )}
             </tbody>
           </table>
@@ -173,6 +280,7 @@ export default function RechazosClient({ data }: { data: any[] }) {
 function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
   const [status, setStatus] = useState(row.status);
   const [isPending, startTransition] = useTransition();
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleUpdate = (newStatus: string) => {
     setStatus(newStatus);
@@ -180,6 +288,15 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
       const res = await updateDemandStatus(row.id, newStatus);
       if (!res.success) toast.error("Error al actualizar");
     });
+  };
+
+  const handleUpdateNotes = async (notes: string) => {
+    const res = await updateDemandNotes(row.id, notes);
+    if (!res.success) {
+      toast.error("Error al actualizar notas");
+    } else {
+      toast.success("Notas guardadas");
+    }
   };
 
   const dynamicPriority = calculateDynamicPriority(row.requestDate);
@@ -196,38 +313,110 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
   if (!showResolved && RESOLVED_STATUSES.includes(status)) return null;
 
   return (
-    <tr className="hover:bg-slate-50/80 transition-colors">
-      <td className="py-4 px-4">
-        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${badge.bg} text-[9px] font-black uppercase tracking-tighter whitespace-nowrap`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${badge.dot} animate-pulse`} />
-          {badge.text}
-        </div>
-      </td>
-      <td className="py-4 px-4">
-        <select
-          className="w-full min-w-[140px] border border-slate-200 text-[11px] rounded p-1.5 font-bold cursor-pointer bg-slate-100/50 hover:bg-white transition-colors"
-          value={status}
-          onChange={(e) => handleUpdate(e.target.value)}
-          disabled={isPending}
-        >
-          {STATUS_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
-        </select>
-      </td>
-      <td className="py-4 px-4">
-        <div className="flex flex-col">
-          <span className="font-bold text-slate-900 leading-tight">{row.fullName}</span>
-          <span className="text-[11px] text-slate-500 font-medium">{row.rut} • {row.age} años</span>
-        </div>
-      </td>
-      <td className="py-4 px-4">
-        <div className="flex items-center gap-1.5 text-slate-700 font-bold whitespace-nowrap">
-          <Calendar className="h-3.5 w-3.5 text-slate-400" />
-          {fechaIngreso}
-        </div>
-      </td>
-      <td className="py-4 px-4">
-        <span className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">{normalizePoli(row.policlinic)}</span>
-      </td>
-    </tr>
+    <>
+      <tr className="hover:bg-slate-50/80 transition-colors">
+        <td className="py-4 px-4">
+          <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${badge.bg} text-[9px] font-black uppercase tracking-tighter whitespace-nowrap`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${badge.dot} animate-pulse`} />
+            {badge.text}
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          <select
+            className="w-full min-w-[130px] border border-slate-200 text-[11px] rounded p-1.5 font-bold cursor-pointer bg-slate-100/50 hover:bg-white transition-colors"
+            value={status}
+            onChange={(e) => handleUpdate(e.target.value)}
+            disabled={isPending}
+          >
+            {STATUS_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+          </select>
+        </td>
+        <td className="py-4 px-4">
+          <div className="flex flex-col">
+            <span className="font-bold text-slate-900 leading-tight">{row.fullName}</span>
+            <span className="text-[11px] text-slate-500 font-medium">{row.rut} • {row.age ? `${row.age} años` : "S/I"}</span>
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1.5 text-slate-700 font-bold whitespace-nowrap">
+              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+              {fechaIngreso}
+            </div>
+            {row.plazo && (
+              <span className="text-[10px] font-semibold text-slate-500 mt-0.5 ml-5">Plazo: {row.plazo}</span>
+            )}
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          <div className="flex flex-col text-slate-700 font-bold">
+            <span className="flex items-center gap-1 text-[11px] font-black text-blue-600">
+              <Stethoscope className="h-3.5 w-3.5 shrink-0" />
+              {row.attentionType || "CONTROL"}
+            </span>
+            <span className="text-[11px] text-slate-500 font-medium">{normalizePoli(row.policlinic)}</span>
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          <div className="flex items-start gap-1.5 font-bold text-slate-700 max-w-[250px]">
+            <Phone className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+            <span className="text-[11px] leading-tight break-words">{row.observation || "Sin observaciones"}</span>
+          </div>
+        </td>
+        <td className="py-4 px-4">
+          <input
+            type="text"
+            defaultValue={row.notes || ""}
+            onBlur={(e) => {
+              if (e.target.value !== (row.notes || "")) {
+                handleUpdateNotes(e.target.value);
+              }
+            }}
+            className="w-full min-w-[120px] px-2 py-1.5 text-[11px] text-slate-800 font-bold border border-slate-200 rounded-lg hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-slate-50/50 hover:bg-white focus:bg-white transition-all shadow-sm"
+            placeholder="Añadir nota..."
+          />
+        </td>
+        <td className="py-4 px-4 text-center">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
+          >
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+        </td>
+      </tr>
+      {isExpanded && (
+        <tr className="bg-slate-50/60 animate-in fade-in duration-200">
+          <td colSpan={8} className="p-4 border-t border-slate-100">
+            <div className="flex flex-col gap-2 max-w-2xl ml-8">
+              <h4 className="text-xs font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
+                <History className="h-3.5 w-3.5 text-slate-400" />
+                Historial de Cambios de Estado
+              </h4>
+              {row.auditLogs && row.auditLogs.length > 0 ? (
+                <div className="space-y-1.5 mt-1 border-l-2 border-slate-200 pl-4 py-1">
+                  {row.auditLogs.map((log: any, idx: number) => {
+                    let formattedDate = log.timestamp;
+                    try {
+                      const logDate = new Date(log.timestamp);
+                      formattedDate = `${String(logDate.getDate()).padStart(2, "0")}-${String(logDate.getMonth() + 1).padStart(2, "0")}-${logDate.getFullYear()} a las ${String(logDate.getHours()).padStart(2, "0")}:${String(logDate.getMinutes()).padStart(2, "0")}`;
+                    } catch { /**/ }
+                    return (
+                      <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                        <span className="text-slate-400">{formattedDate}:</span>
+                        <span>Cambió a <strong className="text-slate-800">{log.newValue}</strong> por <strong className="text-slate-800">{log.changedBy || "Sistema"}</strong></span>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-400 italic">No hay registros de cambios para este paciente.</p>
+              )}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 }

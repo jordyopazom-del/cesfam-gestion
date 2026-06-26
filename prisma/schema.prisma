@@ -325,18 +325,23 @@ model BlockedPatient {
 // 7. SSO — Gestión de Demanda (Rechazos / Derivaciones / Dashboard)
 // ==========================================
 model DemandRequest {
-  id          Int              @id @default(autoincrement())
-  rut         String
-  fullName    String
-  age         Int?
-  requestDate String?
-  origin      String?
-  policlinic  String?
-  priority    String           @default("Baja")
-  status      String           @default("📋 Pendiente")
-  pregnancy   String?
-  updatedAt   DateTime         @default(now()) @updatedAt
-  auditLogs   DemandAuditLog[]
+  id            Int              @id @default(autoincrement())
+  rut           String
+  fullName      String
+  age           Int?
+  requestDate   String?
+  origin        String?
+  policlinic    String?
+  priority      String           @default("Baja")
+  status        String           @default("📋 Pendiente")
+  pregnancy     String?
+  establishment String?
+  attentionType String?
+  observation   String?
+  plazo         String?
+  notes         String?
+  updatedAt     DateTime         @default(now()) @updatedAt
+  auditLogs     DemandAuditLog[]
 }
 
 model DemandAuditLog {

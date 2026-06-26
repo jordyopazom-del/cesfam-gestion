@@ -45,6 +45,10 @@ export async function bulkInsertDemands(demands: any[]) {
           priority: d.priority || "Baja",
           status: d.status || "📋 Pendiente",
           pregnancy: d.pregnancy || "NONE",
+          establishment: d.establishment || "",
+          attentionType: d.attention_type || "",
+          observation: d.observation || "",
+          plazo: d.plazo || "",
         },
       });
       inserted++;
