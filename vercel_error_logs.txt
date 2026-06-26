@@ -1,0 +1,325 @@
+Vercel CLI 54.14.0 (Node.js 20.20.2)
+Resolving deployment "cesfamfutrono.vercel.app"
+Fetching project "prj_v6XIwzjm7utEIw8X7j6lc9jhtJiY"
+Fetching logs...
+TIME         HOST                      LEVEL                                                        
+15:51:46.96  cesfamfutrono.vercel.app  error  λ POST /api/agenda-openings                           
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query INSERT INTO "public"."AgendaOpening" ("id","coordinator","location","profession","professional_name","performance","start_time","end_time","selected_days","status","request_type","category_type","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."AgendaOpening"."id", "public"."AgendaOpening"."coordinator", "public"."AgendaOpening"."location", "public"."AgendaOpening"."profession", "public"."AgendaOpening"."professional_name", "public"."AgendaOpening"."performance", "public"."AgendaOpening"."start_time", "public"."AgendaOpening"."end_time", "public"."AgendaOpening"."selected_days", "public"."AgendaOpening"."status", "public"."AgendaOpening"."request_type", "public"."AgendaOpening"."category_type", "public"."AgendaOpening"."created_at"
+prisma:query ROLLBACK
+Error creating agenda opening: Error [PrismaClientKnownRequestError]:  Invalid `prisma.agendaOpening.create()` invocation:   The column `request_type` does not exist in the current database.     at async l (.next/server/app/api/pdf/[id]/route.js:1:4692)     at async p (.next/server/app/api/agenda-openings/route.js:1:1729) {   code: 'P2022',   clientVersion: '5.22.0',   meta: [Object] }
+
+15:51:04.78  cesfamfutrono.vercel.app  info   λ GET /api/requests                                   
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."AgendaBlockRequest"."id", "public"."AgendaBlockRequest"."coordinator", "public"."AgendaBlockRequest"."location", "public"."AgendaBlockRequest"."profession", "public"."AgendaBlockRequest"."professional_name", "public"."AgendaBlockRequest"."block_type", "public"."AgendaBlockRequest"."start_date", "public"."AgendaBlockRequest"."end_date", "public"."AgendaBlockRequest"."selected_days", "public"."AgendaBlockRequest"."start_time", "public"."AgendaBlockRequest"."end_time", "public"."AgendaBlockRequest"."status", "public"."AgendaBlockRequest"."agenda_blocked_status", "public"."AgendaBlockRequest"."pdf_urls", "public"."AgendaBlockRequest"."assigned_admin", "public"."AgendaBlockRequest"."processed_at", "public"."AgendaBlockRequest"."submitter_email", "public"."AgendaBlockRequest"."unblock_status", "public"."AgendaBlockRequest"."unblock_reason", "public"."AgendaBlockRequest"."created_at" FROM "public"."AgendaBlockRequest" WHERE 1=1 ORDER BY "public"."AgendaBlockRequest"."created_at" DESC OFFSET $1
+prisma:query COMMIT
+
+15:51:04.78  cesfamfutrono.vercel.app  info   ε POST /                                              
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+
+15:50:59.13  cesfamfutrono.vercel.app  info   ε GET /                                               
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."status" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+
+15:50:27.60  cesfamfutrono.vercel.app  info   ε GET /                                               
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."status" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+
+15:50:17.22  cesfamfutrono.vercel.app  error  λ POST /api/agenda-openings                           
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query INSERT INTO "public"."AgendaOpening" ("id","coordinator","location","profession","professional_name","performance","start_time","end_time","selected_days","status","request_type","category_type","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."AgendaOpening"."id", "public"."AgendaOpening"."coordinator", "public"."AgendaOpening"."location", "public"."AgendaOpening"."profession", "public"."AgendaOpening"."professional_name", "public"."AgendaOpening"."performance", "public"."AgendaOpening"."start_time", "public"."AgendaOpening"."end_time", "public"."AgendaOpening"."selected_days", "public"."AgendaOpening"."status", "public"."AgendaOpening"."request_type", "public"."AgendaOpening"."category_type", "public"."AgendaOpening"."created_at"
+Error creating agenda opening: Error [PrismaClientKnownRequestError]:  Invalid `prisma.agendaOpening.create()` invocation:   The column `request_type` does not exist in the current database.     at async l (.next/server/app/api/pdf/[id]/route.js:1:4692)     at async p (.next/server/app/api/agenda-openings/route.js:1:1729) {   code: 'P2022',   clientVersion: '5.22.0',   meta: [Object] }
+prisma:query ROLLBACK
+
+15:49:41.15  cesfamfutrono.vercel.app  info   ε GET /                                               
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."status" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+
+15:49:38.57  cesfamfutrono.vercel.app  info   ε POST /login                                         
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+
+15:49:28.70  cesfamfutrono.vercel.app  info   λ GET /login.rsc                                      
+
+15:49:28.45  cesfamfutrono.vercel.app  info   ε POST /                                              
+
+15:49:22.25  cesfamfutrono.vercel.app  error  λ POST /api/agenda-openings                           
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query INSERT INTO "public"."AgendaOpening" ("id","coordinator","location","profession","professional_name","performance","start_time","end_time","selected_days","status","request_type","category_type","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."AgendaOpening"."id", "public"."AgendaOpening"."coordinator", "public"."AgendaOpening"."location", "public"."AgendaOpening"."profession", "public"."AgendaOpening"."professional_name", "public"."AgendaOpening"."performance", "public"."AgendaOpening"."start_time", "public"."AgendaOpening"."end_time", "public"."AgendaOpening"."selected_days", "public"."AgendaOpening"."status", "public"."AgendaOpening"."request_type", "public"."AgendaOpening"."category_type", "public"."AgendaOpening"."created_at"
+prisma:query ROLLBACK
+Error creating agenda opening: Error [PrismaClientKnownRequestError]:  Invalid `prisma.agendaOpening.create()` invocation:   The column `request_type` does not exist in the current database.     at async l (.next/server/app/api/pdf/[id]/route.js:1:4692)     at async p (.next/server/app/api/agenda-openings/route.js:1:1729) {   code: 'P2022',   clientVersion: '5.22.0',   meta: [Object] }
+
+15:49:03.45  cesfamfutrono.vercel.app  info   ε POST /                                              
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+
+15:49:03.45  cesfamfutrono.vercel.app  info   λ GET /api/requests                                   
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."AgendaBlockRequest"."id", "public"."AgendaBlockRequest"."coordinator", "public"."AgendaBlockRequest"."location", "public"."AgendaBlockRequest"."profession", "public"."AgendaBlockRequest"."professional_name", "public"."AgendaBlockRequest"."block_type", "public"."AgendaBlockRequest"."start_date", "public"."AgendaBlockRequest"."end_date", "public"."AgendaBlockRequest"."selected_days", "public"."AgendaBlockRequest"."start_time", "public"."AgendaBlockRequest"."end_time", "public"."AgendaBlockRequest"."status", "public"."AgendaBlockRequest"."agenda_blocked_status", "public"."AgendaBlockRequest"."pdf_urls", "public"."AgendaBlockRequest"."assigned_admin", "public"."AgendaBlockRequest"."processed_at", "public"."AgendaBlockRequest"."submitter_email", "public"."AgendaBlockRequest"."unblock_status", "public"."AgendaBlockRequest"."unblock_reason", "public"."AgendaBlockRequest"."created_at" FROM "public"."AgendaBlockRequest" WHERE 1=1 ORDER BY "public"."AgendaBlockRequest"."created_at" DESC OFFSET $1
+prisma:query COMMIT
+
+15:48:57.07  cesfamfutrono.vercel.app  info   ε GET /                                               
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."status" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+
+15:48:44.11  cesfamfutrono.vercel.app  info   λ GET /                                               
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."status" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+
+15:48:30.34  cesfamfutrono.vercel.app  info   ε POST /login                                         
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+
+15:47:26.22  cesfamfutrono.vercel.app  info   λ GET /api/pdf/ba5266bd-2a4d-4937-96ce-8573046b2700   
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."AgendaBlockRequest"."id", "public"."AgendaBlockRequest"."coordinator", "public"."AgendaBlockRequest"."location", "public"."AgendaBlockRequest"."profession", "public"."AgendaBlockRequest"."professional_name", "public"."AgendaBlockRequest"."block_type", "public"."AgendaBlockRequest"."start_date", "public"."AgendaBlockRequest"."end_date", "public"."AgendaBlockRequest"."selected_days", "public"."AgendaBlockRequest"."start_time", "public"."AgendaBlockRequest"."end_time", "public"."AgendaBlockRequest"."status", "public"."AgendaBlockRequest"."agenda_blocked_status", "public"."AgendaBlockRequest"."pdf_urls", "public"."AgendaBlockRequest"."assigned_admin", "public"."AgendaBlockRequest"."processed_at", "public"."AgendaBlockRequest"."submitter_email", "public"."AgendaBlockRequest"."unblock_status", "public"."AgendaBlockRequest"."unblock_reason", "public"."AgendaBlockRequest"."created_at" FROM "public"."AgendaBlockRequest" WHERE ("public"."AgendaBlockRequest"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+
+15:47:14.08  cesfamfutrono.vercel.app  info   λ GET /api/pdf/ba5266bd-2a4d-4937-96ce-8573046b2700   
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."AgendaBlockRequest"."id", "public"."AgendaBlockRequest"."coordinator", "public"."AgendaBlockRequest"."location", "public"."AgendaBlockRequest"."profession", "public"."AgendaBlockRequest"."professional_name", "public"."AgendaBlockRequest"."block_type", "public"."AgendaBlockRequest"."start_date", "public"."AgendaBlockRequest"."end_date", "public"."AgendaBlockRequest"."selected_days", "public"."AgendaBlockRequest"."start_time", "public"."AgendaBlockRequest"."end_time", "public"."AgendaBlockRequest"."status", "public"."AgendaBlockRequest"."agenda_blocked_status", "public"."AgendaBlockRequest"."pdf_urls", "public"."AgendaBlockRequest"."assigned_admin", "public"."AgendaBlockRequest"."processed_at", "public"."AgendaBlockRequest"."submitter_email", "public"."AgendaBlockRequest"."unblock_status", "public"."AgendaBlockRequest"."unblock_reason", "public"."AgendaBlockRequest"."created_at" FROM "public"."AgendaBlockRequest" WHERE ("public"."AgendaBlockRequest"."id" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+
+15:45:25.25  cesfamfutrono.vercel.app  info   ε GET /login                                          
+
+15:45:24.42  cesfamfutrono.vercel.app  info   ε GET /sso/reprogramacion                             
+
+15:45:24.02  cesfamfutrono.vercel.app  info   ε GET /sso/reprogramacion                             
+
+15:41:37.23  cesfamfutrono.vercel.app  error  λ POST /api/agenda-openings                           
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query INSERT INTO "public"."AgendaOpening" ("id","coordinator","location","profession","professional_name","performance","start_time","end_time","selected_days","status","request_type","category_type","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."AgendaOpening"."id", "public"."AgendaOpening"."coordinator", "public"."AgendaOpening"."location", "public"."AgendaOpening"."profession", "public"."AgendaOpening"."professional_name", "public"."AgendaOpening"."performance", "public"."AgendaOpening"."start_time", "public"."AgendaOpening"."end_time", "public"."AgendaOpening"."selected_days", "public"."AgendaOpening"."status", "public"."AgendaOpening"."request_type", "public"."AgendaOpening"."category_type", "public"."AgendaOpening"."created_at"
+prisma:query ROLLBACK
+Error creating agenda opening: Error [PrismaClientKnownRequestError]:  Invalid `prisma.agendaOpening.create()` invocation:   The column `request_type` does not exist in the current database.     at async p (.next/server/app/api/agenda-openings/route.js:1:4996)     at async p (.next/server/app/api/agenda-openings/route.js:1:1729) {   code: 'P2022',   clientVersion: '5.22.0',   meta: [Object] }
+
+15:32:54.43  cesfamfutrono.vercel.app  info   λ POST /                                              
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+
+15:32:54.12  cesfamfutrono.vercel.app  info   λ GET /api/requests                                   
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."AgendaBlockRequest"."id", "public"."AgendaBlockRequest"."coordinator", "public"."AgendaBlockRequest"."location", "public"."AgendaBlockRequest"."profession", "public"."AgendaBlockRequest"."professional_name", "public"."AgendaBlockRequest"."block_type", "public"."AgendaBlockRequest"."start_date", "public"."AgendaBlockRequest"."end_date", "public"."AgendaBlockRequest"."selected_days", "public"."AgendaBlockRequest"."start_time", "public"."AgendaBlockRequest"."end_time", "public"."AgendaBlockRequest"."status", "public"."AgendaBlockRequest"."agenda_blocked_status", "public"."AgendaBlockRequest"."pdf_urls", "public"."AgendaBlockRequest"."assigned_admin", "public"."AgendaBlockRequest"."processed_at", "public"."AgendaBlockRequest"."submitter_email", "public"."AgendaBlockRequest"."unblock_status", "public"."AgendaBlockRequest"."unblock_reason", "public"."AgendaBlockRequest"."created_at" FROM "public"."AgendaBlockRequest" WHERE 1=1 ORDER BY "public"."AgendaBlockRequest"."created_at" DESC OFFSET $1
+prisma:query COMMIT
+
+15:32:52.24  cesfamfutrono.vercel.app  info   ε POST /                                              
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+
+15:32:52.24  cesfamfutrono.vercel.app  error  λ GET /api/agenda-openings                            
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."AgendaOpening"."id", "public"."AgendaOpening"."coordinator", "public"."AgendaOpening"."location", "public"."AgendaOpening"."profession", "public"."AgendaOpening"."professional_name", "public"."AgendaOpening"."performance", "public"."AgendaOpening"."start_time", "public"."AgendaOpening"."end_time", "public"."AgendaOpening"."selected_days", "public"."AgendaOpening"."status", "public"."AgendaOpening"."request_type", "public"."AgendaOpening"."category_type", "public"."AgendaOpening"."created_at" FROM "public"."AgendaOpening" WHERE 1=1 ORDER BY "public"."AgendaOpening"."created_at" DESC OFFSET $1
+prisma:query ROLLBACK
+⨯ Error [PrismaClientKnownRequestError]:  Invalid `prisma.agendaOpening.findMany()` invocation:   The column `AgendaOpening.request_type` does not exist in the current database.     at async l (.next/server/app/api/requests/route.js:1:4855)     at async l (.next/server/app/api/agenda-openings/route.js:1:1020) {   code: 'P2022',   clientVersion: '5.22.0',   meta: [Object] }
+⨯ Error [PrismaClientKnownRequestError]:  Invalid `prisma.agendaOpening.findMany()` invocation:   The column `AgendaOpening.request_type` does not exist in the current database.     at async l (.next/server/app/api/requests/route.js:1:4855)     at async l (.next/server/app/api/agenda-openings/route.js:1:1020) {   code: 'P2022',   clientVersion: '5.22.0',   meta: [Object] }
+
+15:29:38.04  cesfamfutrono.vercel.app  info   λ GET /api/requests                                   
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."AgendaBlockRequest"."id", "public"."AgendaBlockRequest"."coordinator", "public"."AgendaBlockRequest"."location", "public"."AgendaBlockRequest"."profession", "public"."AgendaBlockRequest"."professional_name", "public"."AgendaBlockRequest"."block_type", "public"."AgendaBlockRequest"."start_date", "public"."AgendaBlockRequest"."end_date", "public"."AgendaBlockRequest"."selected_days", "public"."AgendaBlockRequest"."start_time", "public"."AgendaBlockRequest"."end_time", "public"."AgendaBlockRequest"."status", "public"."AgendaBlockRequest"."agenda_blocked_status", "public"."AgendaBlockRequest"."pdf_urls", "public"."AgendaBlockRequest"."assigned_admin", "public"."AgendaBlockRequest"."processed_at", "public"."AgendaBlockRequest"."submitter_email", "public"."AgendaBlockRequest"."unblock_status", "public"."AgendaBlockRequest"."unblock_reason", "public"."AgendaBlockRequest"."created_at" FROM "public"."AgendaBlockRequest" WHERE 1=1 ORDER BY "public"."AgendaBlockRequest"."created_at" DESC OFFSET $1
+prisma:query COMMIT
+
+15:29:38.04  cesfamfutrono.vercel.app  info   ε POST /                                              
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+
+15:23:36.61  cesfamfutrono.vercel.app  error  λ POST /api/agenda-openings                           
+prisma:query SELECT 1
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query INSERT INTO "public"."AgendaOpening" ("id","coordinator","location","profession","professional_name","performance","start_time","end_time","selected_days","status","request_type","category_type","created_at") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING "public"."AgendaOpening"."id", "public"."AgendaOpening"."coordinator", "public"."AgendaOpening"."location", "public"."AgendaOpening"."profession", "public"."AgendaOpening"."professional_name", "public"."AgendaOpening"."performance", "public"."AgendaOpening"."start_time", "public"."AgendaOpening"."end_time", "public"."AgendaOpening"."selected_days", "public"."AgendaOpening"."status", "public"."AgendaOpening"."request_type", "public"."AgendaOpening"."category_type", "public"."AgendaOpening"."created_at"
+prisma:query ROLLBACK
+Error creating agenda opening: Error [PrismaClientKnownRequestError]:  Invalid `prisma.agendaOpening.create()` invocation:   The column `request_type` does not exist in the current database.     at async p (.next/server/app/api/agenda-openings/route.js:1:4996)     at async p (.next/server/app/api/agenda-openings/route.js:1:1729) {   code: 'P2022',   clientVersion: '5.22.0',   meta: [Object] }
+
+15:21:02.62  cesfamfutrono.vercel.app  info   ε GET /                                               
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."name", "public"."User"."email", "public"."User"."emailVerified", "public"."User"."image", "public"."User"."password", "public"."User"."role", "public"."User"."status", "public"."User"."resetRequested", "public"."User"."contractedHours", "public"."User"."accessLogistica", "public"."User"."accessSolicitudes", "public"."User"."accessReservas", "public"."User"."accessAgendas", "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE ("public"."User"."email" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."Personnel"."id", "public"."Personnel"."name", "public"."Personnel"."profession", "public"."Personnel"."type", "public"."Personnel"."email", "public"."Personnel"."birthDate" FROM "public"."Personnel" WHERE 1=1 ORDER BY "public"."Personnel"."name" ASC OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."PersonalLogistica"."id", "public"."PersonalLogistica"."nombre", "public"."PersonalLogistica"."especialidad", "public"."PersonalLogistica"."disponibilidad", "public"."PersonalLogistica"."correo" FROM "public"."PersonalLogistica" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT "public"."User"."id", "public"."User"."email" FROM "public"."User" WHERE 1=1 OFFSET $1
+prisma:query COMMIT
+prisma:query BEGIN
+prisma:query DEALLOCATE ALL
+prisma:query SELECT COUNT(*) FROM (SELECT "public"."User"."id" FROM "public"."User" WHERE "public"."User"."status" = $1 OFFSET $2) AS "sub"
+prisma:query COMMIT
+
+Fetched 30 logs for cesfamfutrono/cesfam
