@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/session';
 import { updateAgendaOpeningStatus } from '@/lib/db';
 import { sendEmail, generateRequestEmailHtml } from '@/lib/email-service';
 import { getPersonnel } from '@/app/admin/personnel/actions';
@@ -8,6 +9,10 @@ export async function PATCH(
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await getSession();
+        if (!session || !session.email) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        }
         const { id } = await params;
         const body = await request.json();
         const { status, pdfUrl, assignedAdmin } = body;

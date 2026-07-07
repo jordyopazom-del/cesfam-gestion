@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { getPdfById } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await getSession();
+        if (!session || !session.email) {
+            return new NextResponse('No autorizado', { status: 401 });
+        }
         const { id } = await params;
         const { searchParams } = new URL(request.url);
         const indexStr = searchParams.get('index');

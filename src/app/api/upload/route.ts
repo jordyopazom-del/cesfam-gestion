@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/session";
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session || !session.email) {
+      return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    }
     const formData = await request.formData();
     const file = formData.get("file") as File;
 

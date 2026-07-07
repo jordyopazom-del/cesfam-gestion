@@ -7,7 +7,7 @@ export async function GET(req: Request) {
     const secret = searchParams.get("secret");
 
     // Protect with secret from environment variables
-    if (secret !== process.env.SSO_SECRET_KEY && secret !== "someagendas") {
+    if (!process.env.SSO_SECRET_KEY || secret !== process.env.SSO_SECRET_KEY) {
       return NextResponse.json({ message: "No autorizado" }, { status: 401 });
     }
 

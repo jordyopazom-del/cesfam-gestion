@@ -9,6 +9,11 @@ function generateId() {
 }
 
 export async function GET() {
+    const session = await getSession();
+    if (!session || !session.email) {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
     const requests = await getAgendaOpenings();
     return NextResponse.json(requests);
 }
@@ -47,7 +52,10 @@ export async function POST(req: NextRequest) {
         // ──────────────────────────────────────────────────────────────────────
 
         const session = await getSession();
-        const submitterEmail = session?.email || undefined;
+        if (!session || !session.email) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        }
+        const submitterEmail = session.email;
 
         const newRequest: AgendaOpeningRequest = {
             id: generateId(),
