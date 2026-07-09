@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { fetchUsers, adminUpdateUser, adminDeleteUser } from '@/app/actions/auth';
-import { Users, RefreshCw, CheckCircle, AlertCircle, Search, Shield, Trash2 } from 'lucide-react';
+import { Users, RefreshCw, CheckCircle, AlertCircle, Search, Shield, Trash2, Download } from 'lucide-react';
 import clsx from 'clsx';
 
 interface User {
@@ -176,15 +176,26 @@ export default function UserManagement() {
                         <p className="text-gray-500 mt-0.5">Control de cuentas, roles y permisos de módulos</p>
                     </div>
                 </div>
-                <div className="relative w-full md:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                    <input
-                        type="text"
-                        placeholder="Buscar usuario..."
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                    />
+                <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                    <button
+                        onClick={() => {
+                            window.open('/api/admin/backup', '_blank');
+                        }}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow transition-all active:scale-[0.98] outline-none cursor-pointer"
+                    >
+                        <Download size={16} />
+                        Exportar Respaldo (.json)
+                    </button>
+                    <div className="relative w-full md:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Buscar usuario..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                        />
+                    </div>
                 </div>
             </div>
 
