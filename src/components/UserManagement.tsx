@@ -23,7 +23,43 @@ export default function UserManagement() {
     const [searchTerm, setSearchTerm] = useState('');
     const [savingEmail, setSavingEmail] = useState<string | null>(null);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const [isCleaning, setIsCleaning] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+
+    const handleCleanupPdfs = async () => {
+        if (!window.confirm('¿Estás seguro de que deseas eliminar permanentemente los archivos PDF base64 de las solicitudes con más de 7 días de antigüedad? Esta acción no se puede deshacer.')) {
+            return;
+        }
+        
+        setIsCleaning(true);
+        setMessage(null);
+        try {
+            const res = await fetch('/api/admin/cleanup-pdfs', {
+                method: 'POST',
+            });
+            if (!res.ok) {
+                const errText = await res.text();
+                throw new Error(errText || 'Error en la respuesta del servidor');
+            }
+            const data = await res.json();
+            if (data.success) {
+                setMessage({
+                    type: 'success',
+                    text: data.message || `Limpieza exitosa. Se procesaron ${data.cleanedCount} registros.`
+                });
+            } else {
+                throw new Error(data.error || 'Error al procesar la limpieza');
+            }
+        } catch (error: any) {
+            console.error('Manual cleanup error:', error);
+            setMessage({
+                type: 'error',
+                text: `Error al ejecutar la limpieza: ${error.message}`
+            });
+        } finally {
+            setIsCleaning(false);
+        }
+    };
     const ITEMS_PER_PAGE = 25;
 
     // Reset page to 1 when search term changes
@@ -185,6 +221,14 @@ export default function UserManagement() {
                     >
                         <Download size={16} />
                         Exportar Respaldo (.json)
+                    </button>
+                    <button
+                        onClick={handleCleanupPdfs}
+                        disabled={isCleaning}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-600 disabled:from-gray-400 disabled:to-gray-300 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow transition-all active:scale-[0.98] outline-none cursor-pointer disabled:cursor-not-allowed"
+                    >
+                        {isCleaning ? <RefreshCw className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                        {isCleaning ? 'Limpiando...' : 'Limpiar PDFs (>7 días)'}
                     </button>
                     <div className="relative w-full md:w-64">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />

@@ -1,22 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
 
-export const dynamic = 'force-dynamic';
+const prisma = new PrismaClient();
 
-export async function GET(req: NextRequest) {
+async function main() {
+    console.log('🔄 Iniciando script de limpieza de PDFs...');
+    
     try {
-        const authHeader = req.headers.get('authorization');
-        const cronSecret = process.env.CRON_SECRET;
-        
-        // Secure endpoint: only allow Vercel Cron or local development
-        if (process.env.NODE_ENV === 'production' && cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-            return new NextResponse('No autorizado', { status: 401 });
-        }
-
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        console.log(`📅 Buscando registros creados antes de: ${sevenDaysAgo.toISOString()}`);
 
-        // Find records older than 7 days that have pdf_urls
         const requestsToClean = await prisma.agendaBlockRequest.findMany({
             where: {
                 created_at: {
@@ -28,9 +21,13 @@ export async function GET(req: NextRequest) {
             },
             select: {
                 id: true,
-                pdf_urls: true
+                pdf_urls: true,
+                created_at: true,
+                professional_name: true
             }
         });
+
+        console.log(`📋 Se encontraron ${requestsToClean.length} registros antiguos con PDFs.`);
 
         let cleanedCount = 0;
 
@@ -45,11 +42,10 @@ export async function GET(req: NextRequest) {
                 urls = [req.pdf_urls];
             }
 
-            // Check if any URL contains a data URL (Base64 file) or if it has been marked as internal base64
             const hasBase64 = urls.some(url => url.startsWith('data:'));
 
             if (hasBase64) {
-                // Replace base64 urls with 'INTERNAL_PDF_CLEANED'
+                console.log(`🧹 Limpiando base64 de solicitud ID: ${req.id} (${req.professional_name}) del ${new Date(req.created_at).toLocaleDateString()}`);
                 const cleanedUrls = urls.map(url => url.startsWith('data:') ? 'INTERNAL_PDF_CLEANED' : url);
                 
                 await prisma.agendaBlockRequest.update({
@@ -62,13 +58,12 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        return NextResponse.json({
-            success: true,
-            message: `Limpieza completada. Se eliminaron PDFs base64 en ${cleanedCount} registros antiguos.`,
-            cleanedCount
-        });
+        console.log(`✅ Limpieza completada. Se eliminaron PDFs base64 en ${cleanedCount} registros.`);
     } catch (error: any) {
-        console.error('Error during cron cleanup-pdfs:', error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        console.error('❌ Error durante la limpieza de PDFs:', error);
+    } finally {
+        await prisma.$disconnect();
     }
 }
+
+main();

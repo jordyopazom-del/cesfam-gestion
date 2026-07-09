@@ -1,16 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/session';
+import { getUserByEmail } from '@/lib/auth-db';
 import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(req: NextRequest) {
+export async function POST() {
     try {
-        const authHeader = req.headers.get('authorization');
-        const cronSecret = process.env.CRON_SECRET;
-        
-        // Secure endpoint: only allow Vercel Cron or local development
-        if (process.env.NODE_ENV === 'production' && cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+        const session = await getSession();
+        if (!session || !session.email) {
             return new NextResponse('No autorizado', { status: 401 });
+        }
+
+        const user = await getUserByEmail(session.email);
+        const isAdmin = user?.role === 'ADMIN' || user?.role === 'Admin' || session.email === 'kkoandres@gmail.com';
+
+        if (!isAdmin) {
+            return new NextResponse('No autorizado', { status: 403 });
         }
 
         const sevenDaysAgo = new Date();
@@ -45,7 +51,7 @@ export async function GET(req: NextRequest) {
                 urls = [req.pdf_urls];
             }
 
-            // Check if any URL contains a data URL (Base64 file) or if it has been marked as internal base64
+            // Check if any URL contains a data URL (Base64 file)
             const hasBase64 = urls.some(url => url.startsWith('data:'));
 
             if (hasBase64) {
@@ -64,11 +70,11 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: `Limpieza completada. Se eliminaron PDFs base64 en ${cleanedCount} registros antiguos.`,
+            message: `Limpieza completada con éxito. Se eliminaron PDFs base64 en ${cleanedCount} registros con antigüedad superior a 7 días.`,
             cleanedCount
         });
     } catch (error: any) {
-        console.error('Error during cron cleanup-pdfs:', error);
+        console.error('Error in manual pdf cleanup API:', error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
