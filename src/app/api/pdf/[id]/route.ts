@@ -86,7 +86,7 @@ export async function GET(
                         <div class="icon">🗑️</div>
                         <h1>Respaldo Eliminado por Antigüedad</h1>
                         <p>
-                            Este archivo PDF de respaldo ha sido eliminado automáticamente tras transcurrir <strong>10 días</strong> desde su creación, con el fin de optimizar el almacenamiento del servidor.
+                            Este archivo PDF de respaldo ha sido eliminado automáticamente tras transcurrir <strong>7 días</strong> desde su creación, con el fin de optimizar el almacenamiento del servidor.
                         </p>
                         <p>
                             El registro administrativo de la solicitud y toda su trazabilidad siguen estando completamente disponibles en el sistema de agendas.

@@ -547,15 +547,15 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                                                 {req.pdfUrl.map((url: string, idx: number) => (
                                                                     <a
                                                                         key={idx}
-                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:')) ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:') || url === 'INTERNAL_PDF_CLEANED') ? `/api/pdf/${req.id}?index=${idx}` : url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"
-                                                                        title={`Ver Documento ${idx + 1}`}
+                                                                        className={clsx("w-7 h-7 rounded-lg transition-all flex items-center justify-center shadow-sm relative group/doc", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-100 text-gray-400 hover:bg-gray-200" : "bg-blue-50 text-blue-600 hover:bg-blue-100")}
+                                                                        title={url === 'INTERNAL_PDF_CLEANED' ? 'PDF Eliminado por Antigüedad' : `Ver Documento ${idx + 1}`}
                                                                     >
-                                                                        <FileText size={14} />
+                                                                        <FileText size={14} className={url === 'INTERNAL_PDF_CLEANED' ? "line-through opacity-70" : ""} />
                                                                         {req.pdfUrl!.length > 1 && (
-                                                                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold">
+                                                                            <span className={clsx("absolute -top-1 -right-1 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-400" : "bg-blue-600")}>
                                                                                 {idx + 1}
                                                                             </span>
                                                                         )}
@@ -653,15 +653,15 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                                                 {req.pdfUrl.map((url: string, idx: number) => (
                                                                     <a
                                                                         key={idx}
-                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:')) ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:') || url === 'INTERNAL_PDF_CLEANED') ? `/api/pdf/${req.id}?index=${idx}` : url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all flex items-center justify-center shadow-sm relative group/doc"
-                                                                        title={`Ver Documento ${idx + 1}`}
+                                                                        className={clsx("w-7 h-7 rounded-lg transition-all flex items-center justify-center shadow-sm relative group/doc", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-100 text-gray-400 hover:bg-gray-200" : "bg-blue-50 text-blue-600 hover:bg-blue-100")}
+                                                                        title={url === 'INTERNAL_PDF_CLEANED' ? 'PDF Eliminado por Antigüedad' : `Ver Documento ${idx + 1}`}
                                                                     >
-                                                                        <FileText size={14} />
+                                                                        <FileText size={14} className={url === 'INTERNAL_PDF_CLEANED' ? "line-through opacity-70" : ""} />
                                                                         {req.pdfUrl!.length > 1 && (
-                                                                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold">
+                                                                            <span className={clsx("absolute -top-1 -right-1 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-400" : "bg-blue-600")}>
                                                                                 {idx + 1}
                                                                             </span>
                                                                         )}

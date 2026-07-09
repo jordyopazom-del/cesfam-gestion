@@ -208,18 +208,26 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                         )}
                                         {req.pdfUrl && req.pdfUrl.length > 0 && req.pdfUrl[0] !== 'SIN PACIENTES' && (
                                             <div className="flex flex-wrap gap-1 justify-center">
-                                                {req.pdfUrl.map((url, idx) => (
-                                                    <a
-                                                        key={idx}
-                                                        href={url === 'INTERNAL_PDF' || url.startsWith('data:') ? `/api/pdf/${req.id}?index=${idx}` : url}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-[9px] text-purple-600 hover:text-purple-800 flex items-center gap-1 transition-colors font-bold uppercase"
-                                                        title={`Ver Documento ${idx + 1}`}
-                                                    >
-                                                        <FileText size={9} /> PDF {req.pdfUrl!.length > 1 ? idx + 1 : ''}
-                                                    </a>
-                                                ))}
+                                                {req.pdfUrl.map((url, idx) => {
+                                                    const isCleaned = url === 'INTERNAL_PDF_CLEANED';
+                                                    return (
+                                                        <a
+                                                            key={idx}
+                                                            href={url === 'INTERNAL_PDF' || url.startsWith('data:') || isCleaned ? `/api/pdf/${req.id}?index=${idx}` : url}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className={clsx(
+                                                                "text-[9px] flex items-center gap-1 transition-colors font-bold uppercase",
+                                                                isCleaned 
+                                                                    ? "text-gray-400 hover:text-gray-600 line-through decoration-1" 
+                                                                    : "text-purple-600 hover:text-purple-800"
+                                                            )}
+                                                            title={isCleaned ? `PDF Eliminado por Antigüedad` : `Ver Documento ${idx + 1}`}
+                                                        >
+                                                            <FileText size={9} /> {isCleaned ? 'PDF Eliminado' : `PDF ${req.pdfUrl!.length > 1 ? idx + 1 : ''}`}
+                                                        </a>
+                                                    );
+                                                })}
                                             </div>
                                         )}
                                     </div>
