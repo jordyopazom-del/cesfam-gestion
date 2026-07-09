@@ -54,11 +54,11 @@ function mapAgendaBlock(req: any): BlockingRequest {
     try {
         const parsed = JSON.parse(req.pdf_urls || '[]');
         pdfUrl = (Array.isArray(parsed) ? parsed : [parsed]).map((url: string) =>
-            (url.startsWith('data:') || url === 'INTERNAL_PDF_CLEANED') ? 'INTERNAL_PDF' : url
+            url.startsWith('data:') ? 'INTERNAL_PDF' : url
         );
     } catch(e){
         if (req.pdf_urls) {
-            pdfUrl = [(req.pdf_urls.startsWith('data:') || req.pdf_urls === 'INTERNAL_PDF_CLEANED') ? 'INTERNAL_PDF' : req.pdf_urls];
+            pdfUrl = [req.pdf_urls.startsWith('data:') ? 'INTERNAL_PDF' : req.pdf_urls];
         }
     }
 
