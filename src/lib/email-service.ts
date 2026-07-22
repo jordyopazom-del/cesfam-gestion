@@ -9,8 +9,13 @@ interface EmailParams {
 }
 
 export async function sendEmail({ to, subject, html, fromName, replyTo }: EmailParams) {
-    const user = process.env.EMAIL_USER || 'calvarado@munifutrono.cl';
-    const pass = process.env.EMAIL_PASS || 'Loki4040';
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASS;
+
+    if (!user || !pass) {
+        console.error('Error al enviar correo: EMAIL_USER o EMAIL_PASS no están configurados.');
+        return { success: false, error: 'Credenciales de correo no configuradas' };
+    }
 
     const transporter = nodemailer.createTransport({
         service: 'gmail',

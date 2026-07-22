@@ -1,11 +1,17 @@
 import { NextResponse } from 'next/server';
 import { updateUnblockStatus } from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 export async function PATCH(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const session = await getSession();
+        if (!session || !session.email) {
+            return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+        }
+
         const { id } = await params;
         const body = await request.json();
         const { unblockStatus, unblockReason } = body;

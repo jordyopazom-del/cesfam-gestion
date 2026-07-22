@@ -1,9 +1,15 @@
 import { SignJWT, jwtVerify } from 'jose';
 
-const secretKey = 'secret-key-cesfam-2026'; // In production, use env variable
-const key = new TextEncoder().encode(secretKey);
+function getKey() {
+    const secretKey = process.env.SESSION_SECRET || (process.env.NODE_ENV !== 'production' ? 'secret-key-cesfam-2026' : undefined);
+    if (!secretKey) {
+        throw new Error('SESSION_SECRET environment variable is required in production');
+    }
+    return new TextEncoder().encode(secretKey);
+}
 
 export async function encrypt(payload: any) {
+    const key = getKey();
     return await new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
@@ -13,6 +19,7 @@ export async function encrypt(payload: any) {
 
 export async function decrypt(input: string): Promise<any> {
     try {
+        const key = getKey();
         const { payload } = await jwtVerify(input, key, {
             algorithms: ['HS256'],
         });
