@@ -144,15 +144,38 @@ export async function checkBlockingOverlap(
     startTime: string,
     endTime: string
 ): Promise<{day: string, existingStartTime: string, existingEndTime: string} | null> {
-    const existing = await prisma.agendaBlockRequest.findFirst({
+    const newDatesOnly = selectedDays.map(d => d.split('T')[0]);
+
+    const activeBlocks = await prisma.agendaBlockRequest.findMany({
         where: {
             professional_name: professionalName,
             status: { notIn: ['Rejected', 'Rechazado'] }
         }
     });
-    
-    if (existing) {
-        return null;
+
+    for (const block of activeBlocks) {
+        let existingDays: string[] = [];
+        try {
+            existingDays = JSON.parse(block.selected_days || '[]');
+        } catch (e) {}
+
+        const existingDatesOnly = existingDays.map(d => d.split('T')[0]);
+        const overlappingDate = newDatesOnly.find(d => existingDatesOnly.includes(d));
+
+        if (overlappingDate) {
+            const newStart = startTime;
+            const newEnd = endTime;
+            const existStart = block.start_time;
+            const existEnd = block.end_time;
+
+            if (newStart < existEnd && newEnd > existStart) {
+                return {
+                    day: overlappingDate,
+                    existingStartTime: existStart,
+                    existingEndTime: existEnd
+                };
+            }
+        }
     }
     return null;
 }
@@ -227,6 +250,39 @@ export async function checkAgendaOpeningOverlap(
     startTime: string,
     endTime: string
 ): Promise<{day: string, existingStartTime: string, existingEndTime: string} | null> {
+    const newDatesOnly = selectedDays.map(d => d.split('T')[0]);
+
+    const activeOpenings = await prisma.agendaOpening.findMany({
+        where: {
+            professional_name: professionalName,
+            status: { notIn: ['Rejected', 'Rechazado'] }
+        }
+    });
+
+    for (const opening of activeOpenings) {
+        let existingDays: string[] = [];
+        try {
+            existingDays = JSON.parse(opening.selected_days || '[]');
+        } catch (e) {}
+
+        const existingDatesOnly = existingDays.map(d => d.split('T')[0]);
+        const overlappingDate = newDatesOnly.find(d => existingDatesOnly.includes(d));
+
+        if (overlappingDate) {
+            const newStart = startTime;
+            const newEnd = endTime;
+            const existStart = opening.start_time;
+            const existEnd = opening.end_time;
+
+            if (newStart < existEnd && newEnd > existStart) {
+                return {
+                    day: overlappingDate,
+                    existingStartTime: existStart,
+                    existingEndTime: existEnd
+                };
+            }
+        }
+    }
     return null;
 }
 

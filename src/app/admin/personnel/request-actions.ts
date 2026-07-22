@@ -72,8 +72,18 @@ export async function uploadFileAction(formData: FormData) {
         const file = formData.get('file') as File;
         if (!file) throw new Error('No file provided');
 
+        if (file.size > 5 * 1024 * 1024) {
+            throw new Error('El archivo excede el tamaño máximo permitido de 5MB');
+        }
+
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
+
+        // Verify PDF Magic Numbers (%PDF-)
+        if (buffer.length < 4 || buffer[0] !== 0x25 || buffer[1] !== 0x50 || buffer[2] !== 0x44 || buffer[3] !== 0x46) {
+            throw new Error('Solo se permiten archivos en formato PDF válido');
+        }
+
         const base64 = buffer.toString('base64');
         const dataUrl = `data:${file.type};base64,${base64}`;
 
