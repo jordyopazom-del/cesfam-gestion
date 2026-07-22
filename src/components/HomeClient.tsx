@@ -10,8 +10,8 @@ import UnblockManagementTable from '@/components/UnblockManagementTable';
 
 import { 
     LayoutDashboard, PlusCircle, FileText, CalendarPlus, 
-    ChevronDown, User, RefreshCw, Globe, LifeBuoy, 
-    ExternalLink, Calendar, Briefcase, Shield, Users, Truck, TrendingUp, Key,
+    ChevronDown, User, RefreshCw, 
+    Calendar, Briefcase, Shield, Users, Truck, TrendingUp, Key,
     XCircle, ArrowRightLeft, Clock, UploadCloud, Settings
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -56,10 +56,8 @@ export default function HomeClient({
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isAgendasDropdownOpen, setIsAgendasDropdownOpen] = useState(false);
-    const [isApoyoDropdownOpen, setIsApoyoDropdownOpen] = useState(false);
     const [isSsoDropdownOpen, setIsSsoDropdownOpen] = useState(false);
     const agendasDropdownRef = useRef<HTMLDivElement>(null);
-    const apoyoDropdownRef = useRef<HTMLDivElement>(null);
     const ssoDropdownRef = useRef<HTMLDivElement>(null);
 
     const handleSuccess = () => {
@@ -80,14 +78,10 @@ export default function HomeClient({
         }
     };
 
-    // Close dropdowns when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (agendasDropdownRef.current && !agendasDropdownRef.current.contains(event.target as Node)) {
                 setIsAgendasDropdownOpen(false);
-            }
-            if (apoyoDropdownRef.current && !apoyoDropdownRef.current.contains(event.target as Node)) {
-                setIsApoyoDropdownOpen(false);
             }
             if (ssoDropdownRef.current && !ssoDropdownRef.current.contains(event.target as Node)) {
                 setIsSsoDropdownOpen(false);
@@ -373,96 +367,7 @@ export default function HomeClient({
                             )}
                         </div>
 
-                        <a 
-                            href="https://sites.google.com/view/cesfambelarminaparedes?pli=1"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
-                        >
-                            <Globe size={16} />
-                            Intranet
-                        </a>
 
-                        <div className="relative" ref={apoyoDropdownRef}>
-                            <button
-                                onClick={() => setIsApoyoDropdownOpen(!isApoyoDropdownOpen)}
-                                className={clsx(
-                                    "flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
-                                )}
-                            >
-                                <LifeBuoy size={16} />
-                                Apoyo
-                                <ChevronDown size={14} className={clsx("transition-transform", isApoyoDropdownOpen && "rotate-180")} />
-                            </button>
-
-                            {isApoyoDropdownOpen && (
-                                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
-                                    <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
-                                        Enlaces Externos
-                                    </div>
-                                    <a
-                                        href="https://www.hbvaldivia.cl/core/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                                            CORE
-                                        </div>
-                                        <ExternalLink size={14} className="text-gray-300" />
-                                    </a>
-                                    <a
-                                        href="http://10.8.102.72/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                                            Ras Minsal
-                                        </div>
-                                        <ExternalLink size={14} className="text-gray-300" />
-                                    </a>
-                                    <a
-                                        href="https://contingencia.rasvaldivia.cl/rasvaldivia/index.php"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                                            Ras Externo
-                                        </div>
-                                        <ExternalLink size={14} className="text-gray-300" />
-                                    </a>
-                                    <a
-                                        href="https://cesfamfutrono.wiener-lab.com/estudios/login/?next=/estudios/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                                            Laboratorio Cesfam
-                                        </div>
-                                        <ExternalLink size={14} className="text-gray-300" />
-                                    </a>
-                                    <a
-                                        href="http://laboratorioloslagos.ddns.net/"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center justify-between px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                                            Laboratorio Externo
-                                        </div>
-                                        <ExternalLink size={14} className="text-gray-300" />
-                                    </a>
-                                </div>
-                            )}
-                        </div>
 
                         {isAdmin && (
                             <button
