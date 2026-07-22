@@ -32,3 +32,24 @@ export async function decrypt(input: string): Promise<any> {
         return null;
     }
 }
+
+export async function generatePdfToken(requestId: string): Promise<string> {
+    const key = getKey();
+    return await new SignJWT({ requestId })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('30d')
+        .sign(key);
+}
+
+export async function verifyPdfToken(token: string, requestId: string): Promise<boolean> {
+    try {
+        const key = getKey();
+        const { payload } = await jwtVerify(token, key, {
+            algorithms: ['HS256'],
+        });
+        return payload?.requestId === requestId;
+    } catch {
+        return false;
+    }
+}

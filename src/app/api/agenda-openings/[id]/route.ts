@@ -70,7 +70,7 @@ export async function PATCH(
                 }
 
                 if (recipients.length > 0) {
-                    const html = generateRequestEmailHtml(updatedRequest, 'Apertura');
+                    const html = await generateRequestEmailHtml(updatedRequest, 'Apertura');
                     await sendEmail({
                         to: Array.from(new Set(recipients)),
                         subject: `Gestión Finalizada: Apertura de Agenda - ${updatedRequest.professionalName}`,

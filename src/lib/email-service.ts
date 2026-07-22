@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { generatePdfToken } from '@/lib/session-crypto';
 
 interface EmailParams {
     to: string[];
@@ -42,8 +43,9 @@ export async function sendEmail({ to, subject, html, fromName, replyTo }: EmailP
     }
 }
 
-export function generateRequestEmailHtml(request: any, type: 'Bloqueo' | 'Apertura') {
+export async function generateRequestEmailHtml(request: any, type: 'Bloqueo' | 'Apertura') {
     const isNoPatients = Array.isArray(request.pdfUrl) ? request.pdfUrl[0] === 'SIN PACIENTES' : request.pdfUrl === 'SIN PACIENTES';
+    const pdfToken = request.id ? await generatePdfToken(request.id) : '';
     
     return `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
@@ -68,7 +70,7 @@ export function generateRequestEmailHtml(request: any, type: 'Bloqueo' | 'Apertu
                             const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
                                            (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://cesfam-app.vercel.app');
                             const link = (url === 'INTERNAL_PDF' || url.startsWith('data:'))
-                                ? `${baseUrl}/api/pdf/${request.id}?index=${idx}`
+                                ? `${baseUrl}/api/pdf/${request.id}?index=${idx}${pdfToken ? `&token=${pdfToken}` : ''}`
                                 : url;
                             return `
                                 <div style="margin-bottom: 10px;">

@@ -75,7 +75,7 @@ export async function PATCH(
                 }
 
                 if (recipients.length > 0) {
-                    const html = generateRequestEmailHtml(updatedRequest, 'Bloqueo');
+                    const html = await generateRequestEmailHtml(updatedRequest, 'Bloqueo');
                     await sendEmail({
                         to: Array.from(new Set(recipients)), // removed duplicates if any
                         subject: `Gestión Finalizada: Bloqueo - ${updatedRequest.professionalName}`,

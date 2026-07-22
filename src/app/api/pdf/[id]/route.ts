@@ -1,21 +1,26 @@
 import { NextResponse } from 'next/server';
 import { getPdfById } from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { verifyPdfToken } from '@/lib/session-crypto';
 
 export async function GET(
     request: Request,
     { params }: { params: Promise<{ id: string }> }
 ) {
     try {
-        const session = await getSession();
-        if (!session || !session.email) {
-            return new NextResponse('No autorizado', { status: 401 });
-        }
-
         const { id } = await params;
         const { searchParams } = new URL(request.url);
         const indexStr = searchParams.get('index');
+        const token = searchParams.get('token');
         const index = indexStr ? parseInt(indexStr) : 0;
+
+        const session = await getSession();
+        const isAuthenticated = session && session.email;
+        const isValidToken = token ? await verifyPdfToken(token, id) : false;
+
+        if (!isAuthenticated && !isValidToken) {
+            return new NextResponse('No autorizado', { status: 401 });
+        }
         
         const pdfArray = await getPdfById(id);
 
