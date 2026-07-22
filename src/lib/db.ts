@@ -131,7 +131,7 @@ export async function saveRequest(request: any): Promise<BlockingRequest> {
             end_time: request.endTime,
             status: request.status,
             submitter_email: request.submitterEmail,
-            pdf_urls: request.pdfUrl ? JSON.stringify(request.pdfUrl) : null,
+            pdf_urls: null, // EFICIENCIA: Descartamos el PDF Base64 para no saturar la BD
             agenda_blocked_status: request.agendaBlockedStatus || null,
         },
     });
@@ -193,9 +193,10 @@ export async function updateRequestStatus(id: string, status: string, additional
     } else if (status === 'Realizado') {
         dataToUpdate.processed_at = new Date();
     }
-    if (additionalData.pdfUrl) {
-        dataToUpdate.pdf_urls = JSON.stringify(additionalData.pdfUrl);
-    }
+    // EFICIENCIA: Ignoramos update de pdfUrl para no guardar Base64
+    // if (additionalData.pdfUrl) {
+    //     dataToUpdate.pdf_urls = JSON.stringify(additionalData.pdfUrl);
+    // }
 
     const updated = await prisma.agendaBlockRequest.update({
         where: { id },

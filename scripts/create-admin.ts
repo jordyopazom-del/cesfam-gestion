@@ -4,32 +4,44 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = 'calvarado@munifutrono.cl';
-  const password = await bcrypt.hash('160878', 10);
-
+  const email = 'admin@cesfam.cl';
+  const password = 'admin'; // Contraseña temporal
+  
+  const hashedPassword = await bcrypt.hash(password, 10);
+  
   const user = await prisma.user.upsert({
     where: { email },
     update: {
-      password,
+      password: hashedPassword,
       role: 'ADMIN',
-      name: 'Claudio Alvarado',
-      status: 'active'
+      accessLogistica: true,
+      accessSolicitudes: true,
+      accessReservas: true,
+      accessAgendas: true
     },
     create: {
-      email,
-      password,
+      email: email,
+      name: 'Administrador Sistema',
+      password: hashedPassword,
       role: 'ADMIN',
-      name: 'Claudio Alvarado',
-      status: 'active'
+      status: 'active',
+      accessLogistica: true,
+      accessSolicitudes: true,
+      accessReservas: true,
+      accessAgendas: true
     },
   });
-
-  console.log('Usuario administrador creado/actualizado:', user.email);
+  
+  console.log('✅ Usuario Administrador Creado con éxito!');
+  console.log('-------------------------------------------');
+  console.log(`Email: ${user.email}`);
+  console.log(`Clave: ${password}`);
+  console.log('-------------------------------------------');
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('Error creando usuario:', e);
     process.exit(1);
   })
   .finally(async () => {
