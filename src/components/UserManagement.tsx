@@ -15,6 +15,7 @@ interface User {
     accessSolicitudes: boolean;
     accessReservas: boolean;
     accessAgendas: boolean;
+    accessDemanda: boolean;
 }
 
 export default function UserManagement() {
@@ -107,6 +108,7 @@ export default function UserManagement() {
                 accessSolicitudes: merged.accessSolicitudes,
                 accessReservas: merged.accessReservas,
                 accessAgendas: merged.accessAgendas,
+                accessDemanda: merged.accessDemanda,
             });
             if (success) {
                 setMessage({ type: 'success', text: `Usuario ${email} actualizado.` });
@@ -132,6 +134,7 @@ export default function UserManagement() {
                 accessSolicitudes: user.accessSolicitudes,
                 accessReservas: user.accessReservas,
                 accessAgendas: user.accessAgendas,
+                accessDemanda: user.accessDemanda,
             });
             if (success) {
                 setMessage({ type: 'success', text: `Usuario ${user.email} aprobado.` });
@@ -151,6 +154,7 @@ export default function UserManagement() {
                 accessSolicitudes: user.accessSolicitudes,
                 accessReservas: user.accessReservas,
                 accessAgendas: user.accessAgendas,
+                accessDemanda: user.accessDemanda,
             });
             await loadUsers();
         } finally {
@@ -192,6 +196,7 @@ export default function UserManagement() {
 
     const modules: { key: keyof User; label: string; icon: string }[] = [
         { key: 'accessAgendas', label: 'Agendas', icon: '📅' },
+        { key: 'accessDemanda', label: 'Demanda', icon: '🔄' },
         { key: 'accessReservas', label: 'Reservas', icon: '🏠' },
         { key: 'accessLogistica', label: 'Logística', icon: '🚐' },
     ];

@@ -118,7 +118,8 @@ export async function fetchUsers() {
         accessLogistica: u.accessLogistica,
         accessSolicitudes: u.accessSolicitudes,
         accessReservas: u.accessReservas,
-        accessAgendas: u.accessAgendas
+        accessAgendas: u.accessAgendas,
+        accessDemanda: u.accessDemanda
     }));
 }
 
@@ -166,6 +167,7 @@ export async function adminUpdateUser(
         accessSolicitudes: boolean;
         accessReservas: boolean;
         accessAgendas: boolean;
+        accessDemanda: boolean;
     }
 ) {
     const { updateUserStatusAndRole } = await import('@/lib/auth-db');

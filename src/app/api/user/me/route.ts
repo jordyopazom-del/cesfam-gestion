@@ -24,5 +24,6 @@ export async function GET() {
         accessSolicitudes: user.accessSolicitudes,
         accessReservas: user.accessReservas,
         accessAgendas: user.accessAgendas,
+        accessDemanda: user.accessDemanda,
     });
 }

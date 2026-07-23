@@ -31,6 +31,7 @@ interface HomeClientProps {
     userEmail?: string;
     userName?: string;
     accessLogistica?: boolean;
+    accessDemanda?: boolean;
     accessSolicitudes?: boolean;
     accessReservas?: boolean;
     accessAgendas?: boolean;
@@ -43,7 +44,8 @@ export default function HomeClient({
     personnel, 
     userEmail, 
     userName, 
-    accessLogistica = false, 
+    accessLogistica = false,
+    accessDemanda = false, 
     accessSolicitudes = false, 
     accessReservas = false, 
     accessAgendas = false,
@@ -267,79 +269,79 @@ export default function HomeClient({
                             </button>
                         )}
 
-                        <div className="relative" ref={ssoDropdownRef}>
-                            <button
-                                onClick={() => setIsSsoDropdownOpen(!isSsoDropdownOpen)}
-                                className={clsx(
-                                    "flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all outline-none",
-                                    isSsoDropdownOpen ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
-                                )}
-                            >
-                                <RefreshCw size={16} className="text-blue-600" />
-                                Gestión Demanda
-                                <ChevronDown size={14} className={clsx("transition-transform", isSsoDropdownOpen && "rotate-180")} />
-                            </button>
+                        {(isAdmin || accessDemanda) && (
+                            <div className="relative" ref={ssoDropdownRef}>
+                                <button
+                                    onClick={() => setIsSsoDropdownOpen(!isSsoDropdownOpen)}
+                                    className={clsx(
+                                        "flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all outline-none",
+                                        isSsoDropdownOpen ? "bg-white text-blue-600 shadow-sm" : "text-gray-600 hover:text-gray-900 hover:bg-gray-200/50"
+                                    )}
+                                >
+                                    <RefreshCw size={16} className="text-blue-600" />
+                                    Gestión Demanda
+                                    <ChevronDown size={14} className={clsx("transition-transform", isSsoDropdownOpen && "rotate-180")} />
+                                </button>
 
-                            {isSsoDropdownOpen && (
-                                <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
-                                    <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
-                                        Gestión e Información
+                                {isSsoDropdownOpen && (
+                                    <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+                                        <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">
+                                            Gestión e Información
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                router.push('/sso/dashboard');
+                                                setIsSsoDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <LayoutDashboard size={16} className="text-gray-400" />
+                                            Panel Analítico
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                router.push('/sso/rechazos');
+                                                setIsSsoDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <XCircle size={16} className="text-gray-400" />
+                                            Gestión de Rechazos
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                router.push('/sso/derivaciones');
+                                                setIsSsoDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <ArrowRightLeft size={16} className="text-gray-400" />
+                                            Gestión de Derivaciones
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                router.push('/sso/reprogramacion');
+                                                setIsSsoDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <Calendar size={16} className="text-gray-400" />
+                                            Reprogramación RAS
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                router.push('/sso/horas');
+                                                setIsSsoDropdownOpen(false);
+                                            }}
+                                            className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                                        >
+                                            <Clock size={16} className="text-gray-400" />
+                                            Estado de Horas
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            router.push('/sso/dashboard');
-                                            setIsSsoDropdownOpen(false);
-                                        }}
-                                        className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <LayoutDashboard size={16} className="text-gray-400" />
-                                        Panel Analítico
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            router.push('/sso/rechazos');
-                                            setIsSsoDropdownOpen(false);
-                                        }}
-                                        className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <XCircle size={16} className="text-gray-400" />
-                                        Gestión de Rechazos
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            router.push('/sso/derivaciones');
-                                            setIsSsoDropdownOpen(false);
-                                        }}
-                                        className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <ArrowRightLeft size={16} className="text-gray-400" />
-                                        Gestión de Derivaciones
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            router.push('/sso/reprogramacion');
-                                            setIsSsoDropdownOpen(false);
-                                        }}
-                                        className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <Calendar size={16} className="text-gray-400" />
-                                        Reprogramación RAS
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            router.push('/sso/horas');
-                                            setIsSsoDropdownOpen(false);
-                                        }}
-                                        className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                    >
-                                        <Clock size={16} className="text-gray-400" />
-                                        Estado de Horas
-                                    </button>
-
-
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
 
 
 
@@ -585,6 +587,7 @@ export default function HomeClient({
                                              <div className="space-y-1">
                                                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                                        Gestión Demanda
+                                                   {(!accessDemanda && !isAdmin) && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
                                                   </h3>
                                                   <p className="text-xs text-gray-400 font-semibold leading-relaxed">
                                                        Planificación RAS, control y gestión de rechazos/derivaciones de interconsultas, panel de carga de datos y control de horas.
@@ -592,12 +595,21 @@ export default function HomeClient({
                                              </div>
                                         </div>
                                         <div className="pt-6">
-                                             <button 
-                                                  onClick={() => { router.push('/sso/dashboard'); }}
-                                                  className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
-                                             >
-                                                  Entrar al Módulo
-                                             </button>
+                                             {(accessDemanda || isAdmin) ? (
+                                                  <button 
+                                                       onClick={() => { router.push('/sso/dashboard'); }}
+                                                       className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
+                                                  >
+                                                       Entrar al Módulo
+                                                  </button>
+                                             ) : (
+                                                  <button 
+                                                       disabled
+                                                       className="w-full py-2.5 px-4 bg-gray-100 text-gray-400 font-bold text-xs rounded-xl cursor-not-allowed"
+                                                  >
+                                                       Sin Acceso
+                                                  </button>
+                                             )}
                                         </div>
                                    </div>
                               </div>

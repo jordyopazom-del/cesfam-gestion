@@ -28,7 +28,8 @@ export async function verifyCredentials(email: string, pass: string) {
             accessLogistica: true,
             accessSolicitudes: true,
             accessReservas: true,
-            accessAgendas: true
+            accessAgendas: true,
+            accessDemanda: true
           }
         });
       }
@@ -83,6 +84,7 @@ export async function updateUserStatusAndRole(
     accessSolicitudes: boolean;
     accessReservas: boolean;
     accessAgendas: boolean;
+    accessDemanda: boolean;
   }
 ) {
   const data: any = { status, role };
@@ -91,6 +93,7 @@ export async function updateUserStatusAndRole(
     data.accessSolicitudes = permissions.accessSolicitudes;
     data.accessReservas = permissions.accessReservas;
     data.accessAgendas = permissions.accessAgendas;
+    data.accessDemanda = permissions.accessDemanda;
   }
   await prisma.user.update({
     where: { email },

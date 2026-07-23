@@ -53,6 +53,7 @@ model User {
   accessSolicitudes Boolean @default(false)
   accessReservas Boolean   @default(false)
   accessAgendas Boolean    @default(false)
+  accessDemanda Boolean    @default(false)
   
   accounts      Account[]
   sessions      Session[]
