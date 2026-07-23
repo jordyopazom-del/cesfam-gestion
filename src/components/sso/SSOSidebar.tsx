@@ -96,36 +96,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
             );
           })}
 
-          {isAdmin && (
-            <>
-              <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-10 mb-4">
-                Administración
-              </p>
-              {adminNavigation.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      "group flex items-center rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200",
-                      isActive
-                        ? "bg-slate-900 text-white shadow-md"
-                        : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                    )}
-                  >
-                    <item.icon
-                      className={cn(
-                        "mr-3 h-5 w-5 flex-shrink-0 transition-colors",
-                        isActive ? "text-slate-200" : "text-slate-400 group-hover:text-slate-600"
-                      )}
-                    />
-                    {item.name}
-                  </Link>
-                );
-              })}
-            </>
-          )}
+
         </nav>
       </div>
 
