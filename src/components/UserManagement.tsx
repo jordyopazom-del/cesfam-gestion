@@ -471,6 +471,7 @@ export default function UserManagement() {
                                             className="w-full max-w-[125px] px-2.5 py-1.5 rounded-lg text-xs font-bold border border-gray-200 bg-white outline-none cursor-pointer text-gray-700"
                                         >
                                             <option value="ADMIN">Admin</option>
+                                            <option value="COORDINADOR">Coordinador</option>
                                             <option value="SOLICITANTE">Solicitante</option>
                                             <option value="USUARIO">Usuario</option>
                                         </select>
