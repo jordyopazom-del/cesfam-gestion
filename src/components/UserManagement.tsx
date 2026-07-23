@@ -196,7 +196,7 @@ export default function UserManagement() {
 
     const modules: { key: keyof User; label: string; icon: string }[] = [
         { key: 'accessAgendas', label: 'Agendas', icon: '📅' },
-        { key: 'accessDemanda', label: 'Demanda', icon: '🔄' },
+        { key: 'accessDemanda', label: 'Demanda', icon: '📊' },
         { key: 'accessReservas', label: 'Reservas', icon: '🏠' },
         { key: 'accessLogistica', label: 'Logística', icon: '🚐' },
     ];
@@ -263,10 +263,10 @@ export default function UserManagement() {
                     {/* Cabecera de Tabla (Solo Desktop) */}
                     <div className="hidden lg:grid grid-cols-12 gap-4 px-4 py-3 border-b border-gray-100 text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">
                         <div className="lg:col-span-3">Funcionario</div>
-                        <div className="lg:col-span-3">Módulos Habilitados</div>
+                        <div className="lg:col-span-4">Módulos Habilitados</div>
                         <div className="lg:col-span-2 text-center">Estado</div>
                         <div className="lg:col-span-2 text-center">Rol de Acceso</div>
-                        <div className="lg:col-span-2 text-right pr-4">Acciones</div>
+                        <div className="lg:col-span-1 text-right pr-4">Acciones</div>
                     </div>
 
                     {paginatedUsers.map(user => {
@@ -292,7 +292,7 @@ export default function UserManagement() {
                                     </div>
 
                                     {/* Centro: Módulos Habilitados */}
-                                    <div className="flex flex-row flex-nowrap items-center gap-1.5 lg:col-span-3 overflow-hidden">
+                                    <div className="flex flex-row flex-wrap items-center gap-1.5 lg:col-span-4">
                                         {modules.map(({ key, label, icon }) => {
                                             const enabled = getEdit(email, key, user[key]) as boolean;
                                             return (
@@ -363,7 +363,7 @@ export default function UserManagement() {
                                     </div>
 
                                     {/* Derecha: Acciones (Guardar / Eliminar) */}
-                                    <div className="flex lg:col-span-2 justify-start lg:justify-end items-center gap-2 min-h-[34px] w-full">
+                                    <div className="flex lg:col-span-1 justify-start lg:justify-end items-center gap-2 min-h-[34px] w-full">
                                         {hasEdits && (
                                             <button
                                                 onClick={() => handleSave(user)}
