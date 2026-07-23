@@ -397,29 +397,39 @@ export default function UserManagement() {
 
                                     {/* Centro: Módulos Habilitados */}
                                     <div className="flex flex-row flex-wrap items-center gap-1.5 lg:col-span-4">
-                                        {modules.map(({ key, label, icon }) => {
-                                            const enabled = getEdit(email, key, user[key]) as boolean;
-                                            return (
-                                                <label
-                                                    key={key}
-                                                    className={clsx(
-                                                        'flex items-center gap-1 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all select-none text-[10.5px] font-bold shrink-0',
-                                                        enabled
-                                                            ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                                                            : 'bg-white text-gray-400 border-gray-200 hover:border-blue-300 hover:text-blue-600'
-                                                    )}
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        className="hidden"
-                                                        checked={enabled}
-                                                        onChange={e => setEdit(email, key, e.target.checked)}
-                                                    />
-                                                    <span>{icon}</span>
-                                                    <span>{label}</span>
-                                                </label>
-                                            );
-                                        })}
+                                        {getEdit(email, 'role', user.role) === 'ADMIN' ? (
+                                            <span className="text-[10.5px] font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
+                                                Acceso total por defecto (Admin)
+                                            </span>
+                                        ) : getEdit(email, 'role', user.role) === 'SOLICITANTE' ? (
+                                            <span className="text-[10.5px] font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-200">
+                                                Modo Solo Solicitudes
+                                            </span>
+                                        ) : (
+                                            modules.map(({ key, label, icon }) => {
+                                                const enabled = getEdit(email, key, user[key]) as boolean;
+                                                return (
+                                                    <label
+                                                        key={key}
+                                                        className={clsx(
+                                                            'flex items-center gap-1 px-2.5 py-1.5 rounded-lg border cursor-pointer transition-all select-none text-[10.5px] font-bold shrink-0',
+                                                            enabled
+                                                                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                                                                : 'bg-white text-gray-400 border-gray-200 hover:border-blue-300 hover:text-blue-600'
+                                                        )}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            className="hidden"
+                                                            checked={enabled}
+                                                            onChange={e => setEdit(email, key, e.target.checked)}
+                                                        />
+                                                        <span>{icon}</span>
+                                                        <span>{label}</span>
+                                                    </label>
+                                                );
+                                            })
+                                        )}
                                     </div>
 
                                     {/* Derecha: Estado */}
