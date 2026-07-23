@@ -336,33 +336,7 @@ export default function HomeClient({
                                         Estado de Horas
                                     </button>
 
-                                    {isAdmin && (
-                                        <>
-                                            <div className="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest border-b border-gray-50 mt-2 mb-1">
-                                                Administración SSO
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    router.push('/sso/admin/carga');
-                                                    setIsSsoDropdownOpen(false);
-                                                }}
-                                                className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                            >
-                                                <UploadCloud size={16} className="text-gray-400" />
-                                                Carga de Datos
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    router.push('/sso/admin/panel');
-                                                    setIsSsoDropdownOpen(false);
-                                                }}
-                                                className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                            >
-                                                <Settings size={16} className="text-gray-400" />
-                                                Panel de Administración
-                                            </button>
-                                        </>
-                                    )}
+
                                 </div>
                             )}
                         </div>
@@ -381,7 +355,7 @@ export default function HomeClient({
                                 )}
                             >
                                 <Users size={16} />
-                                Funcionarios
+                                Directorio y Accesos
                                 {pendingUsersCount > 0 && (
                                     <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white animate-pulse">
                                         {pendingUsersCount}
