@@ -53,7 +53,12 @@ export default function HomeClient({
 }: HomeClientProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock' | 'stats' | 'calendar'>('dashboard');
-    const canRequestAgendas = isAdmin || userRole === 'SOLICITANTE';
+    const isAdminUser = userRole === 'ADMIN';
+    const isAgendasEnabled = isAdminUser || accessAgendas;
+    const isLogisticaEnabled = isAdminUser || accessLogistica;
+    const isReservasEnabled = isAdminUser || accessReservas;
+    const isDemandaEnabled = isAdminUser || accessDemanda;
+    const canRequestAgendas = isAdmin || userRole === 'SOLICITANTE' || userRole === 'COORDINADOR' || userRole === 'USUARIO';
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -250,7 +255,7 @@ export default function HomeClient({
                             )}
                         </div>
 
-                        {accessReservas && (
+                        {isReservasEnabled && (
                             <button
                                 onClick={() => { router.push('/reservas'); }}
                                 className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
@@ -259,7 +264,7 @@ export default function HomeClient({
                                 Reservas
                             </button>
                         )}
-                        {accessLogistica && (
+                        {isLogisticaEnabled && (
                             <button
                                 onClick={() => { router.push('/logistica'); }}
                                 className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans"
@@ -269,7 +274,7 @@ export default function HomeClient({
                             </button>
                         )}
 
-                        {(isAdmin || accessDemanda) && (
+                        {isDemandaEnabled && (
                             <div className="relative" ref={ssoDropdownRef}>
                                 <button
                                     onClick={() => setIsSsoDropdownOpen(!isSsoDropdownOpen)}
@@ -434,7 +439,7 @@ export default function HomeClient({
                                    {/* Card 1: Agenda y Bloqueos */}
                                    <div className={clsx(
                                         "bg-white rounded-3xl border p-6 flex flex-col justify-between transition-all duration-300 shadow-sm relative overflow-hidden group",
-                                        accessAgendas 
+                                        isAgendasEnabled 
                                              ? "border-gray-100 hover:shadow-md hover:border-blue-200" 
                                              : "border-gray-100 bg-gray-50/50 opacity-70"
                                    )}>
@@ -445,7 +450,7 @@ export default function HomeClient({
                                              <div className="space-y-1">
                                                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                                        Bloqueo de Agendas
-                                                       {!accessAgendas && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
+                                                       {!isAgendasEnabled && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
                                                   </h3>
                                                   <p className="text-xs text-gray-400 font-semibold leading-relaxed">
                                                        Solicitud y apertura de agendas clínicas de funcionarios, bloqueos programados y visualización de reportes semanales.
@@ -453,9 +458,9 @@ export default function HomeClient({
                                              </div>
                                         </div>
                                         <div className="pt-6">
-                                             {accessAgendas ? (
+                                             {isAgendasEnabled ? (
                                                   <div className="flex flex-col gap-2">
-                                                       {canRequestAgendas ? (
+                                                       {(isAdmin || userRole === 'SOLICITANTE') ? (
                                                             <>
                                                                  <button 
                                                                       onClick={() => setActiveTab('form')}
@@ -472,18 +477,34 @@ export default function HomeClient({
                                                             </>
                                                        ) : (
                                                             <>
-                                                                 <button 
-                                                                      onClick={() => setActiveTab('calendar')}
-                                                                      className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
-                                                                 >
-                                                                      Ver Calendario
-                                                                 </button>
-                                                                 <button 
-                                                                      onClick={() => setActiveTab('reports')}
-                                                                      className="w-full py-2.5 px-4 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-xs rounded-xl border border-gray-100 transition-all"
-                                                                 >
-                                                                      Ver Reportes
-                                                                 </button>
+                                                                 <div className="grid grid-cols-2 gap-2">
+                                                                      <button 
+                                                                           onClick={() => setActiveTab('form')}
+                                                                           className="w-full py-2 px-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] rounded-lg shadow-sm transition-all text-center"
+                                                                      >
+                                                                           Solicitar Bloqueo
+                                                                      </button>
+                                                                      <button 
+                                                                           onClick={() => setActiveTab('agenda')}
+                                                                           className="w-full py-2 px-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px] rounded-lg shadow-sm transition-all text-center"
+                                                                      >
+                                                                           Abrir Agenda
+                                                                      </button>
+                                                                 </div>
+                                                                 <div className="grid grid-cols-2 gap-2">
+                                                                      <button 
+                                                                           onClick={() => setActiveTab('calendar')}
+                                                                           className="w-full py-2 px-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-[11px] rounded-lg border border-gray-100 transition-all text-center"
+                                                                      >
+                                                                           Ver Calendario
+                                                                      </button>
+                                                                      <button 
+                                                                           onClick={() => setActiveTab('reports')}
+                                                                           className="w-full py-2 px-2 bg-gray-50 hover:bg-gray-100 text-gray-600 font-bold text-[11px] rounded-lg border border-gray-100 transition-all text-center"
+                                                                      >
+                                                                           Ver Reportes
+                                                                      </button>
+                                                                 </div>
                                                             </>
                                                        )}
                                                   </div>
@@ -501,7 +522,7 @@ export default function HomeClient({
                                    {/* Card 2: Logística */}
                                    <div className={clsx(
                                         "bg-white rounded-3xl border p-6 flex flex-col justify-between transition-all duration-300 shadow-sm relative overflow-hidden group",
-                                        accessLogistica 
+                                        isLogisticaEnabled 
                                              ? "border-gray-100 hover:shadow-md hover:border-emerald-200" 
                                              : "border-gray-100 bg-gray-50/50 opacity-70"
                                    )}>
@@ -512,7 +533,7 @@ export default function HomeClient({
                                              <div className="space-y-1">
                                                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                                        Gestión Logística
-                                                       {!accessLogistica && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
+                                                       {!isLogisticaEnabled && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
                                                   </h3>
                                                   <p className="text-xs text-gray-400 font-semibold leading-relaxed">
                                                        Planificación avanzada de rondas médicas, administración de vehículos, conductores, personal clínico y pacientes georreferenciados.
@@ -520,7 +541,7 @@ export default function HomeClient({
                                              </div>
                                         </div>
                                         <div className="pt-6">
-                                             {accessLogistica ? (
+                                             {isLogisticaEnabled ? (
                                                   <button 
                                                        onClick={() => { router.push('/logistica'); }}
                                                        className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
@@ -541,7 +562,7 @@ export default function HomeClient({
                                    {/* Card 3: Reservas de Salas */}
                                    <div className={clsx(
                                         "bg-white rounded-3xl border p-6 flex flex-col justify-between transition-all duration-300 shadow-sm relative overflow-hidden group",
-                                        accessReservas 
+                                        isReservasEnabled 
                                              ? "border-gray-100 hover:shadow-md hover:border-purple-200" 
                                              : "border-gray-100 bg-gray-50/50 opacity-70"
                                    )}>
@@ -552,7 +573,7 @@ export default function HomeClient({
                                              <div className="space-y-1">
                                                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                                        Reserva de Salas
-                                                       {!accessReservas && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
+                                                       {!isReservasEnabled && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
                                                   </h3>
                                                   <p className="text-xs text-gray-400 font-semibold leading-relaxed">
                                                        Calendario mensual de solicitudes de reserva para salas comunes de reuniones, proyectores, telones y otros activos clínicos.
@@ -560,7 +581,7 @@ export default function HomeClient({
                                              </div>
                                         </div>
                                         <div className="pt-6">
-                                             {accessReservas ? (
+                                             {isReservasEnabled ? (
                                                   <button 
                                                        onClick={() => { router.push('/reservas'); }}
                                                        className="w-full py-2.5 px-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
@@ -587,7 +608,7 @@ export default function HomeClient({
                                              <div className="space-y-1">
                                                   <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
                                                        Gestión Demanda
-                                                   {(!accessDemanda && !isAdmin) && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
+                                                   {!isDemandaEnabled && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
                                                   </h3>
                                                   <p className="text-xs text-gray-400 font-semibold leading-relaxed">
                                                        Planificación RAS, control y gestión de rechazos/derivaciones de interconsultas, panel de carga de datos y control de horas.
@@ -595,7 +616,7 @@ export default function HomeClient({
                                              </div>
                                         </div>
                                         <div className="pt-6">
-                                             {(accessDemanda || isAdmin) ? (
+                                             {isDemandaEnabled ? (
                                                   <button 
                                                        onClick={() => { router.push('/sso/dashboard'); }}
                                                        className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
