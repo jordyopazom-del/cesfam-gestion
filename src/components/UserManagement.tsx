@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchUsers, adminUpdateUser, adminDeleteUser } from '@/app/actions/auth';
-import { Users, RefreshCw, CheckCircle, AlertCircle, Search, Shield, Trash2, Download } from 'lucide-react';
+import { fetchUsers, adminUpdateUser, adminDeleteUser, adminCreateUser, adminResetPassword } from '@/app/actions/auth';
+import { Users, RefreshCw, CheckCircle, AlertCircle, Search, Shield, Trash2, Download, UserCheck, Key, UserPlus } from 'lucide-react';
 import clsx from 'clsx';
 
 interface User {
@@ -26,6 +26,11 @@ export default function UserManagement() {
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [isCleaning, setIsCleaning] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    
+    // States for New User Form
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [newUser, setNewUser] = useState({ name: '', email: '', password: '', role: 'USUARIO' });
+    const [creating, setCreating] = useState(false);
 
     const handleCleanupPdfs = async () => {
         if (!window.confirm('¿Estás seguro de que deseas eliminar permanentemente los archivos PDF base64 de las solicitudes con más de 7 días de antigüedad? Esta acción no se puede deshacer.')) {
@@ -184,6 +189,49 @@ export default function UserManagement() {
         }
     };
 
+    const handleCreateUser = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setCreating(true);
+        setMessage(null);
+        try {
+            const res = await adminCreateUser(newUser.name, newUser.email, newUser.role, newUser.password);
+            if (res.error) {
+                setMessage({ type: 'error', text: res.error });
+            } else {
+                setMessage({ type: 'success', text: res.success! });
+                setNewUser({ name: '', email: '', password: '', role: 'USUARIO' });
+                setShowCreateForm(false);
+                await loadUsers();
+            }
+        } catch (error) {
+            setMessage({ type: 'error', text: 'Ocurrió un error al registrar al usuario.' });
+        } finally {
+            setCreating(false);
+            setTimeout(() => setMessage(null), 4000);
+        }
+    };
+
+    const handleResetPassword = async (email: string) => {
+        if (!window.confirm(`¿Seguro que deseas resetear la contraseña de ${email} a "cesfam2026"? El usuario deberá cambiarla al iniciar sesión.`)) {
+            return;
+        }
+        setSavingEmail(email);
+        setMessage(null);
+        try {
+            const success = await adminResetPassword(email);
+            if (success) {
+                setMessage({ type: 'success', text: `Contraseña de ${email} reseteada exitosamente.` });
+            } else {
+                setMessage({ type: 'error', text: 'Error al resetear la contraseña.' });
+            }
+        } catch {
+            setMessage({ type: 'error', text: 'Error al resetear la contraseña.' });
+        } finally {
+            setSavingEmail(null);
+            setTimeout(() => setMessage(null), 4000);
+        }
+    };
+
     const filteredUsers = users.filter(u =>
         (u.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (u.email || '').toLowerCase().includes(searchTerm.toLowerCase())
@@ -219,6 +267,13 @@ export default function UserManagement() {
                 </div>
                 <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
                     <button
+                        onClick={() => setShowCreateForm(!showCreateForm)}
+                        className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white text-sm font-semibold rounded-lg shadow-sm hover:shadow transition-all active:scale-[0.98] outline-none cursor-pointer"
+                    >
+                        <UserPlus size={16} />
+                        Nuevo Funcionario
+                    </button>
+                    <button
                         onClick={() => {
                             window.open('/api/admin/backup', '_blank');
                         }}
@@ -249,6 +304,55 @@ export default function UserManagement() {
             </div>
 
             <div className="p-8">
+                {showCreateForm && (
+                    <div className="mb-6 bg-slate-50 rounded-xl border border-slate-200 p-6 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <UserCheck className="h-5 w-5 text-blue-600" /> Registrar Nuevo Funcionario
+                        </h3>
+                        <form onSubmit={handleCreateUser} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 mb-1 block">Nombre Completo</label>
+                                <input 
+                                    type="text" placeholder="Ej: Juan Pérez" required
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                                    value={newUser.name} onChange={e => setNewUser({...newUser, name: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 mb-1 block">Correo Electrónico</label>
+                                <input 
+                                    type="email" placeholder="Ej: juan.perez@cesfam.cl" required
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                                    value={newUser.email} onChange={e => setNewUser({...newUser, email: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 mb-1 block">Contraseña</label>
+                                <input 
+                                    type="password" placeholder="Mínimo 6 caracteres" required minLength={6}
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white"
+                                    value={newUser.password} onChange={e => setNewUser({...newUser, password: e.target.value})}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-500 mb-1 block">Rol Principal</label>
+                                <select 
+                                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white font-semibold text-slate-700"
+                                    value={newUser.role} onChange={e => setNewUser({...newUser, role: e.target.value})}
+                                >
+                                    <option value="USUARIO">Usuario (Gestor)</option>
+                                    <option value="ADMIN">Administrador</option>
+                                    <option value="COORDINADOR">Coordinador</option>
+                                    <option value="SOLICITANTE">Solicitante</option>
+                                </select>
+                            </div>
+                            <button type="submit" disabled={creating} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg py-2.5 text-sm shadow-sm transition-colors cursor-pointer disabled:opacity-50">
+                                {creating ? 'Registrando...' : 'Registrar Funcionario'}
+                            </button>
+                        </form>
+                    </div>
+                )}
+
                 {message && (
                     <div className={clsx(
                         'mb-4 p-4 rounded-lg flex items-center gap-2',
@@ -374,6 +478,14 @@ export default function UserManagement() {
                                                 <span>Guardar</span>
                                             </button>
                                         )}
+                                        <button
+                                            onClick={() => handleResetPassword(email)}
+                                            disabled={savingEmail === email}
+                                            title="Resetear clave a cesfam2026"
+                                            className="flex items-center justify-center p-2 text-amber-600 hover:bg-amber-50 hover:text-amber-700 rounded-lg transition disabled:opacity-50 shadow-sm border border-amber-100 hover:border-amber-200 shrink-0"
+                                        >
+                                            <Key size={16} />
+                                        </button>
                                         <button
                                             onClick={() => handleDelete(email)}
                                             disabled={savingEmail === email}

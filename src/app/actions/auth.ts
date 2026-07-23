@@ -178,6 +178,22 @@ export async function adminUpdateUser(
 export async function adminDeleteUser(email: string) {
     const { deleteUser } = await import('@/lib/auth-db');
     const success = await deleteUser(email);
-    return success;
+    return { success };
 }
 
+export async function adminCreateUser(name: string, email: string, role: string, pass: string) {
+    const { registerUser, updateUserStatusAndRole, getUserByEmail } = await import('@/lib/auth-db');
+    const existing = await getUserByEmail(email);
+    if (existing) {
+        return { error: 'El correo ya está registrado.' };
+    }
+    await registerUser(email, name, pass);
+    await updateUserStatusAndRole(email, 'active', role, {
+        accessLogistica: false,
+        accessSolicitudes: false,
+        accessReservas: false,
+        accessAgendas: false,
+        accessDemanda: false
+    });
+    return { success: 'Funcionario registrado exitosamente.' };
+}
