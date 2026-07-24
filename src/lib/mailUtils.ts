@@ -75,8 +75,6 @@ export const getMailtoLink = (req: any, type: 'blockings' | 'openings', personne
         patientsNote = `\n✅ Observación:\nLa agenda ha sido desbloqueada exitosamente.\n`;
     } else if (hasDocs) {
         patientsNote = `\n📄 Documento Adjunto:\n${docLinksText}\n`;
-    } else {
-        patientsNote = `\n📄 Documento Adjunto:\nSin documento añadido\n`;
     }
 
     const bodyText = `Estimado/a,
