@@ -12,7 +12,15 @@ export default async function middleware(req: NextRequest) {
     const isProtectedRoute = protectedRoutes.some(r => path === r || path.startsWith(r + '/'));
     const isPublicRoute = publicRoutes.some(r => path === r || path.startsWith(r + '/'));
 
-    // 2. Decrypt the session from the cookie
+    // 2. Interceptar SSO nonce y redirigir al endpoint de procesamiento
+    const ssoNonce = req.nextUrl.searchParams.get("sso_nonce");
+    if (ssoNonce) {
+        const ssoUrl = new URL("/api/sso", req.url);
+        ssoUrl.searchParams.set("sso_nonce", ssoNonce);
+        return NextResponse.redirect(ssoUrl);
+    }
+
+    // 3. Decrypt the session from the cookie
     const cookie = req.cookies.get('cesfam_session')?.value;
     const session = cookie ? await decrypt(cookie) : null;
 

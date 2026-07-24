@@ -1,8 +1,43 @@
 'use client';
 
-import { useActionState } from 'react';
+import { useActionState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { login } from '../actions/auth';
 import { Loader2, Mail, Lock, ShieldCheck, HeartPulse } from 'lucide-react';
+
+function SsoErrorAlert() {
+    const searchParams = useSearchParams();
+    const errorParam = searchParams.get('error');
+
+    if (!errorParam) return null;
+
+    let message = '';
+    let colorClass = 'bg-red-500/10 border-red-500/20 text-red-400';
+
+    switch (errorParam) {
+        case 'user_not_registered':
+            message = 'Tu usuario de la Intranet no tiene acceso a esta plataforma. Solicita acceso al administrador.';
+            colorClass = 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400';
+            break;
+        case 'invalid_token':
+            message = 'El enlace es inválido o ya fue utilizado. Intenta nuevamente desde la Intranet.';
+            break;
+        case 'token_expired':
+            message = 'El enlace expiró (60 segundos). Intenta nuevamente desde la Intranet.';
+            break;
+        case 'sso_failed':
+            message = 'Error al procesar el acceso automático. Usa tu contraseña.';
+            break;
+        default:
+            return null;
+    }
+
+    return (
+        <div className={`p-4 border rounded-xl text-sm font-semibold text-center animate-shake ${colorClass} mb-6`}>
+            {message}
+        </div>
+    );
+}
 
 export default function LoginPage() {
     const [state, action, isPending] = useActionState(login, undefined);
@@ -25,6 +60,10 @@ export default function LoginPage() {
                         Sistema Unificado de Control y Administración
                     </p>
                 </div>
+
+                <Suspense fallback={null}>
+                    <SsoErrorAlert />
+                </Suspense>
 
                 <form className="mt-8 space-y-5" action={action}>
                     <div className="space-y-4">
