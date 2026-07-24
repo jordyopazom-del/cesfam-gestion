@@ -54,6 +54,7 @@ model User {
   accessReservas Boolean   @default(false)
   accessAgendas Boolean    @default(false)
   accessDemanda Boolean    @default(false)
+  accessReprogramacion Boolean @default(false)
   
   accounts      Account[]
   sessions      Session[]
@@ -301,6 +302,8 @@ model AgendaBlock {
   reason           String?
   uploadedBy       String?
   uploadDate       DateTime         @default(now())
+  assignedToEmail  String?
+  status           String           @default("Pendiente")
   patients         BlockedPatient[]
 }
 
@@ -315,6 +318,7 @@ model BlockedPatient {
   contactPhones  String?
   status         String       @default("Pendiente")
   solution       String?
+  lastStatusUpdate DateTime?
   updatedBy      String?
   updatedAt      DateTime     @default(now()) @updatedAt
 

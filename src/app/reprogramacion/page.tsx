@@ -24,6 +24,8 @@ export default async function ReprogramacionPage() {
         initialActiveBlocks={activeBlocks}
         initialHistoryBlocks={historyBlocks}
         userRole={user?.role || "gestor"}
+        userEmail={user?.email || ""}
+        userName={user?.name || ""}
       />
     </div>
   );

@@ -16,7 +16,6 @@ const navigation = [
   { name: "Panel Analítico", href: "/sso/dashboard", icon: LayoutDashboard },
   { name: "Gestión Rechazos", href: "/sso/rechazos", icon: XCircle },
   { name: "Gestión Derivaciones", href: "/sso/derivaciones", icon: ArrowRightLeft },
-  { name: "Reprogramación RAS", href: "/sso/reprogramacion", icon: Calendar },
   { name: "Estado de Horas", href: "/sso/horas", icon: Clock },
 ];
 

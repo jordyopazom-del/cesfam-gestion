@@ -119,7 +119,8 @@ export async function fetchUsers() {
         accessSolicitudes: u.accessSolicitudes,
         accessReservas: u.accessReservas,
         accessAgendas: u.accessAgendas,
-        accessDemanda: u.accessDemanda
+        accessDemanda: u.accessDemanda,
+        accessReprogramacion: u.accessReprogramacion
     }));
 }
 
@@ -168,6 +169,7 @@ export async function adminUpdateUser(
         accessReservas: boolean;
         accessAgendas: boolean;
         accessDemanda: boolean;
+        accessReprogramacion?: boolean;
     }
 ) {
     const { updateUserStatusAndRole } = await import('@/lib/auth-db');
@@ -193,7 +195,8 @@ export async function adminCreateUser(name: string, email: string, role: string,
         accessSolicitudes: false,
         accessReservas: false,
         accessAgendas: false,
-        accessDemanda: false
+        accessDemanda: false,
+        accessReprogramacion: false
     });
     return { success: 'Funcionario registrado exitosamente.' };
 }

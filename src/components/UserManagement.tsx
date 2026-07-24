@@ -16,6 +16,7 @@ interface User {
     accessReservas: boolean;
     accessAgendas: boolean;
     accessDemanda: boolean;
+    accessReprogramacion: boolean;
 }
 
 export default function UserManagement() {
@@ -114,6 +115,7 @@ export default function UserManagement() {
                 accessReservas: merged.accessReservas,
                 accessAgendas: merged.accessAgendas,
                 accessDemanda: merged.accessDemanda,
+                accessReprogramacion: merged.accessReprogramacion,
             });
             if (success) {
                 setMessage({ type: 'success', text: `Usuario ${email} actualizado.` });
@@ -140,6 +142,7 @@ export default function UserManagement() {
                 accessReservas: user.accessReservas,
                 accessAgendas: user.accessAgendas,
                 accessDemanda: user.accessDemanda,
+                accessReprogramacion: user.accessReprogramacion || false,
             });
             if (success) {
                 setMessage({ type: 'success', text: `Usuario ${user.email} aprobado.` });
@@ -160,6 +163,7 @@ export default function UserManagement() {
                 accessReservas: user.accessReservas,
                 accessAgendas: user.accessAgendas,
                 accessDemanda: user.accessDemanda,
+                accessReprogramacion: user.accessReprogramacion || false,
             });
             await loadUsers();
         } finally {
@@ -247,6 +251,7 @@ export default function UserManagement() {
         { key: 'accessDemanda', label: 'Demanda', icon: '📊' },
         { key: 'accessReservas', label: 'Reservas', icon: '🏠' },
         { key: 'accessLogistica', label: 'Logística', icon: '🚐' },
+        { key: 'accessReprogramacion', label: 'Reprogramación', icon: '🔄' },
     ];
 
     if (loading) {

@@ -35,7 +35,9 @@ interface HomeClientProps {
     accessSolicitudes?: boolean;
     accessReservas?: boolean;
     accessAgendas?: boolean;
+    accessReprogramacion?: boolean;
     pendingUsersCount?: number;
+    reprogramacionNotificationCount?: number;
 }
 
 export default function HomeClient({ 
@@ -49,7 +51,9 @@ export default function HomeClient({
     accessSolicitudes = false, 
     accessReservas = false, 
     accessAgendas = false,
-    pendingUsersCount = 0
+    accessReprogramacion = false,
+    pendingUsersCount = 0,
+    reprogramacionNotificationCount = 0
 }: HomeClientProps) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<'dashboard' | 'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock' | 'stats' | 'calendar'>('dashboard');
@@ -58,6 +62,7 @@ export default function HomeClient({
     const isLogisticaEnabled = isAdminUser || accessLogistica;
     const isReservasEnabled = isAdminUser || accessReservas;
     const isDemandaEnabled = isAdminUser || accessDemanda;
+    const isReprogramacionEnabled = isAdminUser || accessReprogramacion;
     const canRequestAgendas = isAdmin || userRole === 'SOLICITANTE' || userRole === 'COORDINADOR' || userRole === 'USUARIO';
     const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
@@ -325,16 +330,6 @@ export default function HomeClient({
                                         </button>
                                         <button
                                             onClick={() => {
-                                                router.push('/sso/reprogramacion');
-                                                setIsSsoDropdownOpen(false);
-                                            }}
-                                            className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
-                                        >
-                                            <Calendar size={16} className="text-gray-400" />
-                                            Reprogramación RAS
-                                        </button>
-                                        <button
-                                            onClick={() => {
                                                 router.push('/sso/horas');
                                                 setIsSsoDropdownOpen(false);
                                             }}
@@ -348,8 +343,20 @@ export default function HomeClient({
                             </div>
                         )}
 
-
-
+                        {isReprogramacionEnabled && (
+                            <button
+                                onClick={() => { router.push('/reprogramacion'); }}
+                                className="flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-200/50 transition-all font-sans relative"
+                            >
+                                <Calendar size={16} />
+                                Reprogramación
+                                {reprogramacionNotificationCount !== undefined && reprogramacionNotificationCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm border border-white">
+                                        {reprogramacionNotificationCount}
+                                    </span>
+                                )}
+                            </button>
+                        )}
                         {isAdmin && (
                             <button
                                 onClick={() => {
@@ -622,6 +629,56 @@ export default function HomeClient({
                                                        className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
                                                   >
                                                        Entrar al Módulo
+                                                  </button>
+                                             ) : (
+                                                  <button 
+                                                       disabled
+                                                       className="w-full py-2.5 px-4 bg-gray-100 text-gray-400 font-bold text-xs rounded-xl cursor-not-allowed"
+                                                  >
+                                                       Sin Acceso
+                                                  </button>
+                                             )}
+                                        </div>
+                                   </div>
+
+                                   {/* Card 5: Reprogramación Agenda */}
+                                   <div className={clsx(
+                                        "bg-white rounded-3xl border p-6 flex flex-col justify-between transition-all duration-300 shadow-sm relative overflow-hidden group",
+                                        isReprogramacionEnabled 
+                                             ? "border-gray-100 hover:shadow-md hover:border-red-200" 
+                                             : "border-gray-100 bg-gray-50/50 opacity-70"
+                                   )}>
+                                        <div className="space-y-4">
+                                             <div className="w-12 h-12 rounded-2xl bg-red-50 text-red-600 flex items-center justify-center transition-transform group-hover:scale-105 duration-300 relative">
+                                                  <Calendar size={24} />
+                                                  {isReprogramacionEnabled && reprogramacionNotificationCount !== undefined && reprogramacionNotificationCount > 0 && (
+                                                       <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm animate-pulse border-2 border-white">
+                                                            {reprogramacionNotificationCount}
+                                                       </span>
+                                                  )}
+                                             </div>
+                                             <div className="space-y-1">
+                                                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                                                       Reprogramación
+                                                       {!isReprogramacionEnabled && <span className="text-[10px] bg-gray-100 text-gray-400 border border-gray-200 px-2 py-0.5 rounded-full font-bold">Bloqueado</span>}
+                                                  </h3>
+                                                  <p className="text-xs text-gray-400 font-semibold leading-relaxed">
+                                                       Gestión de pacientes caídos, asignación de bloques y notificaciones de reprogramación.
+                                                  </p>
+                                             </div>
+                                        </div>
+                                        <div className="pt-6">
+                                             {isReprogramacionEnabled ? (
+                                                  <button 
+                                                       onClick={() => { router.push('/sso/reprogramacion'); }}
+                                                       className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
+                                                  >
+                                                       Gestionar Bloqueos
+                                                       {reprogramacionNotificationCount !== undefined && reprogramacionNotificationCount > 0 && (
+                                                            <span className="bg-white text-red-600 px-1.5 py-0.5 rounded-md text-[10px] font-black">
+                                                                 {reprogramacionNotificationCount}
+                                                            </span>
+                                                       )}
                                                   </button>
                                              ) : (
                                                   <button 

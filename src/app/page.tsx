@@ -21,6 +21,13 @@ export default async function Home() {
     ? await prisma.user.count({ where: { status: 'pending' } })
     : 0;
 
+  // Get Reprogramacion notifications
+  const reprogramacionNotificationCount = (!isAdmin && user?.role !== 'COORDINADOR')
+    ? await prisma.agendaBlock.count({
+        where: { assignedToEmail: user?.email, status: 'Pendiente' }
+      })
+    : 0;
+
   return (
     <HomeClient
       isAdmin={isAdmin}
@@ -32,7 +39,10 @@ export default async function Home() {
       accessSolicitudes={isAdmin || (user?.accessSolicitudes ?? false)}
       accessReservas={isAdmin || (user?.accessReservas ?? false)}
       accessAgendas={isAdmin || (user?.accessAgendas ?? false)}
+      accessDemanda={isAdmin || (user?.accessDemanda ?? false)}
+      accessReprogramacion={isAdmin || (user?.accessReprogramacion ?? false)}
       pendingUsersCount={pendingUsersCount}
+      reprogramacionNotificationCount={reprogramacionNotificationCount}
     />
   );
 }
