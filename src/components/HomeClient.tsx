@@ -670,7 +670,7 @@ export default function HomeClient({
                                         <div className="pt-6">
                                              {isReprogramacionEnabled ? (
                                                   <button 
-                                                       onClick={() => { router.push('/sso/reprogramacion'); }}
+                                                       onClick={() => { router.push('/reprogramacion'); }}
                                                        className="w-full py-2.5 px-4 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all flex items-center justify-center gap-2"
                                                   >
                                                        Gestionar Bloqueos
