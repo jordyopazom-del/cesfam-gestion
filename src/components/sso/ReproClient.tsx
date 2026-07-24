@@ -226,7 +226,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {patients.filter((p: any) => showResolved || !["Reprogramado", "Avisado - Sin Cupo", "No ubicable"].includes(p.Estado)).map((p: any) => {
+                  {patients.filter((p: any) => showResolved || !["Reprogramado", "Avisado - Sin Cupo", "No ubicable"].includes(p.Estado) || (p.Estado === "Reprogramado" && !p.Fecha_Reprogramacion)).map((p: any) => {
                     const dateParts = (p.Fecha_Atencion || "").split(' a las ');
                     const date = dateParts[0];
                     const time = dateParts[1] ? dateParts[1].replace(' Hrs', '') : '';
