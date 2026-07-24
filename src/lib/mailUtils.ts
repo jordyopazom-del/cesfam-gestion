@@ -63,14 +63,18 @@ export const getMailtoLink = (req: any, type: 'blockings' | 'openings', personne
     }
 
     let patientsNote = '';
-    if (isBlock && pdfUrls.includes('PROCESADO_EXTENSION_RAS')) {
+    const status = req.agendaBlockedStatus || req.status;
+
+    if (isBlock && status === 'Realizado') {
         patientsNote = `\n👨‍⚕️ Registro de Pacientes:\nEl listado de pacientes asociados a este bloqueo ya fue registrado en el módulo de Reprogramación. El funcionario asignado los tiene disponibles en su Bandeja de Entrada en la plataforma para iniciar los llamados correspondientes.\n`;
+    } else if (status === 'Sin Agenda') {
+        patientsNote = `\nℹ️ Observación:\nEl profesional no registraba pacientes citados en el tramo indicado (Sin Agenda).\n`;
+    } else if (status === 'No Corresponde') {
+        patientsNote = `\n❌ Observación:\nLa solicitud no corresponde o ha sido rechazada.\n`;
+    } else if (status === 'Desbloqueado') {
+        patientsNote = `\n✅ Observación:\nLa agenda ha sido desbloqueada exitosamente.\n`;
     } else if (hasDocs) {
         patientsNote = `\n📄 Documento Adjunto:\n${docLinksText}\n`;
-    } else if (req.agendaBlockedStatus === 'Sin Agenda') {
-        patientsNote = `\nℹ️ Observación:\nEl profesional no registraba pacientes citados en el tramo indicado (Sin Agenda).\n`;
-    } else if (req.agendaBlockedStatus === 'No Corresponde') {
-        patientsNote = `\n❌ Observación:\nLa solicitud no corresponde o ha sido rechazada.\n`;
     } else {
         patientsNote = `\n📄 Documento Adjunto:\nSin documento añadido\n`;
     }
