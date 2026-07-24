@@ -3,11 +3,10 @@
 import { useState } from 'react';
 import { BlockingRequest, AgendaOpeningRequest } from '@/lib/db';
 import { Official } from '@/app/admin/personnel/actions';
-import { X, Upload, User, CheckCircle2, Mail } from 'lucide-react';
+import { X, User, CheckCircle2, Mail } from 'lucide-react';
 import { getMailtoLink } from '@/lib/mailUtils';
 import clsx from 'clsx';
-
-import { uploadFileAction, processUpdateAction } from '@/app/admin/personnel/request-actions';
+import { processUpdateAction } from '@/app/admin/personnel/request-actions';
 
 interface ProcessingModalProps {
     request: BlockingRequest | AgendaOpeningRequest;
@@ -18,23 +17,19 @@ interface ProcessingModalProps {
 }
 
 export default function ProcessingModal({ request, type, personnel, onClose, onSuccess }: ProcessingModalProps) {
-    const [files, setFiles] = useState<File[]>([]);
     const [assignedAdmin, setAssignedAdmin] = useState('');
-    const [isNoPatients, setIsNoPatients] = useState(false);
     const [sendEmail, setSendEmail] = useState(true);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleUpload = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!isNoPatients && (files.length === 0 || !assignedAdmin)) {
-            setError('Por favor complete todos los campos y suba al menos un archivo.');
+        if (!assignedAdmin.trim()) {
+            setError('Por favor selecciona o ingresa el funcionario responsable.');
             return;
         }
 
-        // Trick to bypass async popup blocker: 
-        // Open a blank window synchronously during the exact click event cycle.
         let mailWindow: Window | null = null;
         if (sendEmail) {
             mailWindow = window.open('about:blank', '_blank');
@@ -44,47 +39,22 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
         setError(null);
 
         try {
-            let pdfUrl: string[] = isNoPatients ? ['SIN PACIENTES'] : [];
-            let adminToSave = 'N/A';
+            const updatedData = await processUpdateAction(request.id, type, {
+                status: 'Realizado',
+                pdfUrl: ['PROCESADO_EXTENSION_RAS'],
+                assignedAdmin: assignedAdmin.trim()
+            });
 
-            if (!isNoPatients && files.length > 0) {
-                // 1. Upload All Files (One by one or all at once)
-                // Using Server Action for each file
-                for (const file of files) {
-                    const formData = new FormData();
-                    formData.append('file', file);
-
-                    try {
-                        const uploadRes = await uploadFileAction(formData);
-                        pdfUrl.push(uploadRes.url);
-                    } catch (uploadError: any) {
-                        throw new Error(`Error al subir ${file.name}: ${uploadError.message || 'El archivo puede ser demasiado grande'}`);
-                    }
-                }
-                adminToSave = assignedAdmin;
+            if (sendEmail && mailWindow) {
+                const mailUrl = getMailtoLink(updatedData, type === 'Bloqueo' ? 'blockings' : 'openings', personnel);
+                mailWindow.location.href = mailUrl;
             }
 
-            // 2. Update Request using Server Action
-            try {
-                const updatedData = await processUpdateAction(request.id, type, {
-                    status: 'Realizado',
-                    pdfUrl,
-                    assignedAdmin: adminToSave
-                });
-
-                if (sendEmail && mailWindow) {
-                    const mailUrl = getMailtoLink(updatedData, type === 'Bloqueo' ? 'blockings' : 'openings', personnel);
-                    mailWindow.location.href = mailUrl;
-                }
-
-                onSuccess(updatedData);
-            } catch (updateError: any) {
-                if (mailWindow) mailWindow.close();
-                throw new Error(`Error al finalizar la gestión: ${updateError.message || 'Verifique el tamaño de los archivos'}`);
-            }
-        } catch (err: any) {
-            console.error('Processing modal error:', err);
-            setError(err.message || 'Ocurrió un error inesperado');
+            onSuccess(updatedData);
+        } catch (updateError: any) {
+            if (mailWindow) mailWindow.close();
+            console.error('Processing modal error:', updateError);
+            setError(updateError.message || 'Error al finalizar la gestión.');
         } finally {
             setLoading(false);
         }
@@ -92,163 +62,87 @@ export default function ProcessingModal({ request, type, personnel, onClose, onS
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-300">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-blue-600 text-white">
-                    <h3 className="text-xl font-bold">Procesar {type}</h3>
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 duration-300">
+                <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-blue-600 text-white">
+                    <div>
+                        <h3 className="text-lg font-bold">Asignar y Aprobar {type}</h3>
+                        <p className="text-xs text-blue-100 mt-0.5">La extensión RAS enviará los pacientes a Reprogramación</p>
+                    </div>
                     <button onClick={onClose} aria-label="Cerrar modal" className="hover:bg-white/20 p-1 rounded-full transition">
-                        <X size={24} />
+                        <X size={20} />
                     </button>
                 </div>
 
-                <form onSubmit={handleUpload} className="p-6 space-y-6">
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-sm text-blue-800">
+                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 text-xs text-blue-900 space-y-1">
                         <p><strong>Profesional:</strong> {request.professionalName}</p>
-                        {type === 'Bloqueo' ? (
-                            <p><strong>Tipo:</strong> {(request as BlockingRequest).blockType}</p>
-                        ) : (
-                            <>
-                                <p><strong>Tipo:</strong> {(request as AgendaOpeningRequest).requestType || 'Apertura'}</p>
-                                <p><strong>Categoría:</strong> {(request as AgendaOpeningRequest).categoryType || '-'}</p>
-                                <p><strong>Rendimiento:</strong> {(request as AgendaOpeningRequest).performance} min</p>
-                            </>
-                        )}
+                        <p><strong>Solicitante:</strong> {request.coordinator}</p>
                         <p><strong>Horas:</strong> {request.startTime} - {request.endTime}</p>
                     </div>
 
                     {error && (
-                        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg animate-shake">
+                        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-lg animate-shake">
                             {error}
                         </div>
                     )}
 
-                    {/* Checkbox "Sin Pacientes" */}
-                    <div 
-                        onClick={() => setIsNoPatients(!isNoPatients)}
-                        className={clsx(
-                            "flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer",
-                            isNoPatients 
-                                ? "bg-green-50 border-green-200 text-green-800 ring-2 ring-green-100" 
-                                : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
-                        )}
-                    >
-                        <div className={clsx(
-                            "w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                            isNoPatients ? "bg-green-600 border-green-600" : "bg-white border-gray-300"
-                        )}>
-                            {isNoPatients && <CheckCircle2 size={16} className="text-white" />}
-                        </div>
-                        <span className="font-semibold text-sm">Sin pacientes en la agenda (Finalizar inmediatamente)</span>
+                    <div className="space-y-2">
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <User size={15} className="text-blue-600" />
+                            Funcionario Responsable (Obligatorio)
+                        </label>
+                        <input
+                            type="text"
+                            list="personnel-list"
+                            aria-label="Nombre del funcionario"
+                            placeholder="Buscar o escribir nombre del funcionario..."
+                            value={assignedAdmin}
+                            onChange={(e) => setAssignedAdmin(e.target.value)}
+                            required
+                            className="w-full p-3 text-xs font-semibold border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition bg-white"
+                        />
+                        <datalist id="personnel-list">
+                            {personnel.map((p, i) => (
+                                <option key={i} value={p.name}>
+                                    {p.profession} ({p.type === 'ADMINISTRATIVO' ? 'Admin' : 'Clínico'})
+                                </option>
+                            ))}
+                        </datalist>
                     </div>
 
-                    {!isNoPatients && (
-                        <>
-                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                <label className="block text-sm font-semibold text-gray-700">Subir Respaldo (PDF)</label>
-                                <label htmlFor="file-upload" className="sr-only">Subir archivo PDF</label>
-                                <div className={clsx(
-                                    "relative border-2 border-dashed rounded-xl p-6 transition-all flex flex-col items-center justify-center gap-2 cursor-pointer",
-                                    files.length > 0 ? "border-green-400 bg-green-50" : "border-gray-300 hover:border-blue-400 hover:bg-blue-50/30"
-                                )}>
-                                    <input
-                                        id="file-upload"
-                                        type="file"
-                                        accept=".pdf"
-                                        multiple
-                                        className="absolute inset-0 opacity-0 cursor-pointer"
-                                        onChange={(e) => {
-                                            const newFiles = Array.from(e.target.files || []);
-                                            setFiles(prev => [...prev, ...newFiles]);
-                                        }}
-                                    />
-                                    <Upload size={32} className="text-gray-400" />
-                                    <span className="text-sm text-gray-500">
-                                        {files.length > 0 ? "Añadir más archivos PDF" : "Haz clic o arrastra archivos PDF"}
-                                    </span>
-                                </div>
-
-                                {files.length > 0 && (
-                                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                                        {files.map((f, i) => (
-                                            <div key={i} className="flex items-center justify-between p-2 bg-white border border-green-100 rounded-lg text-xs">
-                                                <div className="flex items-center gap-2 truncate">
-                                                    <CheckCircle2 size={14} className="text-green-500 flex-shrink-0" />
-                                                    <span className="truncate text-green-700 font-medium">{f.name}</span>
-                                                </div>
-                                                <button 
-                                                    type="button" 
-                                                    title="Eliminar archivo"
-                                                    aria-label="Eliminar archivo"
-                                                    onClick={() => setFiles(prev => prev.filter((_, idx) => idx !== i))}
-                                                    className="p-1 hover:bg-red-50 text-red-500 rounded transition"
-                                                >
-                                                    <X size={14} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                <label className="block text-sm font-semibold text-gray-700 flex items-center gap-2">
-                                    <User size={16} className="text-blue-600" />
-                                    Asignar Funcionario para Llamados
-                                </label>
-                                <input
-                                    type="text"
-                                    list="personnel-list"
-                                    aria-label="Nombre del funcionario"
-                                    placeholder="Nombre del funcionario (Clínico o Administrativo)..."
-                                    value={assignedAdmin}
-                                    onChange={(e) => setAssignedAdmin(e.target.value)}
-                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
-                                />
-                                <datalist id="personnel-list">
-                                    {personnel.map((p, i) => (
-                                        <option key={i} value={p.name}>
-                                            {p.profession} ({p.type === 'ADMINISTRATIVO' ? 'Admin' : 'Clínico'})
-                                        </option>
-                                    ))}
-                                </datalist>
-                            </div>
-                        </>
-                    )}
-
-                    {/* Checkbox "Enviar Confirmación por Correo" */}
                     <div 
                         onClick={() => setSendEmail(!sendEmail)}
                         className={clsx(
-                            "flex items-center gap-3 p-4 rounded-xl border transition-all cursor-pointer",
+                            "flex items-center gap-3 p-3.5 rounded-xl border transition-all cursor-pointer select-none",
                             sendEmail 
                                 ? "bg-blue-50 border-blue-200 text-blue-800 ring-2 ring-blue-100" 
                                 : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
                         )}
                     >
                         <div className={clsx(
-                            "w-5 h-5 rounded border flex items-center justify-center transition-colors",
+                            "w-4 h-4 rounded border flex items-center justify-center transition-colors",
                             sendEmail ? "bg-blue-600 border-blue-600" : "bg-white border-gray-300"
                         )}>
-                            {sendEmail && <CheckCircle2 size={16} className="text-white" />}
+                            {sendEmail && <CheckCircle2 size={14} className="text-white" />}
                         </div>
-                        <Mail size={18} className={sendEmail ? "text-blue-600" : "text-gray-400"} />
-                        <span className="font-semibold text-sm">Enviar confirmación por correo al finalizar</span>
+                        <Mail size={16} className={sendEmail ? "text-blue-600" : "text-gray-400"} />
+                        <span className="font-semibold text-xs">Enviar respaldo por correo al solicitante</span>
                     </div>
 
-
-                    <div className="pt-4 flex gap-3">
+                    <div className="pt-2 flex gap-3">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-4 py-3 border border-gray-200 rounded-xl text-gray-600 font-medium hover:bg-gray-50 transition"
+                            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-xs text-gray-600 font-semibold hover:bg-gray-50 transition"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            disabled={loading || (!isNoPatients && (files.length === 0 || !assignedAdmin))}
-                            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition disabled:opacity-50 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0"
+                            disabled={loading || !assignedAdmin.trim()}
+                            className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition disabled:opacity-50 shadow-md hover:shadow-lg"
                         >
-                            {loading ? 'Procesando...' : `Finalizar ${type}`}
+                            {loading ? 'Procesando...' : 'Confirmar y Enviar Correo'}
                         </button>
                     </div>
                 </form>

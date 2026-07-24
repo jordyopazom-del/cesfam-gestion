@@ -7,6 +7,7 @@ import clsx from 'clsx';
 import { format } from 'date-fns';
 import ProcessingModal from './ProcessingModal';
 import { Official, getPersonnel } from '@/app/admin/personnel/actions';
+import { getMailtoLink } from '@/lib/mailUtils';
 
 export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTrigger: number, isAdmin: boolean }) {
     const [requests, setRequests] = useState<BlockingRequest[]>([]);
@@ -23,8 +24,10 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
         setLoading(true);
         try {
             const res = await fetch('/api/requests');
-            const data = await res.json();
-            setRequests(data);
+            if (res.ok) {
+                const data = await res.json();
+                setRequests(data);
+            }
         } catch (error) {
             console.error('Failed to fetch requests', error);
         } finally {
@@ -45,6 +48,9 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
             return;
         }
 
+        // Trick to bypass async popup blocker: 
+        const mailWindow = window.open('about:blank', '_blank');
+
         // Optimistic update
         setRequests(prev => prev.map(r => r.id === id ? { ...r, agendaBlockedStatus: newStatus } : r));
 
@@ -62,12 +68,20 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                 body: JSON.stringify(body),
             });
 
-            if (!res.ok) {
+            if (res.ok) {
+                const updatedData = await res.json();
+                if (mailWindow) {
+                    const mailUrl = getMailtoLink(updatedData, 'blockings', personnel);
+                    mailWindow.location.href = mailUrl;
+                }
+            } else {
+                if (mailWindow) mailWindow.close();
                 // Revert if failed
                 fetchRequests();
                 alert('Error al actualizar estado de agenda');
             }
         } catch (error) {
+            if (mailWindow) mailWindow.close();
             fetchRequests();
             alert('Error al actualizar estado de agenda');
         }
