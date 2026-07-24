@@ -62,6 +62,19 @@ export const getMailtoLink = (req: any, type: 'blockings' | 'openings', personne
         datesString = `desde el ${format(new Date(sortedDays[0]), 'dd-MM-yyyy')} al ${format(new Date(sortedDays[sortedDays.length - 1]), 'dd-MM-yyyy')}`;
     }
 
+    let patientsNote = '';
+    if (isBlock && pdfUrls.includes('PROCESADO_EXTENSION_RAS')) {
+        patientsNote = `\n👨‍⚕️ Registro de Pacientes:\nEl listado de pacientes asociados a este bloqueo ya fue registrado en el módulo de Reprogramación. El funcionario asignado los tiene disponibles en su Bandeja de Entrada en la plataforma para iniciar los llamados correspondientes.\n`;
+    } else if (hasDocs) {
+        patientsNote = `\n📄 Documento Adjunto:\n${docLinksText}\n`;
+    } else if (req.agendaBlockedStatus === 'Sin Agenda') {
+        patientsNote = `\nℹ️ Observación:\nEl profesional no registraba pacientes citados en el tramo indicado (Sin Agenda).\n`;
+    } else if (req.agendaBlockedStatus === 'No Corresponde') {
+        patientsNote = `\n❌ Observación:\nLa solicitud no corresponde o ha sido rechazada.\n`;
+    } else {
+        patientsNote = `\n📄 Documento Adjunto:\nSin documento añadido\n`;
+    }
+
     const bodyText = `Estimado/a,
 
 Le informamos que la solicitud de ${isBlock ? 'Bloqueo' : 'Apertura'} ha sido procesada y finalizada con éxito.
@@ -72,11 +85,8 @@ Le informamos que la solicitud de ${isBlock ? 'Bloqueo' : 'Apertura'} ha sido pr
 - Tipo: ${isBlock ? req.blockType : req.performance + ' MIN'}
 - ${isBlock ? 'Fechas Bloqueadas' : 'Fechas de Apertura'}: ${datesString}
 - Horario: ${req.startTime} - ${req.endTime}
-- Administrativo Asignado: ${req.assignedAdmin || '-'}
-
-📄 Documento Adjunto:
-${docLinksText}
-
+- Administrativo Asignado: ${req.assignedAdmin && req.assignedAdmin !== 'N/A' ? req.assignedAdmin : 'Ninguno (No requiere llamados)'}
+${patientsNote}
 Saludos cordiales.`;
     
     const uniqueRecipients = Array.from(new Set(recipients)).filter(Boolean);
