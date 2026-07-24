@@ -467,7 +467,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                                 <th className="px-3 py-3">Fechas</th>
                                                 <th className="px-3 py-3">Horas</th>
                                                 <th className="px-3 py-3 text-center">Estado Agenda</th>
-                                                <th className="px-3 py-3 text-center">Doc</th>
+                                                <th className="px-3 py-3 text-center">Correo</th>
                                                 <th className="px-3 py-3">Responsable</th>
                                             </>
                                         ) : (
@@ -478,7 +478,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                                 <th className="px-3 py-3">Horas</th>
                                                 <th className="px-3 py-3">Días de Apertura</th>
                                                 <th className="px-3 py-3 text-center">Estado</th>
-                                                <th className="px-3 py-3 text-center">Doc</th>
+                                                <th className="px-3 py-3 text-center">Correo</th>
                                                 <th className="px-3 py-3">Responsable</th>
                                             </>
                                         )}
@@ -530,43 +530,10 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                                         )}>
                                                             {req.agendaBlockedStatus || 'Pendiente'}
                                                         </span>
-                                                        {isAdmin && (req.agendaBlockedStatus === 'Realizado' || req.agendaBlockedStatus === 'Sin Agenda') && (
-                                                            <button
-                                                                onClick={() => setSelectedRequestToEdit(req)}
-                                                                className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition-colors"
-                                                            >
-                                                                <Pencil size={10} /> Editar Doc
-                                                            </button>
-                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        {req.pdfUrl && req.pdfUrl.length > 0 && req.pdfUrl[0] !== 'SIN PACIENTES' ? (
-                                                            <div className="flex flex-wrap gap-1 justify-center max-w-[80px]">
-                                                                {req.pdfUrl.map((url: string, idx: number) => (
-                                                                    <a
-                                                                        key={idx}
-                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:') || url === 'INTERNAL_PDF_CLEANED') ? `/api/pdf/${req.id}?index=${idx}` : url}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className={clsx("w-7 h-7 rounded-lg transition-all flex items-center justify-center shadow-sm relative group/doc", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-100 text-gray-400 hover:bg-gray-200" : "bg-blue-50 text-blue-600 hover:bg-blue-100")}
-                                                                        title={url === 'INTERNAL_PDF_CLEANED' ? 'PDF Eliminado por Antigüedad' : `Ver Documento ${idx + 1}`}
-                                                                    >
-                                                                        <FileText size={14} className={url === 'INTERNAL_PDF_CLEANED' ? "line-through opacity-70" : ""} />
-                                                                        {req.pdfUrl!.length > 1 && (
-                                                                            <span className={clsx("absolute -top-1 -right-1 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-400" : "bg-blue-600")}>
-                                                                                {idx + 1}
-                                                                            </span>
-                                                                        )}
-                                                                    </a>
-                                                                ))}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="w-8 h-8 flex items-center justify-center text-gray-200" title="Sin Documento">
-                                                                <FileText size={16} />
-                                                            </div>
-                                                        )}
                                                         <button
                                                             onClick={() => handleSendEmail(req, 'blockings')}
                                                             className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
@@ -636,43 +603,10 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                                         )}>
                                                             {req.status === 'Pending' ? 'Pendiente' : req.status}
                                                         </span>
-                                                        {isAdmin && (req.status === 'Realizado') && (
-                                                            <button
-                                                                onClick={() => setSelectedRequestToEdit(req)}
-                                                                className="text-[10px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 transition-colors"
-                                                            >
-                                                                <Pencil size={10} /> Editar Doc
-                                                            </button>
-                                                        )}
                                                     </div>
                                                 </td>
                                                 <td className="px-3 py-3">
                                                     <div className="flex items-center justify-center gap-2">
-                                                        {req.pdfUrl && req.pdfUrl.length > 0 && req.pdfUrl[0] !== 'SIN PACIENTES' ? (
-                                                            <div className="flex flex-wrap gap-1 justify-center max-w-[80px]">
-                                                                {req.pdfUrl.map((url: string, idx: number) => (
-                                                                    <a
-                                                                        key={idx}
-                                                                        href={(url === 'INTERNAL_PDF' || url.startsWith('data:') || url === 'INTERNAL_PDF_CLEANED') ? `/api/pdf/${req.id}?index=${idx}` : url}
-                                                                        target="_blank"
-                                                                        rel="noopener noreferrer"
-                                                                        className={clsx("w-7 h-7 rounded-lg transition-all flex items-center justify-center shadow-sm relative group/doc", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-100 text-gray-400 hover:bg-gray-200" : "bg-blue-50 text-blue-600 hover:bg-blue-100")}
-                                                                        title={url === 'INTERNAL_PDF_CLEANED' ? 'PDF Eliminado por Antigüedad' : `Ver Documento ${idx + 1}`}
-                                                                    >
-                                                                        <FileText size={14} className={url === 'INTERNAL_PDF_CLEANED' ? "line-through opacity-70" : ""} />
-                                                                        {req.pdfUrl!.length > 1 && (
-                                                                            <span className={clsx("absolute -top-1 -right-1 text-white text-[8px] w-3 h-3 rounded-full flex items-center justify-center font-bold", url === 'INTERNAL_PDF_CLEANED' ? "bg-gray-400" : "bg-blue-600")}>
-                                                                                {idx + 1}
-                                                                            </span>
-                                                                        )}
-                                                                    </a>
-                                                                ))}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="w-8 h-8 flex items-center justify-center text-gray-200" title="Sin Documento">
-                                                                <FileText size={16} />
-                                                            </div>
-                                                        )}
                                                         <button
                                                             onClick={() => handleSendEmail(req, 'openings')}
                                                             className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all flex items-center justify-center shadow-sm"
