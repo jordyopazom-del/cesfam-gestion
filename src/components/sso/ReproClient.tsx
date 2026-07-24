@@ -629,8 +629,8 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                         <ChevronRight className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-90 text-blue-600")} />
                       </td>
                       <td className="px-4 py-3 text-slate-600">{b["Fecha Subida"]}</td>
-                      <td className="px-4 py-3 text-slate-600 font-medium truncate max-w-[140px]" title={b["Subido Por"]}>
-                        {b["Subido Por"]}
+                      <td className="px-4 py-3 text-slate-600 font-medium truncate max-w-[140px]" title={b.AsignadoA}>
+                        {b.AsignadoA}
                       </td>
                       <td className="px-4 py-3 font-bold text-slate-800 truncate max-w-[150px]" title={b.Profesional}>
                         {b.Profesional}
