@@ -442,7 +442,7 @@ export default function HomeClient({
                              </div>
 
                               {/* Grid of Modules */}
-                              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                                    {/* Card 1: Agenda y Bloqueos */}
                                    <div className={clsx(
                                         "bg-white rounded-3xl border p-6 flex flex-col justify-between transition-all duration-300 shadow-sm relative overflow-hidden group",
