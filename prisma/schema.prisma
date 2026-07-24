@@ -321,6 +321,7 @@ model BlockedPatient {
   lastStatusUpdate DateTime?
   updatedBy      String?
   updatedAt      DateTime     @default(now()) @updatedAt
+  reprogrammedDate String?
 
   @@index([blockId])
   @@index([rut])

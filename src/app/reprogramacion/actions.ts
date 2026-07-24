@@ -90,6 +90,7 @@ export async function getPatientsByBlock(blockId: number) {
         Telefonos: p.contactPhones || "",
         Solucion: p.solution,
         Estado: p.status,
+        Fecha_Reprogramacion: p.reprogrammedDate,
         Ultimo_Gestor: p.updatedBy,
         Fecha_Actualizacion: p.lastStatusUpdate ? p.lastStatusUpdate.toLocaleString('es-CL', { timeZone: 'America/Santiago' }) : null,
       })),
@@ -121,6 +122,7 @@ export async function getPatientSearch(searchQuery: string) {
         Fecha_Citacion: p.attentionDate || "",
         Estado: p.status,
         Solucion: p.solution,
+        Fecha_Reprogramacion: p.reprogrammedDate,
         Ultimo_Gestor: p.updatedBy,
         Fecha_Actualizacion: p.lastStatusUpdate ? p.lastStatusUpdate.toLocaleString('es-CL', { timeZone: 'America/Santiago' }) : null,
       })),
@@ -130,12 +132,12 @@ export async function getPatientSearch(searchQuery: string) {
   }
 }
 
-export async function updatePatientStatus(patientId: number, status: string, solution: string) {
+export async function updatePatientStatus(patientId: number, status: string, solution: string, reprogrammedDate?: string) {
   try {
     const user = await getSSOUser();
     await prisma.blockedPatient.update({
       where: { id: patientId },
-      data: { status, solution, updatedBy: user?.name || "Sistema", lastStatusUpdate: new Date() },
+      data: { status, solution, reprogrammedDate: reprogrammedDate || null, updatedBy: user?.name || "Sistema", lastStatusUpdate: new Date() },
     });
     revalidatePath("/reprogramacion");
     return { success: true };

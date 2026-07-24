@@ -66,13 +66,26 @@ export default function ReproClient({
     setLoadingPatients(false);
   };
 
-  const handlePatientUpdate = async (patientId: number, status: string, solution: string) => {
-    const res = await updatePatientStatus(patientId, status, solution);
-    if (res.success) {
-      toast.success("Paciente actualizado");
-      if (selectedBlockId) loadPatients(selectedBlockId);
-    } else {
+  const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
+    if (status === "Reprogramado" && !reprogrammedDate) {
+      setPatients((prev) => 
+        prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
+      );
+      toast.error("Seleccione la fecha de reprogramación para guardar");
+      return; // No guardar en DB hasta que ponga la fecha
+    }
+
+    // Actualización optimista
+    setPatients((prev) => 
+      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
+    );
+    
+    const res = await updatePatientStatus(patientId, status, solution, reprogrammedDate);
+    if (!res.success) {
       toast.error(res.error || "Error al actualizar");
+      if (selectedBlockId) loadPatients(selectedBlockId); // Revertir en caso de error
+    } else {
+      // toast.success("Paciente actualizado"); // Opcional, puede ser molesto si son muchos
     }
   };
 
@@ -204,25 +217,33 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                   <tr>
                     <th className="px-4 py-3">RUT</th>
                     <th className="px-4 py-3">Nombre Paciente</th>
-                    <th className="px-4 py-3">Fecha Citación</th>
+                    <th className="px-4 py-3">Fecha</th>
+                    <th className="px-4 py-3">Hora</th>
                     <th className="px-4 py-3">Teléfonos</th>
-                    <th className="px-4 py-3">Solución / Obs.</th>
-                    <th className="px-4 py-3 w-48">Estado</th>
+                    <th className="px-4 py-3 min-w-[150px]">Solución / Obs.</th>
+                    <th className="px-4 py-3 w-40 text-center">Estado</th>
+                    <th className="px-4 py-3 w-40 text-center">F. Reprogramada</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {patients.filter((p: any) => showResolved || !["Reprogramado", "Avisado - Sin Cupo", "No ubicable"].includes(p.Estado)).map((p: any) => (
+                  {patients.filter((p: any) => showResolved || !["Reprogramado", "Avisado - Sin Cupo", "No ubicable"].includes(p.Estado)).map((p: any) => {
+                    const dateParts = (p.Fecha_Atencion || "").split(' a las ');
+                    const date = dateParts[0];
+                    const time = dateParts[1] ? dateParts[1].replace(' Hrs', '') : '';
+
+                    return (
                     <tr key={p.id} className="hover:bg-slate-50/50">
                       <td className="px-4 py-3 font-mono text-slate-600">{p.RUT}</td>
                       <td className="px-4 py-3 font-medium text-slate-800">{p.Nombre}</td>
-                      <td className="px-4 py-3 text-slate-600">{p.Fecha_Atencion}</td>
+                      <td className="px-4 py-3 font-semibold text-slate-700">{date}</td>
+                      <td className="px-4 py-3 text-slate-600">{time}</td>
                       <td className="px-4 py-3 text-slate-600">{p.Telefonos}</td>
                       <td className="px-4 py-3">
                         <input
                           type="text"
                           defaultValue={p.Solucion || ""}
                           onBlur={(e) => {
-                            if (e.target.value !== (p.Solucion || "")) onUpdatePatient(p.id, p.Estado, e.target.value);
+                            if (e.target.value !== (p.Solucion || "")) onUpdatePatient(p.id, p.Estado, e.target.value, p.Fecha_Reprogramacion);
                           }}
                           className="w-full px-2 py-1 text-xs text-slate-800 font-semibold border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:ring-0 bg-transparent"
                           placeholder="Añadir nota..."
@@ -231,13 +252,13 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                       <td className="px-4 py-3">
                         <select
                           value={p.Estado}
-                          onChange={(e) => onUpdatePatient(p.id, e.target.value, p.Solucion || "")}
+                          onChange={(e) => onUpdatePatient(p.id, e.target.value, p.Solucion || "", p.Fecha_Reprogramacion)}
                           className={cn(
-                            "w-full px-2 py-1.5 text-xs font-bold rounded-lg border outline-none cursor-pointer transition-colors",
-                            p.Estado === "Reprogramado" ? "bg-emerald-50 border-emerald-300 text-emerald-700" :
-                            p.Estado === "Avisado - Sin Cupo" ? "bg-amber-50 border-amber-300 text-amber-700" :
-                            p.Estado === "No ubicable" ? "bg-rose-50 border-rose-300 text-rose-700" :
-                            "bg-slate-50 border-slate-200 text-slate-700"
+                            "w-full px-2 py-1.5 text-[11px] font-bold rounded-lg border outline-none cursor-pointer transition-colors text-center shadow-sm appearance-none",
+                            p.Estado === "Reprogramado" ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
+                            p.Estado === "Avisado - Sin Cupo" ? "bg-amber-50 border-amber-200 text-amber-700" :
+                            p.Estado === "No ubicable" ? "bg-rose-50 border-rose-200 text-rose-700" :
+                            "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                           )}
                         >
                           <option value="Pendiente">🟡 Pendiente</option>
@@ -246,8 +267,24 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                           <option value="No ubicable">🔴 No ubicable</option>
                         </select>
                       </td>
+                      <td className="px-4 py-3">
+                         <input 
+                           type="date"
+                           value={p.Fecha_Reprogramacion || ""}
+                           onChange={(e) => {
+                              onUpdatePatient(p.id, p.Estado, p.Solucion || "", e.target.value);
+                           }}
+                           disabled={p.Estado !== "Reprogramado"}
+                           className={cn(
+                             "w-full px-2 py-1.5 text-[11px] font-bold border rounded-lg outline-none transition-colors",
+                             p.Estado === "Reprogramado" 
+                               ? (!p.Fecha_Reprogramacion ? "border-red-400 bg-red-50 text-red-700 focus:border-red-500" : "border-emerald-200 bg-emerald-50 text-emerald-700 focus:border-emerald-500")
+                               : "bg-slate-50/50 text-slate-400 cursor-not-allowed border-transparent opacity-50"
+                           )}
+                         />
+                      </td>
                     </tr>
-                  ))}
+                  )})}
                 </tbody>
               </table>
             </div>
@@ -285,22 +322,38 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                   <th className="px-4 py-3">RUT</th>
                   <th className="px-4 py-3">Nombre</th>
                   <th className="px-4 py-3">Profesional</th>
-                  <th className="px-4 py-3">Cita Original</th>
+                  <th className="px-4 py-3">Fecha Original</th>
+                  <th className="px-4 py-3">Hora Original</th>
                   <th className="px-4 py-3">Estado</th>
                   <th className="px-4 py-3">Nota SOME</th>
+                  <th className="px-4 py-3">F. Reprogramada</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {searchResults.map((p: any) => (
+                {searchResults.map((p: any) => {
+                  const dateParts = (p.Fecha_Citacion || "").split(' a las ');
+                  const date = dateParts[0];
+                  const time = dateParts[1] ? dateParts[1].replace(' Hrs', '') : '';
+                  return (
                   <tr key={p.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 font-mono text-slate-600">{p.RUT}</td>
                     <td className="px-4 py-3 font-medium text-slate-800">{p.Nombre}</td>
                     <td className="px-4 py-3 text-slate-600">{p.Profesional_Bloqueo}</td>
-                    <td className="px-4 py-3 text-slate-600">{p.Fecha_Citacion}</td>
-                    <td className="px-4 py-3 font-bold text-slate-700">{p.Estado}</td>
-                    <td className="px-4 py-3 text-slate-500">{p.Solucion || "-"}</td>
+                    <td className="px-4 py-3 font-semibold text-slate-700">{date}</td>
+                    <td className="px-4 py-3 text-slate-600">{time}</td>
+                    <td className="px-4 py-3 font-bold text-slate-700">
+                      <span className={cn(
+                        "px-2 py-1 text-[11px] font-bold rounded-lg border",
+                        p.Estado === "Reprogramado" ? "bg-emerald-50 border-emerald-200 text-emerald-700" :
+                        p.Estado === "Avisado - Sin Cupo" ? "bg-amber-50 border-amber-200 text-amber-700" :
+                        p.Estado === "No ubicable" ? "bg-rose-50 border-rose-200 text-rose-700" :
+                        "bg-slate-50 border-slate-200 text-slate-600"
+                      )}>{p.Estado}</span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-500 max-w-[200px] truncate" title={p.Solucion}>{p.Solucion || "-"}</td>
+                    <td className="px-4 py-3 font-semibold text-emerald-600">{p.Fecha_Reprogramacion || "-"}</td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
