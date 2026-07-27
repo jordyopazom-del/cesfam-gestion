@@ -22,6 +22,8 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
   const [allAssets, setAllAssets] = useState<any[]>([]);
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
 
+  const [editingRoomId, setEditingRoomId] = useState<string | null>(null);
+
   useEffect(() => {
     fetch('/api/assets')
       .then(res => res.json())
@@ -43,22 +45,46 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
     setSchedules(schedules.filter((_, i) => i !== index));
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleEdit = (room: any) => {
+    setEditingRoomId(room.id);
+    setName(room.name);
+    setDescription(room.description || "");
+    setSchedules(room.schedules.map((s: any) => ({
+      dayOfWeek: s.dayOfWeek,
+      startTime: s.startTime,
+      endTime: s.endTime
+    })));
+    setSelectedAssetIds(room.assets ? room.assets.map((a: any) => a.id) : []);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRoomId(null);
+    setName("");
+    setDescription("");
+    setSchedules([{ dayOfWeek: 1, startTime: "08:00", endTime: "18:00" }]);
+    setSelectedAssetIds([]);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    const isEditing = !!editingRoomId;
+    const url = isEditing ? `/api/admin/rooms/${editingRoomId}` : "/api/admin/rooms";
+    const method = isEditing ? "PUT" : "POST";
+
     try {
-      const res = await fetch("/api/admin/rooms", {
-        method: "POST",
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, description, schedules, assetIds: selectedAssetIds })
       });
 
       if (res.ok) {
-        alert("Sala creada exitosamente");
+        alert(isEditing ? "Sala actualizada exitosamente" : "Sala creada exitosamente");
         window.location.reload();
       } else {
-        alert("Error al crear la sala");
+        alert(isEditing ? "Error al actualizar la sala" : "Error al crear la sala");
       }
     } catch (e) {
       alert("Error de conexión");
@@ -82,14 +108,14 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* Left Column: Form to create room */}
+      {/* Left Column: Form to create/edit room */}
       <div className="lg:col-span-6 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 height-fit">
         <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
           <Sparkles size={18} className="text-blue-500" />
-          Nueva Sala
+          {editingRoomId ? "Editar Sala" : "Nueva Sala"}
         </h2>
         
-        <form onSubmit={handleCreate} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nombre de la Sala</label>
             <input 
@@ -193,18 +219,30 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
             </div>
           )}
 
-          <button 
-            type="submit" 
-            className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm shadow-sm transition-all duration-200
-              ${loading 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100'
-              }
-            `}
-            disabled={loading}
-          >
-            {loading ? "Creando..." : "Guardar Sala"}
-          </button>
+          <div className="flex flex-col gap-2">
+            <button 
+              type="submit" 
+              className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm shadow-sm transition-all duration-200
+                ${loading 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100'
+                }
+              `}
+              disabled={loading}
+            >
+              {loading ? "Guardando..." : (editingRoomId ? "Actualizar Sala" : "Guardar Sala")}
+            </button>
+            {editingRoomId && (
+              <button 
+                type="button" 
+                onClick={handleCancelEdit}
+                className="w-full py-3.5 px-6 rounded-xl font-bold text-sm bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 transition-all duration-200"
+                disabled={loading}
+              >
+                Cancelar Edición
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -220,14 +258,23 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
                   <p className="text-xs text-gray-400 mt-1 font-semibold">{room.description}</p>
                 )}
               </div>
-              <button 
-                type="button"
-                onClick={() => handleDelete(room.id)} 
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 hover:bg-red-50 text-red-600 font-bold text-xs rounded-xl border border-red-100 transition-all"
-              >
-                <Trash2 size={14} />
-                Eliminar
-              </button>
+              <div className="flex items-center gap-2">
+                <button 
+                  type="button"
+                  onClick={() => handleEdit(room)} 
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 hover:bg-blue-50 text-blue-600 font-bold text-xs rounded-xl border border-blue-100 transition-all"
+                >
+                  Editar
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => handleDelete(room.id)} 
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 hover:bg-red-50 text-red-600 font-bold text-xs rounded-xl border border-red-100 transition-all"
+                >
+                  <Trash2 size={14} />
+                  Eliminar
+                </button>
+              </div>
             </div>
             
             <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100">
