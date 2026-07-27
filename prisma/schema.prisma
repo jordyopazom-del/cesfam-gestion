@@ -187,7 +187,7 @@ model Reservation {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
   roomId    String
-  room      Room     @relation(fields: [roomId], references: [id])
+  room      Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   startTime DateTime
   endTime   DateTime
   reason    String?
