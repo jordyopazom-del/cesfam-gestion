@@ -32,6 +32,9 @@ export default async function ReservasPage() {
       where: {
         startTime: {
           gte: today
+        },
+        status: {
+          not: "REJECTED"
         }
       },
       include: {
