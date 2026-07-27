@@ -24,9 +24,7 @@ export default async function AdminPage() {
     redirect("/reservas");
   }
 
-  // Fetch PENDING reservations
-  const pendingReservations = await prisma.reservation.findMany({
-    where: { status: "PENDING" },
+  const reservations = await prisma.reservation.findMany({
     include: {
       user: { select: { name: true, email: true } },
       room: { select: { name: true } },
@@ -35,7 +33,7 @@ export default async function AdminPage() {
     orderBy: { createdAt: "desc" }
   });
 
-  const serialized = pendingReservations.map(r => ({
+  const serialized = reservations.map(r => ({
     id: r.id,
     roomName: r.room.name,
     userName: r.user.name || r.user.email || "Usuario",
@@ -43,6 +41,7 @@ export default async function AdminPage() {
     startTime: r.startTime.toISOString(),
     endTime: r.endTime.toISOString(),
     reason: r.reason || "Sin motivo",
+    status: r.status,
     assets: r.assets.map(a => a.asset.name).join(", ")
   }));
 

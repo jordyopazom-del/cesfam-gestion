@@ -11,6 +11,11 @@ interface AdminClientProps {
 export function AdminClient({ initialReservations }: AdminClientProps) {
   const [reservations, setReservations] = useState(initialReservations);
   const [processing, setProcessing] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"PENDING" | "HISTORY">("PENDING");
+
+  const displayedReservations = reservations.filter(r => 
+    activeTab === "PENDING" ? r.status === "PENDING" : r.status !== "PENDING"
+  );
 
   const handleAction = async (id: string, action: "APPROVED" | "REJECTED") => {
     setProcessing(id);
@@ -64,7 +69,7 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
           window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${recipient}&su=${subject}&body=${body}`, "_blank");
         }
         
-        setReservations(prev => prev.filter(r => r.id !== id));
+        setReservations(prev => prev.map(r => r.id === id ? { ...r, status: action } : r));
       } else {
         alert("Error procesando solicitud.");
       }
@@ -76,7 +81,34 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+      {/* Tabs */}
+      <div className="flex items-center gap-6 px-6 pt-4 border-b border-gray-100">
+        <button
+          onClick={() => setActiveTab("PENDING")}
+          className={`pb-4 text-sm font-bold transition-all border-b-2 ${
+            activeTab === "PENDING" 
+              ? "text-blue-600 border-blue-600" 
+              : "text-gray-400 border-transparent hover:text-gray-600"
+          }`}
+        >
+          Pendientes
+          <span className="ml-2 bg-blue-50 text-blue-600 py-0.5 px-2 rounded-full text-[10px]">
+            {reservations.filter(r => r.status === "PENDING").length}
+          </span>
+        </button>
+        <button
+          onClick={() => setActiveTab("HISTORY")}
+          className={`pb-4 text-sm font-bold transition-all border-b-2 ${
+            activeTab === "HISTORY" 
+              ? "text-blue-600 border-blue-600" 
+              : "text-gray-400 border-transparent hover:text-gray-600"
+          }`}
+        >
+          Historial Procesado
+        </button>
+      </div>
+
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left text-sm text-gray-500">
           <thead className="bg-gray-50 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -90,18 +122,22 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 border-t border-gray-100">
-            {reservations.length === 0 ? (
+            {displayedReservations.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <HelpCircle size={32} className="text-gray-300" />
-                    <span className="font-semibold text-gray-500">No hay solicitudes pendientes</span>
-                    <span className="text-xs text-gray-400">Todas las reservas han sido procesadas.</span>
+                    <span className="font-semibold text-gray-500">
+                      {activeTab === "PENDING" ? "No hay solicitudes pendientes" : "No hay historial disponible"}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {activeTab === "PENDING" ? "Todas las reservas han sido procesadas." : "Aún no has procesado ninguna solicitud."}
+                    </span>
                   </div>
                 </td>
               </tr>
             ) : (
-              reservations.map(r => (
+              displayedReservations.map(r => (
                 <tr key={r.id} className="hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4">
                     <div className="font-bold text-gray-800">{r.userName}</div>
@@ -136,26 +172,42 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button 
-                        type="button"
-                        onClick={() => handleAction(r.id, "APPROVED")}
-                        disabled={processing === r.id}
-                        className="inline-flex items-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-emerald-100 transition-all disabled:opacity-50"
-                      >
-                        <Check size={14} />
-                        Aprobar
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => handleAction(r.id, "REJECTED")}
-                        disabled={processing === r.id}
-                        className="inline-flex items-center gap-1 px-3 py-2 bg-white hover:bg-red-50 text-red-600 font-bold text-xs rounded-xl border border-red-200 transition-all disabled:opacity-50"
-                      >
-                        <X size={14} />
-                        Rechazar
-                      </button>
-                    </div>
+                    {activeTab === "PENDING" ? (
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          type="button"
+                          onClick={() => handleAction(r.id, "APPROVED")}
+                          disabled={processing === r.id}
+                          className="inline-flex items-center gap-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-sm shadow-emerald-100 transition-all disabled:opacity-50"
+                        >
+                          <Check size={14} />
+                          Aprobar
+                        </button>
+                        <button 
+                          type="button"
+                          onClick={() => handleAction(r.id, "REJECTED")}
+                          disabled={processing === r.id}
+                          className="inline-flex items-center gap-1 px-3 py-2 bg-white hover:bg-red-50 text-red-600 font-bold text-xs rounded-xl border border-red-200 transition-all disabled:opacity-50"
+                        >
+                          <X size={14} />
+                          Rechazar
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex justify-end">
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border ${
+                          r.status === "APPROVED" 
+                            ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                            : "bg-red-50 text-red-600 border-red-100"
+                        }`}>
+                          {r.status === "APPROVED" ? (
+                            <><Check size={12} /> Aprobado</>
+                          ) : (
+                            <><X size={12} /> Rechazado</>
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))
