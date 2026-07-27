@@ -396,12 +396,27 @@ export function ReservasClient({ rooms, assets, initialReservations, userId, can
                       </div>
                     </div>
                     <span 
-                      className="flex-shrink-0 cursor-help" 
+                      className="flex-shrink-0 cursor-help flex items-center gap-1.5" 
                       title={r.status === 'APPROVED' ? 'Aprobada' : r.status === 'PENDING' ? 'Pendiente' : 'Rechazada'}
                     >
-                      {r.status === 'APPROVED' && <CheckCircle size={20} className="text-emerald-500" />}
-                      {r.status === 'PENDING' && <Clock size={20} className="text-amber-500" />}
-                      {r.status === 'REJECTED' && <XCircle size={20} className="text-red-500" />}
+                      {r.status === 'APPROVED' && (
+                        <>
+                          <span className="text-xs font-bold text-emerald-600 hidden sm:inline-block">Aprobada</span>
+                          <CheckCircle size={20} className="text-emerald-500" />
+                        </>
+                      )}
+                      {r.status === 'PENDING' && (
+                        <>
+                          <span className="text-xs font-bold text-amber-600 hidden sm:inline-block">Pendiente</span>
+                          <Clock size={20} className="text-amber-500" />
+                        </>
+                      )}
+                      {r.status === 'REJECTED' && (
+                        <>
+                          <span className="text-xs font-bold text-red-600 hidden sm:inline-block">Rechazada</span>
+                          <XCircle size={20} className="text-red-500" />
+                        </>
+                      )}
                     </span>
                   </li>
                 ))}
