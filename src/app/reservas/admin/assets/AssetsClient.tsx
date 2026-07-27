@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2, Sparkles } from 'lucide-react';
+import { Trash2, Sparkles, Edit2 } from 'lucide-react';
 
 interface AssetsClientProps {
   initialAssets: any[];
@@ -13,31 +13,53 @@ export function AssetsClient({ initialAssets }: AssetsClientProps) {
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const [editingAsset, setEditingAsset] = useState<any | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("/api/assets", {
-        method: "POST",
+      const isEditing = !!editingAsset;
+      const url = isEditing ? `/api/assets/${editingAsset.id}` : "/api/assets";
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, description })
       });
 
       if (res.ok) {
-        const newAsset = await res.json();
-        setAssets([...assets, newAsset].sort((a, b) => a.name.localeCompare(b.name)));
-        setName("");
-        setDescription("");
-        alert("Activo creado exitosamente");
+        const savedAsset = await res.json();
+        if (isEditing) {
+          setAssets(assets.map(a => a.id === editingAsset.id ? savedAsset : a).sort((a, b) => a.name.localeCompare(b.name)));
+          alert("Activo actualizado exitosamente");
+        } else {
+          setAssets([...assets, savedAsset].sort((a, b) => a.name.localeCompare(b.name)));
+          alert("Activo creado exitosamente");
+        }
+        handleCancelEdit();
       } else {
-        alert("Error al crear el activo");
+        alert("Error al guardar el activo");
       }
     } catch (e) {
       alert("Error de conexión");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleEditClick = (asset: any) => {
+    setEditingAsset(asset);
+    setName(asset.name);
+    setDescription(asset.description || "");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAsset(null);
+    setName("");
+    setDescription("");
   };
 
   const handleDelete = async (id: string) => {
@@ -57,14 +79,14 @@ export function AssetsClient({ initialAssets }: AssetsClientProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      {/* Left Column: Form to create asset */}
+      {/* Left Column: Form to create/edit asset */}
       <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-6 h-fit">
         <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2">
           <Sparkles size={18} className="text-blue-500" />
-          Nuevo Activo
+          {editingAsset ? "Editar Activo" : "Nuevo Activo"}
         </h2>
         
-        <form onSubmit={handleCreate} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Nombre del Activo</label>
             <input 
@@ -88,18 +110,30 @@ export function AssetsClient({ initialAssets }: AssetsClientProps) {
             />
           </div>
 
-          <button 
-            type="submit" 
-            className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm shadow-sm transition-all duration-200
-              ${loading 
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
-                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100'
-              }
-            `}
-            disabled={loading || !name}
-          >
-            {loading ? "Guardando..." : "Guardar Activo"}
-          </button>
+          <div className="flex gap-2">
+            <button 
+              type="submit" 
+              className={`flex-1 py-3.5 px-6 rounded-xl font-bold text-sm shadow-sm transition-all duration-200
+                ${loading 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed shadow-none'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-100'
+                }
+              `}
+              disabled={loading || !name}
+            >
+              {loading ? "Guardando..." : (editingAsset ? "Actualizar" : "Guardar Activo")}
+            </button>
+            {editingAsset && (
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="py-3.5 px-4 rounded-xl font-bold text-sm text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all"
+                disabled={loading}
+              >
+                Cancelar
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -115,7 +149,15 @@ export function AssetsClient({ initialAssets }: AssetsClientProps) {
                   <p className="text-xs text-gray-500 mt-1">{asset.description}</p>
                 )}
               </div>
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                <button 
+                  type="button"
+                  onClick={() => handleEditClick(asset)} 
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 hover:bg-blue-50 text-blue-600 font-bold text-xs rounded-xl border border-blue-100 transition-all"
+                >
+                  <Edit2 size={14} />
+                  Editar
+                </button>
                 <button 
                   type="button"
                   onClick={() => handleDelete(asset.id)} 
