@@ -25,7 +25,7 @@ export default async function RoomsAdminPage() {
   }
 
   const rooms = await prisma.room.findMany({
-    include: { schedules: true },
+    include: { schedules: true, assets: true },
     orderBy: { name: "asc" }
   });
 
