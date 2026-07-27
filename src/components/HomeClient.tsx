@@ -78,16 +78,6 @@ export default function HomeClient({
 
     const handleAgendasClick = () => {
         setIsAgendasDropdownOpen(!isAgendasDropdownOpen);
-        const agendasTabs = ['form', 'agenda', 'table', 'reports', 'stats', 'calendar'];
-        if (!agendasTabs.includes(activeTab)) {
-            if (isAdmin) {
-                setActiveTab('table');
-            } else if (canRequestAgendas) {
-                setActiveTab('form');
-            } else {
-                setActiveTab('calendar');
-            }
-        }
     };
 
     useEffect(() => {
