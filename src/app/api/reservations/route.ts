@@ -17,7 +17,7 @@ export async function POST(req: Request) {
 
     const userId = user.id;
     const body = await req.json();
-    const { roomId, startTime, endTime, assetIds, reason } = body;
+    const { roomId, startTime, endTime, timeStringStart, timeStringEnd, assetIds, reason } = body;
 
     if (!roomId || !startTime || !endTime || !reason) {
       return NextResponse.json({ message: "Faltan datos requeridos, incluyendo el motivo" }, { status: 400 });
@@ -38,8 +38,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Sala no encontrada" }, { status: 404 });
     }
 
-    const startHour = start.getHours() + start.getMinutes() / 60;
-    const endHour = end.getHours() + end.getMinutes() / 60;
+    let startHour, endHour;
+    
+    if (timeStringStart && timeStringEnd) {
+      const [sH, sM] = timeStringStart.split(':').map(Number);
+      const [eH, eM] = timeStringEnd.split(':').map(Number);
+      startHour = sH + sM / 60;
+      endHour = eH + eM / 60;
+    } else {
+      startHour = start.getHours() + start.getMinutes() / 60;
+      endHour = end.getHours() + end.getMinutes() / 60;
+    }
+    
     const day = start.getDay(); // 0 = Dom, 1 = Lun, ..., 6 = Sab
 
     const daySchedules = room.schedules.filter(s => s.dayOfWeek === day);

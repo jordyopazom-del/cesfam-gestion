@@ -185,6 +185,8 @@ export function ReservasClient({ rooms, assets, initialReservations, userId, can
           roomId: selectedRoom,
           startTime: startDateTime.toISOString(),
           endTime: endDateTime.toISOString(),
+          timeStringStart: startTime,
+          timeStringEnd: endTime,
           assetIds: selectedAssets,
           reason
         })
