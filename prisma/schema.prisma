@@ -171,6 +171,7 @@ model Room {
   description    String?
   reservations   Reservation[]
   schedules      RoomSchedule[]
+  assets         Asset[]
 }
 
 model Asset {
@@ -178,6 +179,7 @@ model Asset {
   name         String             @unique // Data, Telón, Computador
   description  String?
   reservations ReservationAsset[]
+  rooms        Room[]
 }
 
 model Reservation {

@@ -19,6 +19,7 @@ interface Room {
   name: string;
   description: string | null;
   schedules?: RoomSchedule[];
+  assets?: Asset[];
 }
 
 interface Asset {
@@ -311,8 +312,7 @@ export function ReservasClient({ rooms, assets, initialReservations, userId, can
                 <div className="flex flex-col gap-3.5 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
                   {assets.map((asset: any) => {
                     const selectedRoomObj = rooms.find((r: any) => r.id === selectedRoom);
-                    const isCapacitacion = selectedRoomObj?.name.toLowerCase().includes("capacitación") || selectedRoomObj?.name.toLowerCase().includes("capacitacion");
-                    const isIncludedInRoom = isCapacitacion && (asset.name.toLowerCase().includes("data") || asset.name.toLowerCase().includes("telón") || asset.name.toLowerCase().includes("telon"));
+                    const isIncludedInRoom = selectedRoomObj?.assets?.some((a: any) => a.id === asset.id) || false;
                     const isAssetBusy = busyAssetIds.includes(asset.id);
                     const isAssetDisabled = isIncludedInRoom || isAssetBusy;
 

@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     }
 
     const rooms = await prisma.room.findMany({
-      include: { schedules: true }
+      include: { schedules: true, assets: true }
     });
 
     return NextResponse.json(rooms);
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, description, schedules } = body;
+    const { name, description, schedules, assetIds } = body;
 
     if (!name || !schedules || !Array.isArray(schedules)) {
       return NextResponse.json({ message: "Datos inválidos" }, { status: 400 });
@@ -64,7 +64,10 @@ export async function POST(req: Request) {
             startTime: s.startTime,
             endTime: s.endTime
           }))
-        }
+        },
+        assets: assetIds && Array.isArray(assetIds) ? {
+          connect: assetIds.map(id => ({ id }))
+        } : undefined
       }
     });
 

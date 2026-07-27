@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Plus, Calendar, Clock, Sparkles } from 'lucide-react';
 
@@ -19,6 +19,17 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
     { dayOfWeek: 1, startTime: "08:00", endTime: "18:00" }
   ]);
   const [loading, setLoading] = useState(false);
+  const [allAssets, setAllAssets] = useState<any[]>([]);
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/assets')
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) setAllAssets(data);
+      })
+      .catch(console.error);
+  }, []);
 
   const addSchedule = () => setSchedules([...schedules, { dayOfWeek: 1, startTime: "08:00", endTime: "18:00" }]);
   
@@ -40,7 +51,7 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
       const res = await fetch("/api/admin/rooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, schedules })
+        body: JSON.stringify({ name, description, schedules, assetIds: selectedAssetIds })
       });
 
       if (res.ok) {
@@ -157,6 +168,31 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
             </div>
           </div>
 
+          {allAssets.length > 0 && (
+            <div>
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Activos Fijos en la Sala</label>
+              <div className="flex flex-col gap-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+                {allAssets.map(asset => (
+                  <label key={asset.id} className="flex items-center gap-3 text-sm font-semibold text-gray-700 cursor-pointer select-none">
+                    <input 
+                      type="checkbox"
+                      checked={selectedAssetIds.includes(asset.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedAssetIds([...selectedAssetIds, asset.id]);
+                        } else {
+                          setSelectedAssetIds(selectedAssetIds.filter(id => id !== asset.id));
+                        }
+                      }}
+                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    />
+                    {asset.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+
           <button 
             type="submit" 
             className={`w-full py-3.5 px-6 rounded-xl font-bold text-sm shadow-sm transition-all duration-200
@@ -207,6 +243,18 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
                 )) : (
                   <span className="text-xs text-gray-400 font-medium">No hay horarios configurados</span>
                 )}
+              </div>
+              <div className="bg-gray-50/50 p-4 rounded-xl border border-gray-100 mt-3">
+                <strong className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Activos Fijos</strong>
+                <div className="flex flex-wrap gap-2">
+                  {room.assets && room.assets.length > 0 ? room.assets.map((a: any) => (
+                    <span key={a.id} className="text-[10px] bg-emerald-50 border border-emerald-100 text-emerald-600 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+                      {a.name}
+                    </span>
+                  )) : (
+                    <span className="text-xs text-gray-400 font-medium">No tiene activos fijos</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

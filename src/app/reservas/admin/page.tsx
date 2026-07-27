@@ -66,7 +66,13 @@ export default async function AdminPage() {
               <p className="text-xs text-gray-400 font-semibold mt-1">Aprobación y rechazo de reservas de salas pendientes.</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col md:flex-row items-center gap-3">
+            <Link 
+              href="/reservas/admin/assets" 
+              className="px-4 py-2.5 bg-white text-gray-700 font-bold text-sm rounded-xl border border-gray-200 hover:bg-gray-50 transition-all shadow-sm"
+            >
+              Administrar Activos
+            </Link>
             <Link 
               href="/reservas/admin/rooms" 
               className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-all shadow-sm shadow-blue-100"
