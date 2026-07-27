@@ -25,7 +25,7 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
         const data = await res.json();
         const reservation = data.reservation;
         
-        if (action === "APPROVED" && reservation) {
+        if ((action === "APPROVED" || action === "REJECTED") && reservation) {
           const startTime = new Date(reservation.startTime);
           const endTime = new Date(reservation.endTime);
           
@@ -34,7 +34,9 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
           const formattedEndTime = format(endTime, "HH:mm");
           
           const recipient = reservation.user.email || "";
-          const subject = encodeURIComponent(`Reserva Aprobada: ${reservation.room.name}`);
+          
+          const actionText = action === "APPROVED" ? "Aprobada" : "Rechazada";
+          const subject = encodeURIComponent(`Reserva ${actionText}: ${reservation.room.name}`);
           
           const assetsList = reservation.assets && reservation.assets.length > 0
             ? reservation.assets.map((a: any) => a.asset.name).join(", ")
@@ -43,9 +45,9 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
           const bodyLines = [
             `Estimado/a,`,
             ``,
-            `Le informamos que la solicitud de Reserva de Sala ha sido procesada y finalizada con éxito.`,
+            `Le informamos que la solicitud de Reserva de Sala ha sido ${action === "APPROVED" ? "procesada y aprobada con éxito" : "rechazada"}.`,
             ``,
-            `📋 Detalles de la Gestión:`,
+            `📋 Detalles de la Solicitud:`,
             `- Sala: ${reservation.room.name}`,
             `- Solicitante: ${reservation.user.name || "Usuario"}`,
             `- Fechas Reservadas: ${formattedDate}`,
@@ -53,6 +55,8 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
             `- Motivo: ${reservation.reason || "Sin motivo"}`,
             `- Activos Adicionales: ${assetsList}`,
             ``,
+            action === "REJECTED" ? `Motivo del rechazo: [POR FAVOR INDICAR MOTIVO]` : "",
+            action === "REJECTED" ? `` : "",
             `Saludos cordiales.`
           ];
           
