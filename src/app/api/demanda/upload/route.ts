@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/session';
+import { prisma } from '@/lib/prisma';
 import * as XLSX from 'xlsx';
 
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user) {
+    const session = await getSession();
+    if (!session?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: session.email } });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found in database' }, { status: 401 });
     }
 
     const formData = await request.formData();
@@ -66,7 +70,7 @@ export async function POST(request: Request) {
     const headers = rows[headerIndex] as string[];
     const dataRows = rows.slice(headerIndex + 1);
 
-    const distribuciones = [];
+    const distribuciones: any[] = [];
 
     for (const row of dataRows) {
       // Break if we hit an empty row or a total row at the bottom
@@ -122,7 +126,7 @@ export async function POST(request: Request) {
         await tx.reportUpload.update({
           where: { id: existingUpload.id },
           data: {
-            uploadedBy: session.user.id,
+            uploadedBy: user.id,
             uploadedAt: new Date()
           }
         });
@@ -135,7 +139,7 @@ export async function POST(request: Request) {
             reportType: 'DISTRIBUCION_OFERTA',
             startDate,
             endDate,
-            uploadedBy: session.user.id,
+            uploadedBy: user.id,
           }
         });
         uploadId = newUpload.id;

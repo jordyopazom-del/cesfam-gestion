@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, RefreshCw, BarChart3, PieChart } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, Cell, PieChart as RePieChart, Pie } from 'recharts';
-import { toast } from 'sonner';
+import toast from 'react-hot-toast';
 
 export default function DemandaDashboard() {
   const [isUploading, setIsUploading] = useState(false);
