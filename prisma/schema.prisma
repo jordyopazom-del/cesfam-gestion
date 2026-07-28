@@ -63,6 +63,7 @@ model User {
   requests      SolicitudAdministrativa[]
   balances      Balance[]
   reservations  Reservation[]
+  reportUploads ReportUpload[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -180,6 +181,11 @@ model Asset {
   description  String?
   reservations ReservationAsset[]
   rooms        Room[]
+}
+
+model DestinoDerivacion {
+  id     String @id @default(cuid())
+  nombre String @unique
 }
 
 model Reservation {
@@ -365,3 +371,29 @@ model DemandAuditLog {
 
 // Rebuild trigger for staging deployment
 
+// ==========================================
+// 6. Demanda (Estado de Horas)
+// ==========================================
+model ReportUpload {
+  id             String   @id @default(cuid())
+  reportType     String   // "DISTRIBUCION_OFERTA"
+  startDate      DateTime
+  endDate        DateTime
+  uploadedBy     String
+  user           User     @relation(fields: [uploadedBy], references: [id])
+  uploadedAt     DateTime @default(now())
+  
+  distribuciones DistribucionAtencion[]
+  
+  @@unique([reportType, startDate, endDate])
+}
+
+model DistribucionAtencion {
+  id             String       @id @default(cuid())
+  reportUploadId String
+  reportUpload   ReportUpload @relation(fields: [reportUploadId], references: [id], onDelete: Cascade)
+  profesional    String
+  policlinico    String
+  desglose       Json
+  total          Int
+}
