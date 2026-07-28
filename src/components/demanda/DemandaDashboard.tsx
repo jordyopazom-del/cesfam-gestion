@@ -73,8 +73,32 @@ export default function DemandaDashboard() {
   };
 
   // -------------------------------------------------------------
-  // Data Filtering & Computed Metrics
+  // Dynamic Filters & Computed Metrics
   // -------------------------------------------------------------
+  const availableTiposAtencion = useMemo(() => {
+    if (!data?.hasData || !data?.distribuciones) return [];
+    
+    const tipos = new Set<string>();
+    data.distribuciones.forEach((d: any) => {
+      if (selectedPoli !== "TODOS" && d.policlinico !== selectedPoli) return;
+      
+      const desglose = d.desglose as Record<string, number>;
+      Object.keys(desglose).forEach(k => {
+        if (k.trim() !== '' && k.toUpperCase() !== 'TOTAL' && desglose[k] > 0) {
+          tipos.add(k.trim());
+        }
+      });
+    });
+    return Array.from(tipos).sort();
+  }, [data, selectedPoli]);
+
+  // Reset Actividad if it's not available in the new Policlínico
+  useEffect(() => {
+    if (selectedActividad !== "TODAS" && !availableTiposAtencion.includes(selectedActividad)) {
+      setSelectedActividad("TODAS");
+    }
+  }, [selectedPoli, availableTiposAtencion, selectedActividad]);
+
   const filteredData = useMemo(() => {
     if (!data?.hasData || !data?.distribuciones) return [];
 
@@ -237,7 +261,7 @@ export default function DemandaDashboard() {
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="TODAS">Cualquier Actividad</option>
-                    {data.filtros.tiposAtencion.map((t: string) => (
+                    {availableTiposAtencion.map((t: string) => (
                       <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
@@ -314,6 +338,14 @@ export default function DemandaDashboard() {
                         .sort((a, b) => b[1] - a[1])
                         .slice(0, 3);
 
+                      const limit = selectedActividad !== "TODAS" ? 4 : 3;
+                      const hiddenActividades = Object.entries(desglose)
+                        .filter(([k, v]) => v > 0 && k !== selectedActividad)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(limit);
+                      
+                      const hiddenText = hiddenActividades.map(([act, count]) => `${act}: ${count}`).join(', ');
+
                       return (
                         <tr key={i} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4 font-bold text-slate-800">
@@ -351,9 +383,12 @@ export default function DemandaDashboard() {
                               ) : (
                                 <span className="text-xs text-slate-400">Sin otras act.</span>
                               )}
-                              {Object.keys(desglose).filter(k => desglose[k] > 0).length > (selectedActividad !== "TODAS" ? 4 : 3) && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-100">
-                                  +{Object.keys(desglose).filter(k => desglose[k] > 0).length - (selectedActividad !== "TODAS" ? 4 : 3)}
+                              {hiddenActividades.length > 0 && (
+                                <span 
+                                  className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-semibold bg-slate-50 text-slate-400 border border-slate-100 cursor-help"
+                                  title={`Otras actividades:\n${hiddenText}`}
+                                >
+                                  +{hiddenActividades.length}
                                 </span>
                               )}
                             </div>
