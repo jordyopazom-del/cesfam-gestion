@@ -26,30 +26,44 @@ export async function POST(request: Request) {
       });
     }
 
+    if (patients.length === 0) {
+      // Ignorar bloqueos sin pacientes para no ensuciar el historial
+      return NextResponse.json({ success: true, message: 'Bloqueo ignorado por tener 0 pacientes' }, {
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+
     const existingBlock = await prisma.agendaBlock.findFirst({
       where: {
         professionalName,
         startDate: startDate || new Date().toISOString()
+      },
+      include: {
+        patients: true
       }
     });
 
     let block;
     if (existingBlock) {
       block = existingBlock;
-      await prisma.blockedPatient.deleteMany({
-        where: { blockId: existingBlock.id }
-      });
-      await prisma.blockedPatient.createMany({
-        data: patients.map((p: any) => ({
-          blockId: existingBlock.id,
-          rut: p.rut || 'S/N',
-          fullName: p.fullName || 'Desconocido',
-          attentionType: p.attentionType || 'Consulta',
-          attentionDate: p.attentionDate || '',
-          contactPhones: p.contactPhones || '',
-          status: 'Pendiente'
-        }))
-      });
+      
+      // Opción A: Fusión (Merge). Solo agregamos pacientes que no estén ya en la base de datos (comparando por RUT).
+      const existingRuts = new Set(existingBlock.patients.map(p => p.rut));
+      const newPatients = patients.filter((p: any) => !existingRuts.has(p.rut || 'S/N'));
+      
+      if (newPatients.length > 0) {
+        await prisma.blockedPatient.createMany({
+          data: newPatients.map((p: any) => ({
+            blockId: existingBlock.id,
+            rut: p.rut || 'S/N',
+            fullName: p.fullName || 'Desconocido',
+            attentionType: p.attentionType || 'Consulta',
+            attentionDate: p.attentionDate || '',
+            contactPhones: p.contactPhones || '',
+            status: 'Pendiente'
+          }))
+        });
+      }
     } else {
       block = await prisma.agendaBlock.create({
         data: {
