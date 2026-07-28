@@ -40,6 +40,9 @@ export default function RequestModal({ isOpen, onClose, balances = [] }: Request
 
     if (!isOpen) return null;
 
+    // Current date in YYYY-MM-DD format for min attribute
+    const todayStr = new Date().toISOString().split('T')[0];
+
     // Business Rule Check: Vacation Reminder
     const now = new Date();
     const isAfterOct30 = (now.getMonth() === 9 && now.getDate() >= 30) || now.getMonth() > 9;
@@ -237,6 +240,7 @@ export default function RequestModal({ isOpen, onClose, balances = [] }: Request
                                 type="date"
                                 className={`glass-input ${styles.inputFull}`}
                                 required
+                                min={todayStr}
                                 value={start_date}
                                 onChange={(e) => setStartDate(e.target.value)}
                                 title="Fecha de inicio"
@@ -251,6 +255,7 @@ export default function RequestModal({ isOpen, onClose, balances = [] }: Request
                                     type="date"
                                     className={`glass-input ${styles.inputFull}`}
                                     required={!isHalfDay}
+                                    min={start_date || todayStr}
                                     value={end_date}
                                     onChange={(e) => setEndDate(e.target.value)}
                                     title="Fecha de término"
