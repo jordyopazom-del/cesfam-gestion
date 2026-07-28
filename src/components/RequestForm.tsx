@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { BLOCK_TYPES, COORDINATORS, LOCATIONS } from '@/data/constants';
 import { Loader2, CheckCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import TimeInput from './TimeInput';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, isWeekend } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, isToday, isWeekend, isBefore, startOfDay } from 'date-fns';
 import { es } from 'date-fns/locale';
 import clsx from 'clsx';
 import { Official } from '@/app/admin/personnel/actions';
@@ -308,17 +308,20 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
                                 {daysInMonth.map(day => {
                                     const isSelected = selectedDays.some(d => isSameDay(d, day));
                                     const isWeekendDay = isWeekend(day);
+                                    const isPast = isBefore(day, startOfDay(new Date()));
                                     return (
                                         <button
                                             key={day.toISOString()}
                                             type="button"
-                                            onClick={() => toggleDay(day)}
+                                            onClick={() => !isPast && toggleDay(day)}
+                                            disabled={isPast}
                                             className={clsx(
                                                 "h-10 w-10 rounded-full flex items-center justify-center text-sm transition-all duration-200",
                                                 isSelected ? "bg-blue-600 text-white shadow-md scale-105" : "hover:bg-red-50 text-gray-700",
                                                 isToday(day) && !isSelected && "border-2 border-blue-200 font-bold",
                                                 day.getDay() === 0 && !isSelected && "text-red-400 bg-red-50/50",
-                                                day.getDay() === 6 && !isSelected && "text-blue-400 bg-blue-50/50"
+                                                day.getDay() === 6 && !isSelected && "text-blue-400 bg-blue-50/50",
+                                                isPast && "opacity-30 cursor-not-allowed hover:bg-transparent"
                                             )}
                                         >
                                             {format(day, 'd')}
