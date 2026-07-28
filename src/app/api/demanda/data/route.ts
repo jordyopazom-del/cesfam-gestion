@@ -9,65 +9,52 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const dateRange = searchParams.get('range'); // 'all', 'last_month', etc.
-
-    // Fetch the most recent report or all reports
-    const uploads = await prisma.reportUpload.findMany({
+    // Fetch ONLY the most recent report to serve as the "current free slots" (cupos libres actuales)
+    const latestUpload = await prisma.reportUpload.findFirst({
       where: { reportType: 'DISTRIBUCION_OFERTA' },
       include: {
         distribuciones: true
       },
       orderBy: {
-        startDate: 'desc'
+        startDate: 'desc' // Get the most recent date
       }
     });
 
-    // Aggregate data across all fetched uploads
-    // We want to return aggregated totals for Recharts
-    
-    // Aggregation 1: Total by category
-    const categoryTotals: Record<string, number> = {};
-    
-    // Aggregation 2: Total by policlinico
-    const policlinicoData: Record<string, any> = {};
+    if (!latestUpload) {
+      return NextResponse.json({
+        hasData: false,
+        message: 'No hay reportes de demanda subidos.'
+      });
+    }
 
-    uploads.forEach(upload => {
-      upload.distribuciones.forEach(dist => {
-        // Categories
-        const desglose = dist.desglose as Record<string, number>;
-        Object.entries(desglose).forEach(([key, value]) => {
-          if (value > 0) {
-            categoryTotals[key] = (categoryTotals[key] || 0) + value;
-          }
-        });
+    // Extract all unique 'Tipos de Atención' across all distributions
+    // to build the dropdown filters in the frontend.
+    const uniqueTiposAtencion = new Set<string>();
+    const uniquePoliclinicos = new Set<string>();
 
-        // Policlinico distribution
-        const poli = dist.policlinico;
-        if (!policlinicoData[poli]) {
-          policlinicoData[poli] = { name: poli, total: 0 };
+    latestUpload.distribuciones.forEach(dist => {
+      uniquePoliclinicos.add(dist.policlinico);
+      const desglose = dist.desglose as Record<string, number>;
+      Object.keys(desglose).forEach(key => {
+        if (key.trim() !== '' && key.toUpperCase() !== 'TOTAL' && desglose[key] > 0) {
+          uniqueTiposAtencion.add(key.trim());
         }
-        
-        Object.entries(desglose).forEach(([key, value]) => {
-          if (value > 0) {
-            policlinicoData[poli][key] = (policlinicoData[poli][key] || 0) + value;
-            policlinicoData[poli].total += value;
-          }
-        });
       });
     });
 
-    const categoryArray = Object.entries(categoryTotals)
-      .map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value);
-
-    const policlinicoArray = Object.values(policlinicoData)
-      .sort((a: any, b: any) => b.total - a.total);
-
     return NextResponse.json({
-      uploadsMeta: uploads.map(u => ({ id: u.id, startDate: u.startDate, endDate: u.endDate, uploadedAt: u.uploadedAt })),
-      categoryData: categoryArray,
-      policlinicoData: policlinicoArray
+      hasData: true,
+      uploadMeta: {
+        id: latestUpload.id,
+        startDate: latestUpload.startDate,
+        endDate: latestUpload.endDate,
+        uploadedAt: latestUpload.uploadedAt
+      },
+      filtros: {
+        policlinicos: Array.from(uniquePoliclinicos).sort(),
+        tiposAtencion: Array.from(uniqueTiposAtencion).sort()
+      },
+      distribuciones: latestUpload.distribuciones
     });
 
   } catch (error: any) {
