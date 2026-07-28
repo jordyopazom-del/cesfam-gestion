@@ -5,6 +5,7 @@ import clsx from 'clsx';
 import { format } from 'date-fns';
 import { Official, getPersonnel } from '@/app/admin/personnel/actions';
 import ProcessingModal from './ProcessingModal';
+import { getMailtoLink } from '@/lib/mailUtils';
 
 export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refreshTrigger: number, isAdmin: boolean }) {
     const [requests, setRequests] = useState<AgendaOpeningRequest[]>([]);
@@ -42,6 +43,8 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
             return;
         }
 
+        const mailWindow = window.open('about:blank', '_blank');
+
         // Optimistic update
         setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
 
@@ -52,11 +55,19 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                 body: JSON.stringify({ status: newStatus }),
             });
 
-            if (!res.ok) {
+            if (res.ok) {
+                const updatedData = await res.json();
+                if (mailWindow) {
+                    const mailUrl = getMailtoLink(updatedData, 'openings', personnel);
+                    mailWindow.location.href = mailUrl;
+                }
+            } else {
+                if (mailWindow) mailWindow.close();
                 fetchRequests();
                 alert('Error al actualizar estado');
             }
         } catch {
+            if (mailWindow) mailWindow.close();
             fetchRequests();
             alert('Error al actualizar estado');
         }
