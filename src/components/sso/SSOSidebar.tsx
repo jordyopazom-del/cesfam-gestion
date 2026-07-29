@@ -21,7 +21,6 @@ const navigation = [
 
 const adminNavigation = [
   { name: "Carga de Datos", href: "/sso/admin/carga", icon: UploadCloud },
-  { name: "Panel Adm.", href: "/sso/admin/panel", icon: Settings },
 ];
 
 interface SSOSidebarProps {
