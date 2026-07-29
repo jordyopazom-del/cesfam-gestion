@@ -151,8 +151,8 @@ export default function RechazosClient({ data }: { data: any[] }) {
             onClick={() => setActiveTab(tab.key)}
             className={`pb-3 text-xs font-bold transition-all relative flex items-center gap-1.5 ${
               activeTab === tab.key
-                ? "text-blue-600"
-                : "text-slate-500 hover:text-slate-800"
+                ? "text-blue-700 font-extrabold"
+                : "text-slate-600 hover:text-slate-900 font-extrabold"
             }`}
           >
             <span className="uppercase tracking-wider">{tab.label}</span>
@@ -177,21 +177,21 @@ export default function RechazosClient({ data }: { data: any[] }) {
             <input
               type="text"
               placeholder="RUT o Nombre del paciente..."
-              className="w-full pl-10 pr-4 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
         <div className="w-full md:w-48">
-          <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block ml-1">Policlínico</label>
-          <select className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 font-bold" value={selectedPoli} onChange={(e) => setSelectedPoli(e.target.value)}>
+          <label className="text-[11px] font-extrabold text-slate-500 uppercase mb-1 block ml-1 tracking-wider">Policlínico</label>
+          <select className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-bold text-slate-800 shadow-sm" value={selectedPoli} onChange={(e) => setSelectedPoli(e.target.value)}>
             {policlinicos.map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
         </div>
         <div className="w-full md:w-48">
-          <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block ml-1">Prioridad</label>
-          <select className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50/50 font-bold" value={selectedPriority} onChange={(e) => setSelectedPriority(e.target.value)}>
+          <label className="text-[11px] font-extrabold text-slate-500 uppercase mb-1 block ml-1 tracking-wider">Prioridad</label>
+          <select className="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-bold text-slate-800 shadow-sm" value={selectedPriority} onChange={(e) => setSelectedPriority(e.target.value)}>
             <option value="Todos">Todas</option>
             <option value="Alta">🔴 Alta</option>
             <option value="Media">🟠 Media</option>
@@ -372,7 +372,7 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
                 handleUpdateNotes(e.target.value);
               }
             }}
-            className="w-full min-w-[120px] px-2 py-1.5 text-[11px] text-slate-800 font-bold border border-slate-200 rounded-lg hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-slate-50/50 hover:bg-white focus:bg-white transition-all shadow-sm"
+            className="w-full min-w-[120px] px-2 py-1.5 text-[12px] text-slate-800 font-extrabold border border-slate-300 rounded-lg hover:border-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white hover:bg-slate-50 focus:bg-white transition-all shadow-sm"
             placeholder="Añadir nota..."
           />
         </td>
