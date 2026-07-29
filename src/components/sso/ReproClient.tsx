@@ -131,7 +131,7 @@ export default function ReproClient({
             showResolved={showResolved}
             setShowResolved={setShowResolved}
             isAdmin={isAdmin}
-            isJefeSome={userRole === "admin" || userRole === "ADMIN"}
+            isJefeSome={userEmail === "some.cesfam@munifutrono.cl"}
             handleAssign={handleAssign}
             reprogramadores={reprogramadores}
           />
