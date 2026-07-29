@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw } from "lucide-react";
+import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw, Upload, X } from "lucide-react";
 import { getPatientsByBlock, getPatientSearch, updatePatientStatus, getReprogramadores, assignBlock } from "@/app/reprogramacion/actions";
 
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -131,6 +131,7 @@ export default function ReproClient({
             showResolved={showResolved}
             setShowResolved={setShowResolved}
             isAdmin={isAdmin}
+            isJefeSome={userRole === "admin" || userRole === "ADMIN"}
             handleAssign={handleAssign}
             reprogramadores={reprogramadores}
           />
@@ -141,10 +142,14 @@ export default function ReproClient({
   );
 }
 
-function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, loading, onUpdatePatient, showResolved, setShowResolved, isAdmin, handleAssign, reprogramadores }: any) {
+function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, loading, onUpdatePatient, showResolved, setShowResolved, isAdmin, isJefeSome, handleAssign, reprogramadores }: any) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [subFilter, setSubFilter] = useState<"unassigned" | "assigned">("unassigned");
+
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadMotivo, setUploadMotivo] = useState("Subido manualmente por nómina (Urgencia)");
+  const [isUploading, setIsUploading] = useState(false);
 
   const unassignedBlocks = blocks.filter((b: any) => b.AsignadoA === "Sin asignar" || !b.AsignadoA);
   const assignedBlocks = blocks.filter((b: any) => b.AsignadoA && b.AsignadoA !== "Sin asignar");
@@ -164,6 +169,48 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
       else toast.success(`Se encontraron ${res.data.length} paciente(s)`, { id: t });
     } else {
       toast.error("Error al realizar la búsqueda", { id: t });
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith('.xls') && !file.name.endsWith('.xlsx')) {
+      toast.error("Formato inválido. Sube un archivo Excel (.xls o .xlsx)");
+      return;
+    }
+    setUploadFile(file);
+    e.target.value = ''; // reset
+  };
+
+  const submitUpload = async () => {
+    if (!uploadFile) return;
+    setIsUploading(true);
+    const t = toast.loading("Procesando nómina...");
+    
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    formData.append('motivo', uploadMotivo);
+
+    try {
+      const res = await fetch('/api/reprogramacion/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      
+      if (res.ok) {
+        toast.success(`Éxito: ${data.count} pacientes cargados`, { id: t });
+        setUploadFile(null);
+        setUploadMotivo("Subido manualmente por nómina (Urgencia)");
+        window.location.reload();
+      } else {
+        toast.error(data.error || "Error al procesar", { id: t });
+      }
+    } catch (err) {
+      toast.error("Error de conexión", { id: t });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -290,6 +337,59 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
             </div>
           )}
         </div>
+
+        {/* Modal para Subir Archivo Excel */}
+        {uploadFile && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 w-full max-w-md animate-in zoom-in-95 duration-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                  <Upload className="h-5 w-5 text-indigo-600" />
+                  Confirmar Subida
+                </h3>
+                <button onClick={() => setUploadFile(null)} className="text-slate-400 hover:text-slate-600">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <p className="text-sm text-slate-600 mb-4">
+                Archivo seleccionado: <span className="font-semibold text-slate-800 break-all">{uploadFile.name}</span>
+              </p>
+              <div className="space-y-2 mb-6">
+                <label className="text-sm font-semibold text-slate-700">Motivo del Bloqueo (Opcional):</label>
+                <textarea
+                  value={uploadMotivo}
+                  onChange={(e) => setUploadMotivo(e.target.value)}
+                  className="w-full border border-slate-300 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50"
+                  rows={3}
+                  placeholder="Ej: Licencia médica imprevista"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setUploadFile(null)}
+                  className="px-4 py-2 rounded-xl text-slate-600 font-semibold hover:bg-slate-100 transition-colors"
+                  disabled={isUploading}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={submitUpload}
+                  disabled={isUploading}
+                  className="px-5 py-2 rounded-xl bg-indigo-600 text-white font-semibold flex items-center gap-2 hover:bg-indigo-700 disabled:opacity-50 transition-colors"
+                >
+                  {isUploading ? (
+                    <>
+                      <RefreshCcw className="h-4 w-4 animate-spin" />
+                      Procesando...
+                    </>
+                  ) : (
+                    "Confirmar e Importar"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -297,22 +397,36 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">🔎 Búsqueda Rápida en Ventanilla</h3>
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              type="text"
-              value={globalSearch}
-              onChange={(e) => setGlobalSearch(e.target.value)}
-              placeholder="Ej. 12345678-9 o Juan Pérez..."
-              className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-            />
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+          <div className="flex-1 w-full">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">🔎 Búsqueda Rápida en Ventanilla</h3>
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <input
+                  type="text"
+                  value={globalSearch}
+                  onChange={(e) => setGlobalSearch(e.target.value)}
+                  placeholder="Ej. 12345678-9 o Juan Pérez..."
+                  className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all shadow-sm"
+                />
+              </div>
+              <button type="submit" className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20 text-xs">
+                Buscar
+              </button>
+            </form>
           </div>
-          <button type="submit" className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20 text-xs">
-            Buscar
-          </button>
-        </form>
+
+          {isJefeSome && (
+            <div className="flex-none w-full md:w-auto">
+              <label className="cursor-pointer inline-flex items-center justify-center w-full md:w-auto gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-md">
+                <Upload className="h-4 w-4" />
+                Subir Hoja Diaria (Excel)
+                <input type="file" accept=".xls,.xlsx" className="hidden" onChange={handleFileSelect} />
+              </label>
+            </div>
+          )}
+        </div>
 
         {searchResults.length > 0 && (
           <div className="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white">
