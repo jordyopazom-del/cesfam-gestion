@@ -416,7 +416,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-slate-800">{kpis.totalActivos}</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Casos sin gestionar o cerrar</p>
+              <p className="text-[11px] text-slate-500 mt-2">Casos sin gestionar o cerrar</p>
             </div>
 
             {/* KPI 2 */}
@@ -428,7 +428,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-rose-600">{kpis.criticos}</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Casos activos con Prioridad Alta</p>
+              <p className="text-[11px] text-slate-500 mt-2">Casos activos con Prioridad Alta</p>
             </div>
 
             {/* KPI 3 */}
@@ -442,7 +442,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-amber-600">{kpis.estancados}</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">&gt;7 días sin cambios en su estado</p>
+              <p className="text-[11px] text-slate-500 mt-2">&gt;7 días sin cambios en su estado</p>
             </div>
           </>
         )}
@@ -460,7 +460,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-slate-800">{kpis.totalActivos}</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Carga total activa en especialidades</p>
+              <p className="text-[11px] text-slate-500 mt-2">Carga total activa en especialidades</p>
             </div>
 
             {/* KPI 2 */}
@@ -472,9 +472,9 @@ export default function DashboardClient({
                 </span>
               </div>
               <div className="flex items-end justify-between mt-2">
-                <p className="text-3xl font-black text-slate-800">{kpis.tiempoPromedio.toFixed(0)} <span className="text-lg text-slate-400 font-bold">d</span></p>
+                <p className="text-3xl font-black text-slate-800">{kpis.tiempoPromedio.toFixed(0)} <span className="text-lg text-slate-500 font-bold">d</span></p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Promedio en días desde el ingreso del caso</p>
+              <p className="text-[11px] text-slate-500 mt-2">Promedio en días desde el ingreso del caso</p>
             </div>
 
             {/* KPI 3 */}
@@ -488,7 +488,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-emerald-600">{kpis.resueltosEstaSemana}</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Casos cerrados en los últimos 7 días</p>
+              <p className="text-[11px] text-slate-500 mt-2">Casos cerrados en los últimos 7 días</p>
             </div>
           </>
         )}
@@ -506,7 +506,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-slate-800">{kpis.totalActivos}</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Total de la cohorte activa en seguimiento</p>
+              <p className="text-[11px] text-slate-500 mt-2">Total de la cohorte activa en seguimiento</p>
             </div>
 
             {/* KPI 2 */}
@@ -520,7 +520,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-blue-600">{kpis.tasaContacto.toFixed(1)}%</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Porcentaje de casos con gestiones de contacto</p>
+              <p className="text-[11px] text-slate-500 mt-2">Porcentaje de casos con gestiones de contacto</p>
             </div>
 
             {/* KPI 3 */}
@@ -534,7 +534,7 @@ export default function DashboardClient({
               <div className="flex items-end justify-between mt-2">
                 <p className="text-3xl font-black text-emerald-600">{kpis.resueltosEstaSemana}</p>
               </div>
-              <p className="text-[11px] text-slate-400 mt-2">Casos cerrados en los últimos 7 días</p>
+              <p className="text-[11px] text-slate-500 mt-2">Casos cerrados en los últimos 7 días</p>
             </div>
           </>
         )}
@@ -695,7 +695,7 @@ export default function DashboardClient({
               {analysis.topPoliclinicos.map(([nombre, cantidad], idx) => (
                 <div key={nombre} className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100">
                   <span className="font-bold text-slate-700 flex items-center gap-2">
-                    <span className="text-slate-400 text-xs">#{idx + 1}</span> {nombre}
+                    <span className="text-slate-500 text-xs">#{idx + 1}</span> {nombre}
                   </span>
                   <span className="font-black text-slate-900">{cantidad}</span>
                 </div>
@@ -719,7 +719,7 @@ export default function DashboardClient({
               <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl shadow-sm text-center">
                 <p className="text-xs font-bold text-slate-500 uppercase tracking-tighter">📋 Pendiente</p>
                 <p className="text-2xl font-black text-slate-800 mt-1">{funnel.pendientes}</p>
-                <p className="text-[10px] text-slate-400 mt-1">Casos sin gestionar</p>
+                <p className="text-[10px] text-slate-500 mt-1">Casos sin gestionar</p>
               </div>
               <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl shadow-sm text-center relative">
                 <div className="hidden md:block absolute -left-3 top-1/2 -translate-y-1/2 text-slate-300">›</div>
@@ -794,7 +794,7 @@ export default function DashboardClient({
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex justify-between items-center">
                   <div>
                     <p className="font-bold text-slate-700">🤰 Embarazadas</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Total: {analysis.vulnerables.embarazadas.total} casos</p>
+                    <p className="text-[10px] text-slate-500 font-medium">Total: {analysis.vulnerables.embarazadas.total} casos</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-black text-emerald-600">
@@ -810,7 +810,7 @@ export default function DashboardClient({
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex justify-between items-center">
                   <div>
                     <p className="font-bold text-slate-700">👶 Menores 5 Años</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Total: {analysis.vulnerables.menores5.total} casos</p>
+                    <p className="text-[10px] text-slate-500 font-medium">Total: {analysis.vulnerables.menores5.total} casos</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-black text-blue-600">
@@ -826,7 +826,7 @@ export default function DashboardClient({
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-100 flex justify-between items-center">
                   <div>
                     <p className="font-bold text-slate-700">👴 Mayores 65 Años</p>
-                    <p className="text-[10px] text-slate-400 font-medium">Total: {analysis.vulnerables.mayores65.total} casos</p>
+                    <p className="text-[10px] text-slate-500 font-medium">Total: {analysis.vulnerables.mayores65.total} casos</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-black text-emerald-600">

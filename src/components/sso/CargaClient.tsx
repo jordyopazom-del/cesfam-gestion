@@ -331,7 +331,7 @@ export default function CargaClient() {
             onClick={() => fileInputRef.current?.click()}
           >
             <div className="flex justify-center mb-4">
-              <FileSpreadsheet className={`h-12 w-12 ${isDragging ? "text-blue-500" : "text-slate-400"}`} />
+              <FileSpreadsheet className={`h-12 w-12 ${isDragging ? "text-blue-500" : "text-slate-500"}`} />
             </div>
             <h3 className="text-lg font-bold text-slate-700 mb-2">Arrastra tu archivo aquí</h3>
             <p className="text-sm text-slate-500 mb-6">o haz clic para seleccionar (formatos .xlsx, .xls, .csv)</p>

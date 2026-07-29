@@ -48,7 +48,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
           <span className="text-xl font-extrabold text-slate-800 tracking-tight flex items-center">
             SOME <span className="text-blue-600 ml-1">Gestión</span>
           </span>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider tracking-widest mt-1">
             Control de Operaciones
           </span>
         </div>
@@ -67,7 +67,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
 
       <div className="flex flex-1 flex-col overflow-y-auto pt-2 pb-4">
         <nav className="flex-1 space-y-1 px-4">
-          <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">
+          <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-4">
             Gestión Operativa
           </p>
           {navigation.map((item) => {
@@ -86,7 +86,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
                 <item.icon
                   className={cn(
                     "mr-3 h-5 w-5 flex-shrink-0 transition-colors",
-                    isActive ? "text-blue-600" : "text-slate-400 group-hover:text-slate-600"
+                    isActive ? "text-blue-600" : "text-slate-500 group-hover:text-slate-600"
                   )}
                 />
                 {item.name}
@@ -98,7 +98,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
 
         {isAdmin && (
           <div className="px-4 mt-6">
-            <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">
+            <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-4">
               Administración
             </p>
             <div className="space-y-1">
@@ -118,7 +118,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
                     <item.icon
                       className={cn(
                         "mr-3 h-5 w-5 flex-shrink-0 transition-colors",
-                        isActive ? "text-slate-200" : "text-slate-400 group-hover:text-slate-600"
+                        isActive ? "text-slate-200" : "text-slate-500 group-hover:text-slate-600"
                       )}
                     />
                     {item.name}
@@ -131,7 +131,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
       </div>
 
       {/* Footer: User info + logout */}
-      <div className="border-t border-slate-100 p-6 bg-slate-50/50">
+      <div className="border-t border-slate-100 p-6 bg-white">
         <div className="flex items-center mb-6">
           <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-lg shadow-blue-200">
             <span className="font-bold text-sm tracking-tighter">{initials}</span>
@@ -147,7 +147,7 @@ export default function SSOSidebar({ userName, userRole }: SSOSidebarProps) {
           onClick={handleLogout}
           className="group flex w-full items-center rounded-lg px-3 py-2 text-sm font-bold text-slate-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
         >
-          <LogOut className="mr-3 h-4 w-4 text-slate-400 group-hover:text-red-500" />
+          <LogOut className="mr-3 h-4 w-4 text-slate-500 group-hover:text-red-500" />
           Cerrar Sesión
         </button>
       </div>

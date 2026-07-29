@@ -96,7 +96,7 @@ export default function ReproClient({
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[70vh]">
-      <div className="flex border-b border-slate-200 bg-slate-50/50">
+      <div className="flex border-b border-slate-200 bg-white">
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -227,14 +227,14 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
           </button>
           {currentBlock && (
             <div className="text-right">
-              <span className="text-xs font-bold text-slate-400 block uppercase">Profesional Afectado</span>
+              <span className="text-xs font-bold text-slate-500 block uppercase">Profesional Afectado</span>
               <span className="text-sm font-bold text-slate-800">{currentBlock.Profesional}</span>
             </div>
           )}
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="p-4 border-b border-slate-200 bg-white flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h3 className="font-bold text-slate-800 flex items-center gap-2 text-sm">
               👥 Pacientes del Bloqueo ({patients.length})
             </h3>
@@ -250,7 +250,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
           </div>
 
           {loading ? (
-            <div className="p-12 text-center text-slate-400 text-sm animate-pulse font-medium">
+            <div className="p-12 text-center text-slate-500 text-sm animate-pulse font-medium">
               Cargando pacientes del bloqueo...
             </div>
           ) : patients.length === 0 ? (
@@ -279,7 +279,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                     const time = dateParts[1] ? dateParts[1].replace(' Hrs', '') : '';
 
                     return (
-                    <tr key={p.id} className="hover:bg-slate-50/50">
+                    <tr key={p.id} className="hover:bg-white">
                       <td className="px-4 py-3 font-mono text-slate-600">{p.RUT}</td>
                       <td className="px-4 py-3 font-medium text-slate-800">{p.Nombre}</td>
                       <td className="px-4 py-3 font-semibold text-slate-700">{date}</td>
@@ -326,7 +326,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                              "w-full px-2 py-1.5 text-[11px] font-bold border rounded-lg outline-none transition-colors",
                              p.Estado === "Reprogramado" 
                                ? (!p.Fecha_Reprogramacion ? "border-red-400 bg-red-50 text-red-700 focus:border-red-500" : "border-emerald-200 bg-emerald-50 text-emerald-700 focus:border-emerald-500")
-                               : "bg-slate-50/50 text-slate-400 cursor-not-allowed border-transparent opacity-50"
+                               : "bg-white text-slate-500 cursor-not-allowed border-transparent opacity-50"
                            )}
                          />
                       </td>
@@ -347,7 +347,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                   <Upload className="h-5 w-5 text-indigo-600" />
                   Confirmar Subida
                 </h3>
-                <button onClick={() => setUploadFile(null)} className="text-slate-400 hover:text-slate-600">
+                <button onClick={() => setUploadFile(null)} className="text-slate-500 hover:text-slate-600">
                   <X className="h-5 w-5" />
                 </button>
               </div>
@@ -399,10 +399,10 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
       <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200">
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
           <div className="flex-1 w-full">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">🔎 Búsqueda Rápida en Ventanilla</h3>
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">🔎 Búsqueda Rápida en Ventanilla</h3>
             <form onSubmit={handleSearch} className="flex gap-2">
               <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
                 <input
                   type="text"
                   value={globalSearch}
@@ -549,7 +549,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="flex flex-col items-end gap-1">
-                    <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Avance</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Avance</p>
                     <p className="font-mono font-bold text-slate-700">{b.Resueltos} / {b["Total Afectados"]}</p>
                   </div>
                   {isAdmin && (
@@ -631,7 +631,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
 
         <form onSubmit={handleSearch} className="flex items-center gap-2 max-w-md w-full">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
             <input
               type="text"
               value={searchQuery}
@@ -739,7 +739,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                       onClick={() => toggleExpand(b.id)}
                       className={cn("hover:bg-slate-50 cursor-pointer transition-colors", isExpanded && "bg-slate-50/80")}
                     >
-                      <td className="px-4 py-3 text-slate-400">
+                      <td className="px-4 py-3 text-slate-500">
                         <ChevronRight className={cn("h-4 w-4 transition-transform", isExpanded && "rotate-90 text-blue-600")} />
                       </td>
                       <td className="px-4 py-3 text-slate-600">{b["Fecha Subida"]}</td>
@@ -765,7 +765,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                     </tr>
 
                     {isExpanded && (
-                      <tr className="bg-slate-50/50 border-y border-slate-200">
+                      <tr className="bg-white border-y border-slate-200">
                         <td colSpan={8} className="p-4 pl-12">
                           <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
                             <div className="flex items-center justify-between">
@@ -776,7 +776,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                             </div>
 
                             {!isLoading && patientsList.length === 0 ? (
-                              <p className="text-xs text-slate-400 italic py-2">No hay información de pacientes para este bloqueo.</p>
+                              <p className="text-xs text-slate-500 italic py-2">No hay información de pacientes para este bloqueo.</p>
                             ) : (
                               <div className="overflow-x-auto">
                                 <table className="w-full text-left text-xs whitespace-nowrap border-collapse">
@@ -808,7 +808,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                                           </span>
                                         </td>
                                         <td className="px-3 py-2 text-slate-700 max-w-[200px] truncate" title={p.Solucion || "-"}>
-                                          {p.Solucion || <span className="text-slate-400 italic">Sin nota</span>}
+                                          {p.Solucion || <span className="text-slate-500 italic">Sin nota</span>}
                                         </td>
                                         <td className="px-3 py-2 text-slate-500 font-mono text-[11px]">
                                           {p.Fecha_Actualizacion ? `${p.Fecha_Actualizacion} (${p.Ultimo_Gestor || 'Sistema'})` : "-"}
@@ -860,20 +860,20 @@ function AssigneeSelect({
 
   return (
     <div className="relative flex flex-col items-end" onClick={(e) => e.stopPropagation()}>
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Asignado a</p>
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Asignado a</p>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center justify-between gap-1.5 px-3 py-1.5 text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors text-slate-700 max-w-[160px] truncate shadow-sm"
       >
         <span className="truncate">{displayName}</span>
-        <ChevronRight className={cn("h-3.5 w-3.5 text-slate-400 transition-transform", isOpen && "rotate-90")} />
+        <ChevronRight className={cn("h-3.5 w-3.5 text-slate-500 transition-transform", isOpen && "rotate-90")} />
       </button>
 
       {isOpen && (
         <div className="absolute top-full right-0 mt-1 w-64 bg-white rounded-xl shadow-xl border border-slate-200 z-50 p-2 space-y-2 animate-in fade-in zoom-in-95 duration-150">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
             <input
               type="text"
               autoFocus
@@ -914,12 +914,12 @@ function AssigneeSelect({
                 )}
               >
                 <span className="font-semibold">{r.name || r.email}</span>
-                <span className="text-[10px] text-slate-400 font-mono truncate">{r.email}</span>
+                <span className="text-[10px] text-slate-500 font-mono truncate">{r.email}</span>
               </button>
             ))}
 
             {filtered.length === 0 && (
-              <p className="text-[11px] text-slate-400 text-center py-2 italic">Sin coincidencias</p>
+              <p className="text-[11px] text-slate-500 text-center py-2 italic">Sin coincidencias</p>
             )}
           </div>
         </div>

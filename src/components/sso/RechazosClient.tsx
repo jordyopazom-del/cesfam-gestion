@@ -171,9 +171,9 @@ export default function RechazosClient({ data }: { data: any[] }) {
       {/* Toolbar */}
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-end">
         <div className="relative flex-1 w-full">
-          <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block ml-1">Búsqueda rápida</label>
+          <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Búsqueda rápida</label>
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500" />
             <input
               type="text"
               placeholder="RUT o Nombre del paciente..."
@@ -218,7 +218,7 @@ export default function RechazosClient({ data }: { data: any[] }) {
       {showAdvanced && (
         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in slide-in-from-top-4 duration-300">
           <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block ml-1">Grupo de Edad</label>
+            <label className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider mb-1 block ml-1">Grupo de Edad</label>
             <select className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white font-bold" value={selectedAge} onChange={(e) => setSelectedAge(e.target.value)}>
               <option value="Todos">Todos</option>
               <option value="Infantil">Lactante / Preescolar (&lt; 5 años)</option>
@@ -240,7 +240,7 @@ export default function RechazosClient({ data }: { data: any[] }) {
       <div className="flex items-center gap-3 px-1">
         <div className="h-px flex-1 bg-slate-200" />
         <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-full shadow-sm">
-          <span className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Listado Filtrado</span>
+          <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Listado Filtrado</span>
           <span className="text-[11px] font-bold text-blue-600">{filteredData.length} pacientes</span>
         </div>
         <div className="h-px flex-1 bg-slate-200" />
@@ -340,7 +340,7 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
         <td className="py-4 px-4">
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5 text-slate-700 font-bold whitespace-nowrap">
-              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+              <Calendar className="h-3.5 w-3.5 text-slate-500" />
               {fechaIngreso}
             </div>
             {row.plazo && (
@@ -379,7 +379,7 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
         <td className="py-4 px-4 text-center">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
+            className="p-1 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded transition-colors"
           >
             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>
@@ -390,7 +390,7 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
           <td colSpan={8} className="p-4 border-t border-slate-100">
             <div className="flex flex-col gap-2 max-w-2xl ml-8">
               <h4 className="text-xs font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
-                <History className="h-3.5 w-3.5 text-slate-400" />
+                <History className="h-3.5 w-3.5 text-slate-500" />
                 Historial de Cambios de Estado
               </h4>
               {row.auditLogs && row.auditLogs.length > 0 ? (
@@ -404,14 +404,14 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
                     return (
                       <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
                         <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                        <span className="text-slate-400">{formattedDate}:</span>
+                        <span className="text-slate-500">{formattedDate}:</span>
                         <span>Cambió a <strong className="text-slate-800">{log.newValue}</strong> por <strong className="text-slate-800">{log.changedBy || "Sistema"}</strong></span>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400 italic">No hay registros de cambios para este paciente.</p>
+                <p className="text-xs text-slate-500 italic">No hay registros de cambios para este paciente.</p>
               )}
             </div>
           </td>
