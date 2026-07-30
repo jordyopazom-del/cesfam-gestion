@@ -67,11 +67,13 @@ export default function ReproClient({
   };
 
   const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
+    // Actualización optimista SIEMPRE primero para no interrumpir el tipeo
+    setPatients((prev) => 
+      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
+    );
+
     // Validar fecha de reprogramación cuando corresponda
     if (status === "Reprogramado" && !reprogrammedDate) {
-      setPatients((prev) => 
-        prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
-      );
       toast.error("Seleccione la fecha de reprogramación para guardar");
       return;
     }
@@ -79,9 +81,9 @@ export default function ReproClient({
     // Validación a prueba de errores en la fecha
     if (reprogrammedDate) {
       const year = parseInt(reprogrammedDate.split("-")[0], 10);
+      // Si están tipeando el año (ej: 2 o 20) no guardamos aún en BD, ni tiramos error para dejarlos terminar
       if (isNaN(year) || year < 2024 || year > 2035) {
-        toast.error(`⚠️ Fecha inválida (año ${year}). Ingrese una fecha real, ej: 2026-08-07`);
-        return;
+        return; 
       }
       const today = new Date();
       today.setHours(0, 0, 0, 0);
@@ -92,11 +94,6 @@ export default function ReproClient({
       }
     }
 
-    // Actualización optimista
-    setPatients((prev) => 
-      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
-    );
-    
     const res = await updatePatientStatus(patientId, status, solution, reprogrammedDate);
     if (!res.success) {
       toast.error(res.error || "Error al actualizar");
