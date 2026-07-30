@@ -32,14 +32,19 @@ export async function getAllDemands() {
 
 export async function updateDemandStatus(id: number, status: string) {
   try {
-    const user = await getSSOUser();
     await prisma.demandRequest.update({
       where: { id },
       data: { status },
     });
-    await prisma.demandAuditLog.create({
-      data: { demandRequestId: id, newValue: status, changedBy: user?.name || "Sistema" },
-    });
+    // Intentar registrar en auditoría pero sin bloquear si falla
+    try {
+      const user = await getSSOUser();
+      await prisma.demandAuditLog.create({
+        data: { demandRequestId: id, newValue: status, changedBy: user?.name || "Sistema" },
+      });
+    } catch {
+      // El audit log es opcional: si falla no interrumpimos el guardado del estado
+    }
     revalidatePath("/sso/rechazos");
     revalidatePath("/sso/derivaciones");
     revalidatePath("/sso/dashboard");
