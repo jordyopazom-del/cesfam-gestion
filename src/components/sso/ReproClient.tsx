@@ -83,6 +83,13 @@ export default function ReproClient({
         toast.error(`⚠️ Fecha inválida (año ${year}). Ingrese una fecha real, ej: 2026-08-07`);
         return;
       }
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selected = new Date(reprogrammedDate + "T00:00:00");
+      if (selected < today) {
+        toast.error("⚠️ No puede reprogramar para una fecha pasada. Seleccione una fecha de hoy o posterior.");
+        return;
+      }
     }
 
     // Actualización optimista
@@ -328,7 +335,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                          <input 
                            type="date"
                            value={p.Fecha_Reprogramacion || ""}
-                           min="2024-01-01"
+                           min={new Date().toISOString().split("T")[0]}
                            max="2035-12-31"
                            onChange={(e) => {
                               onUpdatePatient(p.id, p.Estado, p.Solucion || "", e.target.value);
