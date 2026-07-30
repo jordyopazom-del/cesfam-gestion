@@ -67,12 +67,22 @@ export default function ReproClient({
   };
 
   const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
+    // Validar fecha de reprogramación cuando corresponda
     if (status === "Reprogramado" && !reprogrammedDate) {
       setPatients((prev) => 
         prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
       );
       toast.error("Seleccione la fecha de reprogramación para guardar");
-      return; // No guardar en DB hasta que ponga la fecha
+      return;
+    }
+
+    // Validación a prueba de errores en la fecha
+    if (reprogrammedDate) {
+      const year = parseInt(reprogrammedDate.split("-")[0], 10);
+      if (isNaN(year) || year < 2024 || year > 2035) {
+        toast.error(`⚠️ Fecha inválida (año ${year}). Ingrese una fecha real, ej: 2026-08-07`);
+        return;
+      }
     }
 
     // Actualización optimista
@@ -318,6 +328,8 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                          <input 
                            type="date"
                            value={p.Fecha_Reprogramacion || ""}
+                           min="2024-01-01"
+                           max="2035-12-31"
                            onChange={(e) => {
                               onUpdatePatient(p.id, p.Estado, p.Solucion || "", e.target.value);
                            }}
