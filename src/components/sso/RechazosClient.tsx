@@ -364,15 +364,15 @@ function TableRow({ row, showResolved }: { row: any; showResolved: boolean }) {
           </div>
         </td>
         <td className="py-4 px-4">
-          <input
-            type="text"
+          <textarea
             defaultValue={row.notes || ""}
             onBlur={(e) => {
               if (e.target.value !== (row.notes || "")) {
                 handleUpdateNotes(e.target.value);
               }
             }}
-            className="w-full min-w-[120px] px-2 py-1.5 text-[12px] text-slate-800 font-extrabold border border-slate-300 rounded-lg hover:border-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white hover:bg-slate-50 focus:bg-white transition-all shadow-sm"
+            rows={1}
+            className="w-full min-w-[120px] px-2 py-1.5 text-[12px] text-slate-800 font-extrabold border border-slate-300 rounded-lg hover:border-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white hover:bg-slate-50 focus:bg-white transition-all shadow-sm resize-y"
             placeholder="Añadir nota..."
           />
         </td>

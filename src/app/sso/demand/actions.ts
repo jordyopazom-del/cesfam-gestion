@@ -10,7 +10,7 @@ export async function getDemandsByOrigin(origin: "Rechazo" | "Derivación Intern
     const demands = await prisma.demandRequest.findMany({
       where,
       orderBy: [{ requestDate: "asc" }],
-      include: { auditLogs: { select: { timestamp: true, newValue: true, demandRequestId: true } } },
+      include: { auditLogs: { select: { timestamp: true, newValue: true, changedBy: true, demandRequestId: true } } },
     });
     return { success: true, data: demands };
   } catch (err: any) {
@@ -21,7 +21,7 @@ export async function getDemandsByOrigin(origin: "Rechazo" | "Derivación Intern
 export async function getAllDemands() {
   try {
     const demands = await prisma.demandRequest.findMany({
-      include: { auditLogs: { select: { timestamp: true, newValue: true, demandRequestId: true } } },
+      include: { auditLogs: { select: { timestamp: true, newValue: true, changedBy: true, demandRequestId: true } } },
       orderBy: { requestDate: "asc" },
     });
     return { success: true, data: demands };
