@@ -286,13 +286,13 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                       <td className="px-4 py-3 text-slate-600">{time}</td>
                       <td className="px-4 py-3 text-slate-600">{p.Telefonos}</td>
                       <td className="px-4 py-3">
-                        <input
-                          type="text"
+                        <textarea
                           defaultValue={p.Solucion || ""}
                           onBlur={(e) => {
                             if (e.target.value !== (p.Solucion || "")) onUpdatePatient(p.id, p.Estado, e.target.value, p.Fecha_Reprogramacion);
                           }}
-                          className="w-full px-2 py-1 text-xs text-slate-800 font-semibold border-b border-transparent hover:border-slate-300 focus:border-blue-500 focus:ring-0 bg-transparent"
+                          rows={1}
+                          className="w-full px-2 py-1 text-xs text-slate-800 font-semibold border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white rounded-lg resize-y shadow-sm"
                           placeholder="Añadir nota..."
                         />
                       </td>
@@ -766,7 +766,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
 
                     {isExpanded && (
                       <tr className="bg-white border-y border-slate-200">
-                        <td colSpan={8} className="p-4 pl-12">
+                        <td colSpan={9} className="p-4 pl-12">
                           <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
                             <div className="flex items-center justify-between">
                               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
@@ -788,6 +788,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                                       <th className="px-3 py-2">Teléfonos</th>
                                       <th className="px-3 py-2">Estado Final</th>
                                       <th className="px-3 py-2">Solución / Nota</th>
+                                      <th className="px-3 py-2">F. Reprogramada</th>
                                       <th className="px-3 py-2">Última Modificación</th>
                                     </tr>
                                   </thead>
@@ -809,6 +810,9 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                                         </td>
                                         <td className="px-3 py-2 text-slate-700 max-w-[200px] truncate" title={p.Solucion || "-"}>
                                           {p.Solucion || <span className="text-slate-500 italic">Sin nota</span>}
+                                        </td>
+                                        <td className="px-3 py-2 font-semibold text-emerald-600">
+                                          {p.Fecha_Reprogramacion || <span className="text-slate-400">-</span>}
                                         </td>
                                         <td className="px-3 py-2 text-slate-500 font-mono text-[11px]">
                                           {p.Fecha_Actualizacion ? `${p.Fecha_Actualizacion} (${p.Ultimo_Gestor || 'Sistema'})` : "-"}
