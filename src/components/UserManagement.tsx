@@ -121,8 +121,8 @@ export default function UserManagement() {
                     accessDemanda: merged.accessDemanda,
                     accessReprogramacion: merged.accessReprogramacion,
                 },
-                merged.name,
-                merged.email !== email ? merged.email : undefined
+                merged.name ?? undefined,
+                merged.email !== email ? (merged.email ?? undefined) : undefined
             );
             if (success) {
                 setMessage({ type: 'success', text: `Usuario ${email} actualizado.` });
