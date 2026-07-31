@@ -59,8 +59,8 @@ export default function HomeClient({
     const [activeTab, setActiveTab] = useState<'dashboard' | 'form' | 'agenda' | 'table' | 'reports' | 'users' | 'activos' | 'unblock' | 'stats' | 'calendar'>('dashboard');
     const isAdminUser = userRole === 'ADMIN';
     const isAgendasEnabled = isAdminUser || accessAgendas;
-    const isLogisticaEnabled = isAdminUser || accessLogistica;
-    const isReservasEnabled = isAdminUser || accessReservas;
+    const isLogisticaEnabled = true;
+    const isReservasEnabled = true;
     const isDemandaEnabled = isAdminUser || accessDemanda;
     const isReprogramacionEnabled = isAdminUser || accessReprogramacion;
     const canRequestAgendas = isAdmin || userRole === 'SOLICITANTE' || userRole === 'COORDINADOR' || userRole === 'USUARIO';

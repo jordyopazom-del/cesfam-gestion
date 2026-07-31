@@ -59,11 +59,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           }
         }
 
-        if (!hasAccessLogistica) {
-          // Sin permiso para Logística → redirigir con mensaje
-          window.location.href = '/?sin_acceso=logistica';
-          return;
-        }
+        // Todos los usuarios pueden ingresar para hacer solicitudes
+        // if (!hasAccessLogistica) {
+        //   window.location.href = '/?sin_acceso=logistica';
+        //   return;
+        // }
 
         setAuthState({
           usuario: {
