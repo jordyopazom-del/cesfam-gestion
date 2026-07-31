@@ -46,7 +46,7 @@ export default function AppContent() {
 
   useEffect(() => {
     if (usuario?.dbRole === 'USER') {
-      setActiveTab('salidas-programadas');
+      setActiveTab('solicitudes');
     }
   }, [usuario]);
 
@@ -78,9 +78,6 @@ export default function AppContent() {
   };
 
   const renderContent = () => {
-    if (usuario?.dbRole === 'USER') {
-      return <RondasManagement viewMode="table" />;
-    }
     switch (activeTab) {
       case 'dashboard': return <Dashboard />;
       case 'reporte-solicitudes': return <SolicitudesReport />;
@@ -238,9 +235,7 @@ export default function AppContent() {
                     </>
                   )}
                   <NavItem tab="salidas-programadas" icon={FileText} label="Salidas Programadas" />
-                  {usuario?.dbRole !== 'USER' && (
-                    <NavItem tab="solicitudes" icon={ClipboardList} label="Solicitudes de Salida" />
-                  )}
+                  <NavItem tab="solicitudes" icon={ClipboardList} label="Solicitudes de Salida" />
                 </div>
               )}
 
