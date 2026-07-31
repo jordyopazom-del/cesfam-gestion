@@ -60,7 +60,7 @@ export default async function ReservasPage() {
     assetIds: r.assets.map(a => a.assetId)
   }));
 
-  const canReserve = true; // Habilitado para todos para hacer solicitudes
+  const canReserve = isAdmin || user.role === "SOLICITANTE";
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
