@@ -20,6 +20,10 @@ export default async function ReservasPage() {
   }
 
   const isAdmin = user.role === "ADMIN" || user.role === "Admin" || session.email === "kkoandres@gmail.com";
+  
+  if (!isAdmin && !user.accessReservas) {
+    redirect("/?sin_acceso=reservas");
+  }
 
   const today = new Date();
   today.setHours(0,0,0,0);
@@ -60,7 +64,8 @@ export default async function ReservasPage() {
     assetIds: r.assets.map(a => a.assetId)
   }));
 
-  const canReserve = isAdmin || user.role === "SOLICITANTE";
+  // Todo el que pase la puerta (tenga acceso) puede reservar.
+  const canReserve = true;
 
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
