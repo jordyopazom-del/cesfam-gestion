@@ -170,10 +170,12 @@ export async function adminUpdateUser(
         accessAgendas: boolean;
         accessDemanda: boolean;
         accessReprogramacion?: boolean;
-    }
+    },
+    newName?: string,
+    newEmail?: string
 ) {
     const { updateUserStatusAndRole } = await import('@/lib/auth-db');
-    const success = await updateUserStatusAndRole(email, status, role, permissions);
+    const success = await updateUserStatusAndRole(email, status, role, permissions, newName, newEmail);
     return success;
 }
 

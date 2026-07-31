@@ -87,9 +87,13 @@ export async function updateUserStatusAndRole(
     accessAgendas: boolean;
     accessDemanda: boolean;
     accessReprogramacion?: boolean;
-  }
+  },
+  newName?: string,
+  newEmail?: string
 ) {
   const data: any = { status, role };
+  if (newName !== undefined) data.name = newName;
+  if (newEmail !== undefined) data.email = newEmail;
   if (permissions) {
     data.accessLogistica = permissions.accessLogistica;
     data.accessSolicitudes = permissions.accessSolicitudes;

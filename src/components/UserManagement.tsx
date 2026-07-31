@@ -109,14 +109,21 @@ export default function UserManagement() {
         setMessage(null);
         try {
             const merged = { ...user, ...edits[email] };
-            const success = await adminUpdateUser(email, merged.status, merged.role, {
-                accessLogistica: merged.accessLogistica,
-                accessSolicitudes: merged.accessSolicitudes,
-                accessReservas: merged.accessReservas,
-                accessAgendas: merged.accessAgendas,
-                accessDemanda: merged.accessDemanda,
-                accessReprogramacion: merged.accessReprogramacion,
-            });
+            const success = await adminUpdateUser(
+                email, 
+                merged.status, 
+                merged.role, 
+                {
+                    accessLogistica: merged.accessLogistica,
+                    accessSolicitudes: merged.accessSolicitudes,
+                    accessReservas: merged.accessReservas,
+                    accessAgendas: merged.accessAgendas,
+                    accessDemanda: merged.accessDemanda,
+                    accessReprogramacion: merged.accessReprogramacion,
+                },
+                merged.name,
+                merged.email !== email ? merged.email : undefined
+            );
             if (success) {
                 setMessage({ type: 'success', text: `Usuario ${email} actualizado.` });
                 setEdits(prev => { const n = { ...prev }; delete n[email]; return n; });
@@ -395,8 +402,20 @@ export default function UserManagement() {
                                             {(user.name || 'U').charAt(0)}
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <div className="font-semibold text-gray-900 text-sm truncate" title={user.name || 'Usuario'}>{user.name || 'Usuario'}</div>
-                                            <div className="text-xs text-gray-400 truncate" title={user.email || ''}>{user.email}</div>
+                                            <input
+                                                type="text"
+                                                className="font-semibold text-gray-900 text-sm truncate bg-transparent outline-none w-full border-b border-transparent focus:border-blue-300 hover:border-gray-200"
+                                                value={getEdit(email, 'name', user.name) || ''}
+                                                onChange={e => setEdit(email, 'name', e.target.value)}
+                                                placeholder="Nombre del Usuario"
+                                            />
+                                            <input
+                                                type="email"
+                                                className="text-xs text-gray-400 truncate bg-transparent outline-none w-full border-b border-transparent focus:border-blue-300 hover:border-gray-200 mt-0.5"
+                                                value={getEdit(email, 'email', user.email) || ''}
+                                                onChange={e => setEdit(email, 'email', e.target.value)}
+                                                placeholder="Correo electrónico"
+                                            />
                                         </div>
                                     </div>
 
