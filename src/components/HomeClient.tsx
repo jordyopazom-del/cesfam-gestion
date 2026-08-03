@@ -138,8 +138,9 @@ export default function HomeClient({
                         </button>
 
                         {/* Menú Agendas */}
-                        <div className="relative" ref={agendasDropdownRef}>
-                            <button
+                        {isAgendasEnabled && (
+                            <div className="relative" ref={agendasDropdownRef}>
+                                <button
                                 onClick={handleAgendasClick}
                                 className={clsx(
                                     "flex items-center gap-1.5 px-2 md:px-2.5 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all outline-none",
@@ -249,6 +250,7 @@ export default function HomeClient({
                                 </div>
                             )}
                         </div>
+                        )}
 
                         {isReservasEnabled && (
                             <button
