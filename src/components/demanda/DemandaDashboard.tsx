@@ -13,7 +13,7 @@ export default function DemandaDashboard() {
   // Filters state
   const [searchName, setSearchName] = useState("");
   const [selectedPoli, setSelectedPoli] = useState("TODOS");
-  const [selectedActividad, setSelectedActividad] = useState("TODAS");
+  const [selectedActividad, setSelectedActividad] = useState("LIBRE");
 
   useEffect(() => {
     fetchData();
@@ -272,7 +272,9 @@ export default function DemandaDashboard() {
             {/* KPIs */}
             <div className="lg:col-span-4 grid grid-cols-2 gap-4">
               <div className="bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl p-5 text-white flex flex-col justify-center shadow-lg shadow-blue-500/20">
-                <span className="text-blue-100 text-sm font-semibold mb-1">Cupos Libres Encontrados</span>
+                <span className="text-blue-100 text-sm font-semibold mb-1">
+                  {selectedActividad === "LIBRE" ? "Cupos Libres Encontrados" : selectedActividad === "TODAS" ? "Total General (Todas las Actividades)" : "Cupos Encontrados"}
+                </span>
                 <span className="text-4xl font-black">{totalCupos}</span>
                 {selectedActividad !== "TODAS" && (
                   <span className="text-xs text-blue-200 mt-2 line-clamp-1 break-all">en {selectedActividad}</span>
@@ -317,7 +319,7 @@ export default function DemandaDashboard() {
                         <th className="px-6 py-4 font-bold">Total Cupos Globales</th>
                       </>
                     ) : (
-                      <th className="px-6 py-4 font-bold text-blue-600">Total Cupos Libres</th>
+                      <th className="px-6 py-4 font-bold text-blue-600">Total General (Todas)</th>
                     )}
                     <th className="px-6 py-4 font-bold text-right">Detalle (Principales)</th>
                   </tr>
