@@ -13,9 +13,13 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
   const [processing, setProcessing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"PENDING" | "HISTORY">("PENDING");
 
-  const displayedReservations = reservations.filter(r => 
-    activeTab === "PENDING" ? r.status === "PENDING" : r.status !== "PENDING"
-  );
+  const displayedReservations = reservations
+    .filter(r => activeTab === "PENDING" ? r.status === "PENDING" : r.status !== "PENDING")
+    .sort((a, b) => {
+      const dateA = new Date(a.startTime).getTime();
+      const dateB = new Date(b.startTime).getTime();
+      return activeTab === "PENDING" ? dateA - dateB : dateB - dateA;
+    });
 
   const handleAction = async (id: string, action: "APPROVED" | "REJECTED" | "CANCELLED") => {
     setProcessing(id);
