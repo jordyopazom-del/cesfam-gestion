@@ -27,7 +27,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const body = await req.json();
     const { status } = body;
 
-    if (!["APPROVED", "REJECTED"].includes(status)) {
+    if (!["APPROVED", "REJECTED", "CANCELLED"].includes(status)) {
       return NextResponse.json({ message: "Estado inválido" }, { status: 400 });
     }
 

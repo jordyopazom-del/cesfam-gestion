@@ -17,7 +17,7 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
     activeTab === "PENDING" ? r.status === "PENDING" : r.status !== "PENDING"
   );
 
-  const handleAction = async (id: string, action: "APPROVED" | "REJECTED") => {
+  const handleAction = async (id: string, action: "APPROVED" | "REJECTED" | "CANCELLED") => {
     setProcessing(id);
     try {
       const res = await fetch(`/api/admin/reservations/${id}`, {
@@ -30,7 +30,7 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
         const data = await res.json();
         const reservation = data.reservation;
         
-        if ((action === "APPROVED" || action === "REJECTED") && reservation) {
+        if ((action === "APPROVED" || action === "REJECTED" || action === "CANCELLED") && reservation) {
           const startTime = new Date(reservation.startTime);
           const endTime = new Date(reservation.endTime);
           
@@ -40,7 +40,7 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
           
           const recipient = reservation.user.email || "";
           
-          const actionText = action === "APPROVED" ? "Aprobada" : "Rechazada";
+          const actionText = action === "APPROVED" ? "Aprobada" : action === "REJECTED" ? "Rechazada" : "Cancelada";
           const subject = encodeURIComponent(`Reserva ${actionText}: ${reservation.room.name}`);
           
           const assetsList = reservation.assets && reservation.assets.length > 0
@@ -50,7 +50,7 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
           const bodyLines = [
             `Estimado/a,`,
             ``,
-            `Le informamos que la solicitud de Reserva de Sala ha sido ${action === "APPROVED" ? "procesada y aprobada con éxito" : "rechazada"}.`,
+            `Le informamos que la solicitud de Reserva de Sala ha sido ${action === "APPROVED" ? "procesada y aprobada con éxito" : action === "REJECTED" ? "rechazada" : "cancelada y la sala ha sido liberada"}.`,
             ``,
             `📋 Detalles de la Solicitud:`,
             `- Sala: ${reservation.room.name}`,
@@ -60,8 +60,8 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
             `- Motivo: ${reservation.reason || "Sin motivo"}`,
             `- Activos Adicionales: ${assetsList}`,
             ``,
-            action === "REJECTED" ? `Motivo del rechazo: [POR FAVOR INDICAR MOTIVO]` : "",
-            action === "REJECTED" ? `` : "",
+            action === "REJECTED" ? `Motivo del rechazo: [POR FAVOR INDICAR MOTIVO]` : action === "CANCELLED" ? `Motivo de la cancelación: [POR FAVOR INDICAR MOTIVO]` : "",
+            (action === "REJECTED" || action === "CANCELLED") ? `` : "",
             `Saludos cordiales.`
           ];
           
@@ -194,18 +194,34 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
                         </button>
                       </div>
                     ) : (
-                      <div className="flex justify-end">
+                      <div className="flex justify-end items-center gap-2">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border ${
                           r.status === "APPROVED" 
                             ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
+                            : r.status === "CANCELLED"
+                            ? "bg-orange-50 text-orange-600 border-orange-100"
                             : "bg-red-50 text-red-600 border-red-100"
                         }`}>
                           {r.status === "APPROVED" ? (
                             <><Check size={12} /> Aprobado</>
+                          ) : r.status === "CANCELLED" ? (
+                            <><X size={12} /> Cancelado</>
                           ) : (
                             <><X size={12} /> Rechazado</>
                           )}
                         </span>
+                        
+                        {r.status === "APPROVED" && (
+                          <button 
+                            type="button"
+                            onClick={() => handleAction(r.id, "CANCELLED")}
+                            disabled={processing === r.id}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-orange-50 text-orange-600 font-bold text-xs rounded-lg border border-orange-200 transition-all disabled:opacity-50"
+                            title="Cancelar reserva aprobada y liberar sala"
+                          >
+                            <X size={12} /> Suspender
+                          </button>
+                        )}
                       </div>
                     )}
                   </td>

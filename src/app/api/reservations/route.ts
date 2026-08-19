@@ -77,7 +77,7 @@ export async function POST(req: Request) {
     const overlapping = await prisma.reservation.findFirst({
       where: {
         roomId,
-        status: { not: "REJECTED" },
+        status: { notIn: ["REJECTED", "CANCELLED"] },
         OR: [
           {
             startTime: { lt: end },
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
     if (assetIds && assetIds.length > 0) {
       const overlappingAssetReservation = await prisma.reservation.findFirst({
         where: {
-          status: { not: "REJECTED" },
+          status: { notIn: ["REJECTED", "CANCELLED"] },
           OR: [
             {
               startTime: { lt: end },
