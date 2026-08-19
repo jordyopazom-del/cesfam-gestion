@@ -194,34 +194,23 @@ export function AdminClient({ initialReservations }: AdminClientProps) {
                         </button>
                       </div>
                     ) : (
-                      <div className="flex justify-end items-center gap-2">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-lg border ${
-                          r.status === "APPROVED" 
-                            ? "bg-emerald-50 text-emerald-600 border-emerald-100" 
-                            : r.status === "CANCELLED"
-                            ? "bg-orange-50 text-orange-600 border-orange-100"
-                            : "bg-red-50 text-red-600 border-red-100"
-                        }`}>
-                          {r.status === "APPROVED" ? (
-                            <><Check size={12} /> Aprobado</>
-                          ) : r.status === "CANCELLED" ? (
-                            <><X size={12} /> Cancelado</>
-                          ) : (
-                            <><X size={12} /> Rechazado</>
-                          )}
-                        </span>
-                        
-                        {r.status === "APPROVED" && (
-                          <button 
-                            type="button"
-                            onClick={() => handleAction(r.id, "CANCELLED")}
-                            disabled={processing === r.id}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-orange-50 text-orange-600 font-bold text-xs rounded-lg border border-orange-200 transition-all disabled:opacity-50"
-                            title="Cancelar reserva aprobada y liberar sala"
-                          >
-                            <X size={12} /> Suspender
-                          </button>
-                        )}
+                      <div className="flex justify-end">
+                        <select
+                          value={r.status}
+                          onChange={(e) => handleAction(r.id, e.target.value as any)}
+                          disabled={processing === r.id}
+                          className={`text-xs font-bold rounded-lg border px-2.5 py-1.5 outline-none transition-all cursor-pointer ${
+                            r.status === "APPROVED" 
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-500/20" 
+                              : r.status === "CANCELLED"
+                              ? "bg-orange-50 text-orange-700 border-orange-200 hover:bg-orange-100 focus:ring-2 focus:ring-orange-500/20"
+                              : "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 focus:ring-2 focus:ring-red-500/20"
+                          } disabled:opacity-50`}
+                        >
+                          <option value="APPROVED">✓ Aprobado</option>
+                          <option value="CANCELLED">⏸ Cancelado / Suspendido</option>
+                          <option value="REJECTED">✕ Rechazado</option>
+                        </select>
                       </div>
                     )}
                   </td>
