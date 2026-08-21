@@ -98,9 +98,7 @@ export default function ReproClient({
     const res = await updatePatientStatus(patientId, status, solution, reprogrammedDate);
     if (!res.success) {
       toast.error(res.error || "Error al actualizar");
-      if (selectedBlockId) loadPatients(selectedBlockId); // Revertir en caso de error
-    } else {
-      // toast.success("Paciente actualizado"); // Opcional, puede ser molesto si son muchos
+      if (selectedBlockId) loadPatients(selectedBlockId);
     }
   };
 
@@ -109,11 +107,13 @@ export default function ReproClient({
     { name: "Historial de Auditoría", id: 1 },
   ];
 
+  if (isAdmin) {
+    tabs.push({ name: "Estadísticas y KPI", id: 2 });
+  }
+
   return (
-    <div className="space-y-6">
-      {isAdmin && <ReproDashboard />}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[70vh]">
-        <div className="flex border-b border-slate-200 bg-white">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[70vh]">
+      <div className="flex border-b border-slate-200 bg-white">
           {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -129,10 +129,11 @@ export default function ReproClient({
         ))}
       </div>
 
-      <div className="p-6">
+      <div className="p-6 bg-slate-50/50 min-h-[calc(70vh-60px)]">
         {activeTab === 0 && (
           <GestionTab
             blocks={activeBlocks.filter((b: any) => {
+              if (showResolved) return true;
               if (b.Resueltos >= b["Total Afectados"]) return false;
               if (!isAdmin) {
                 return b.AsignadoA === userEmail || b.AsignadoA === userName;
@@ -154,8 +155,8 @@ export default function ReproClient({
           />
         )}
         {activeTab === 1 && <HistoryTab blocks={historyBlocks} />}
+        {activeTab === 2 && isAdmin && <ReproDashboard />}
       </div>
-    </div>
     </div>
   );
 }
