@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw, Upload, X } from "lucide-react";
 import { getPatientsByBlock, getPatientSearch, updatePatientStatus, getReprogramadores, assignBlock } from "@/app/reprogramacion/actions";
+import ReproDashboard from "./ReproDashboard";
 
 function cn(...classes: (string | boolean | undefined)[]) {
   return classes.filter(Boolean).join(" ");
@@ -109,9 +110,11 @@ export default function ReproClient({
   ];
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[70vh]">
-      <div className="flex border-b border-slate-200 bg-white">
-        {tabs.map((tab) => (
+    <div className="space-y-6">
+      {isAdmin && <ReproDashboard />}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden min-h-[70vh]">
+        <div className="flex border-b border-slate-200 bg-white">
+          {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
@@ -152,6 +155,7 @@ export default function ReproClient({
         )}
         {activeTab === 1 && <HistoryTab blocks={historyBlocks} />}
       </div>
+    </div>
     </div>
   );
 }

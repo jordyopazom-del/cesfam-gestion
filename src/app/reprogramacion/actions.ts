@@ -221,3 +221,83 @@ export async function getReprogramadores() {
     return { success: false, error: err.message };
   }
 }
+
+export async function getReproStats(startDate?: string, endDate?: string) {
+  try {
+    const user = await getSSOUser();
+    if (!user) return { success: false, error: "Sin sesión activa" };
+
+    const isBoss = user.role === "ADMIN" || user.role === "admin" || user.role === "COORDINADOR";
+    if (!isBoss) return { success: false, error: "No autorizado" };
+
+    const whereClause: any = {};
+    if (startDate || endDate) {
+      whereClause.uploadDate = {};
+      if (startDate) whereClause.uploadDate.gte = new Date(`${startDate}T00:00:00.000Z`);
+      if (endDate) whereClause.uploadDate.lte = new Date(`${endDate}T23:59:59.999Z`);
+    }
+
+    const blocks = await prisma.agendaBlock.findMany({
+      where: whereClause,
+      include: {
+        patients: { select: { status: true } },
+      }
+    });
+
+    let totalAfectados = 0;
+    let totalReprogramados = 0;
+    let totalNoUbicables = 0;
+    let totalSinCupo = 0;
+    let totalPendientes = 0;
+
+    const officialsMap: Record<string, { blocks: number, totalPatients: number, reprogrammed: number, pending: number, noUbicable: number, sinCupo: number }> = {};
+
+    for (const block of blocks) {
+      const assignedTo = block.assignedToEmail || "Sin asignar";
+      if (!officialsMap[assignedTo]) {
+        officialsMap[assignedTo] = { blocks: 0, totalPatients: 0, reprogrammed: 0, pending: 0, noUbicable: 0, sinCupo: 0 };
+      }
+      
+      officialsMap[assignedTo].blocks += 1;
+      officialsMap[assignedTo].totalPatients += block.patients.length;
+      totalAfectados += block.patients.length;
+
+      for (const p of block.patients) {
+        if (p.status === "Reprogramado") {
+          totalReprogramados++;
+          officialsMap[assignedTo].reprogrammed++;
+        } else if (p.status === "No ubicable") {
+          totalNoUbicables++;
+          officialsMap[assignedTo].noUbicable++;
+        } else if (p.status === "Avisado - Sin Cupo") {
+          totalSinCupo++;
+          officialsMap[assignedTo].sinCupo++;
+        } else {
+          totalPendientes++;
+          officialsMap[assignedTo].pending++;
+        }
+      }
+    }
+
+    const officialsStats = Object.keys(officialsMap).map(email => ({
+      email,
+      ...officialsMap[email]
+    }));
+
+    return {
+      success: true,
+      data: {
+        global: {
+          totalAfectados,
+          totalReprogramados,
+          totalNoUbicables,
+          totalSinCupo,
+          totalPendientes,
+        },
+        officials: officialsStats
+      }
+    };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
