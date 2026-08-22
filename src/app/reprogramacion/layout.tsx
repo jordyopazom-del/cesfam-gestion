@@ -6,7 +6,7 @@ export default function ReprogramacionLayout({ children }: { children: React.Rea
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center">
+        <div className="w-full max-w-[1600px] mx-auto px-4 h-16 flex items-center">
           <Link 
             href="/"
             className="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors font-medium text-sm bg-slate-100 hover:bg-blue-50 px-4 py-2 rounded-lg"
@@ -20,7 +20,7 @@ export default function ReprogramacionLayout({ children }: { children: React.Rea
         </div>
       </header>
       <main className="flex-1 p-4 md:p-8">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>

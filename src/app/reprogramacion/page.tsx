@@ -11,7 +11,7 @@ export default async function ReprogramacionPage() {
   const historyBlocks = (historyRes.success && historyRes.data) ? historyRes.data : [];
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-black text-slate-800 tracking-tight flex items-center">
           📅 Reprogramación por Bloqueos (RAS)
