@@ -49,6 +49,18 @@ export async function getActiveBlocks() {
       orderBy: { startDate: "asc" },
     });
 
+
+    const parseDateStr = (dateStr) => {
+      if (!dateStr) return new Date(0);
+      const parts = dateStr.split(" ")[0].split("/"); // 15/09/2026
+      if (parts.length === 3) {
+        return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+      }
+      return new Date(0);
+    };
+
+    blocks.sort((a, b) => parseDateStr(a.startDate).getTime() - parseDateStr(b.startDate).getTime());
+
     return {
       success: true,
       data: blocks.map((b) => ({

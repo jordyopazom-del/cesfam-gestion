@@ -68,10 +68,28 @@ export default function ReproClient({
   };
 
   const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
+    const oldPatient = patients.find((p) => p.id === patientId);
+    
     // Actualización optimista SIEMPRE primero para no interrumpir el tipeo
     setPatients((prev) => 
       prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
     );
+
+    // Actualizar activeBlocks para que desaparezca automáticamente el bloque cuando se completa
+    if (oldPatient) {
+      const resolvedStates = ["Reprogramado", "Avisado - Sin Cupo", "No ubicable"];
+      const wasResolved = resolvedStates.includes(oldPatient.Estado);
+      const isResolved = resolvedStates.includes(status);
+      
+      if (wasResolved !== isResolved && selectedBlockId) {
+        setActiveBlocks((prev) => prev.map((b) => {
+          if (b.id === selectedBlockId) {
+            return { ...b, Resueltos: b.Resueltos + (isResolved ? 1 : -1) };
+          }
+          return b;
+        }));
+      }
+    }
 
     // Validar fecha de reprogramación cuando corresponda
     if (status === "Reprogramado" && !reprogrammedDate) {
