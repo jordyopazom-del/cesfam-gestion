@@ -1,20 +1,28 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getReproStats } from "@/app/reprogramacion/actions";
-import { BarChart3, Users, Clock, AlertTriangle, XCircle, Search, Calendar } from "lucide-react";
+import { getReproStats, getPatientRecurrenceList } from "@/app/reprogramacion/actions";
+import { BarChart3, Users, Clock, AlertTriangle, XCircle, Search, Calendar, FileWarning } from "lucide-react";
 
 export default function ReproDashboard() {
   const [stats, setStats] = useState<any>(null);
+  const [recurrenceList, setRecurrenceList] = useState<any[]>([]);
+  const [searchRUT, setSearchRUT] = useState("");
   const [loading, setLoading] = useState(true);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   const loadStats = async () => {
     setLoading(true);
-    const res = await getReproStats(startDate || undefined, endDate || undefined);
+    const [res, recRes] = await Promise.all([
+      getReproStats(startDate || undefined, endDate || undefined),
+      getPatientRecurrenceList()
+    ]);
     if (res.success && res.data) {
       setStats(res.data);
+    }
+    if (recRes.success && recRes.data) {
+      setRecurrenceList(recRes.data);
     }
     setLoading(false);
   };
@@ -179,6 +187,69 @@ export default function ReproDashboard() {
                     </tr>
                   )
                 })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Recurrencia por Paciente */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileWarning className="text-orange-500" size={18} />
+            <h2 className="text-sm font-bold text-gray-700 uppercase tracking-wider">Historial de Recurrencia de Pacientes (Impacto)</h2>
+          </div>
+          <div className="relative max-w-sm w-full md:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+            <input 
+              type="text" 
+              placeholder="Buscar RUT o nombre..."
+              value={searchRUT}
+              onChange={(e) => setSearchRUT(e.target.value)}
+              className="w-full pl-8 pr-4 py-1.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none"
+            />
+          </div>
+        </div>
+        <div className="overflow-y-auto max-h-[400px]">
+          <table className="w-full text-left text-sm text-gray-600">
+            <thead className="bg-white sticky top-0 border-b border-gray-100 text-xs font-bold text-gray-400 uppercase">
+              <tr>
+                <th className="px-6 py-3">RUT Paciente</th>
+                <th className="px-6 py-3">Nombre</th>
+                <th className="px-6 py-3">Contacto</th>
+                <th className="px-6 py-3 text-center">Nº Veces Afectado</th>
+                <th className="px-6 py-3 text-center">Nivel de Alerta</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50">
+              {recurrenceList
+                .filter(p => !searchRUT || p.rut.includes(searchRUT) || p.nombre.toLowerCase().includes(searchRUT.toLowerCase()))
+                .map((p, idx) => (
+                <tr key={idx} className="hover:bg-orange-50/30 transition-colors">
+                  <td className="px-6 py-3 font-mono font-medium text-slate-700">{p.rut}</td>
+                  <td className="px-6 py-3 font-semibold text-slate-800">{p.nombre}</td>
+                  <td className="px-6 py-3 text-xs text-slate-500">{p.telefonos || "Sin datos"}</td>
+                  <td className="px-6 py-3 text-center font-black text-lg text-slate-700">{p.veces}</td>
+                  <td className="px-6 py-3 text-center">
+                    {p.veces >= 3 ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-red-100 text-red-700">
+                        <AlertTriangle size={12} /> Alta Recurrencia
+                      </span>
+                    ) : p.veces === 2 ? (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-orange-100 text-orange-700">
+                        Media
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 font-medium text-xs">Normal</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {recurrenceList.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-8 text-center text-gray-400 font-semibold">No se registran pacientes con múltiples caídas</td>
+                </tr>
               )}
             </tbody>
           </table>

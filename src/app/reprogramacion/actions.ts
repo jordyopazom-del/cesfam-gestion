@@ -79,10 +79,23 @@ export async function getPatientsByBlock(blockId: number) {
       where: { blockId },
       orderBy: { attentionDate: "asc" },
     });
+    
+    const ruts = patients.map((p) => p.rut);
+    const recurrenceGroups = await prisma.blockedPatient.groupBy({
+      by: ["rut"],
+      where: { rut: { in: ruts } },
+      _count: { rut: true },
+    });
+    const recurrenceMap: Record<string, number> = {};
+    for (const g of recurrenceGroups) {
+      recurrenceMap[g.rut] = g._count.rut;
+    }
+
     return {
       success: true,
       data: patients.map((p) => ({
         id: p.id,
+        Recurrencia: recurrenceMap[p.rut] || 1,
         RUT: p.rut,
         Nombre: p.fullName,
         Tipo: p.attentionType,
@@ -297,6 +310,47 @@ export async function getReproStats(startDate?: string, endDate?: string) {
         officials: officialsStats
       }
     };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+
+export async function getPatientRecurrenceList() {
+  try {
+    const user = await getSSOUser();
+    if (!user || (user.role !== "ADMIN" && user.role !== "admin" && user.role !== "COORDINADOR")) {
+      return { success: false, error: "No autorizado" };
+    }
+    
+    const groups = await prisma.blockedPatient.groupBy({
+      by: ["rut"],
+      _count: { rut: true },
+      orderBy: { _count: { rut: "desc" } },
+      having: { rut: { _count: { gt: 1 } } }
+    });
+
+    const ruts = groups.map(g => g.rut);
+    
+    const patientsData = await prisma.blockedPatient.findMany({
+      where: { rut: { in: ruts } },
+      distinct: ["rut"],
+      select: { rut: true, fullName: true, contactPhones: true }
+    });
+    
+    const patientMap: any = {};
+    for (const p of patientsData) {
+      patientMap[p.rut] = p;
+    }
+
+    const data = groups.map(g => ({
+      rut: g.rut,
+      nombre: patientMap[g.rut]?.fullName || "Sin nombre",
+      telefonos: patientMap[g.rut]?.contactPhones || "",
+      veces: g._count.rut
+    }));
+
+    return { success: true, data };
   } catch (err: any) {
     return { success: false, error: err.message };
   }

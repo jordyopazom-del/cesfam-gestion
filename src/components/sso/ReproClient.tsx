@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw, Upload, X } from "lucide-react";
+import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw, Upload, X, AlertTriangle } from "lucide-react";
 import { getPatientsByBlock, getPatientSearch, updatePatientStatus, getReprogramadores, assignBlock } from "@/app/reprogramacion/actions";
 import ReproDashboard from "./ReproDashboard";
 
@@ -300,7 +300,16 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                     return (
                     <tr key={p.id} className="hover:bg-white">
                       <td className="px-4 py-3 font-mono text-slate-600">{p.RUT}</td>
-                      <td className="px-4 py-3 font-medium text-slate-800">{p.Nombre}</td>
+                      <td className="px-4 py-3 font-medium text-slate-800">
+                        <div className="flex flex-col gap-1">
+                          <span>{p.Nombre}</span>
+                          {p.Recurrencia >= 3 && (
+                            <span className="inline-flex items-center gap-1 w-max px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700" title={`Este paciente ha sido afectado por bloqueos de agenda ${p.Recurrencia} veces en total.`}>
+                              <AlertTriangle size={10} /> Afectado {p.Recurrencia} veces
+                            </span>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-4 py-3 font-semibold text-slate-700">{date}</td>
                       <td className="px-4 py-3 text-slate-600">{time}</td>
                       <td className="px-4 py-3 text-slate-600">{p.Telefonos}</td>
