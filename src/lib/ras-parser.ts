@@ -47,13 +47,17 @@ export async function processRASPdfBuffer(buffer: Buffer, uploadedBy: string) {
 
       if (!rutPacMatch) continue;
 
+      // Ignorar cupos vacíos (NO ASIGNADO) — el PDF los incluye pero no son pacientes reales
+      const nombre = nombrePacMatch ? nombrePacMatch[1].trim() : "";
+      if (!nombre || nombre.toUpperCase().includes("NO ASIGNADO") || nombre === "") continue;
+
       const phones = [fonoMovMatch?.[1], fonoCasaMatch?.[1], fonoContMatch?.[1]]
         .filter(Boolean)
         .join(" / ") || "Sin Teléfono";
 
       patients.push({
         rut: rutPacMatch[1].trim(),
-        fullName: nombrePacMatch ? nombrePacMatch[1].trim() : "Desconocido",
+        fullName: nombre,
         attentionType: tipoAtenMatch ? tipoAtenMatch[1].trim() : "OTRA",
         attentionDate: fechaAtenMatch ? formatDate(fechaAtenMatch[1].trim()) || "" : "",
         contactPhones: phones,
