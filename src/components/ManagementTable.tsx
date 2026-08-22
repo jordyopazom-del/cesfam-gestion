@@ -207,9 +207,9 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                             >
                                                 <option value="">...</option>
                                                 <option value="Realizado">OK</option>
-                                                <option value="Sin Agenda">N/A</option>
-                                                <option value="No Corresponde">Err</option>
-                                                <option value="Desbloqueado">DESBLOQUEAR</option>
+                                                <option value="Sin Agenda">Sin agenda</option>
+                                                <option value="No Corresponde">No corresponde</option>
+                                                <option value="Desbloqueado">Desbloquear</option>
                                             </select>
                                         ) : (
                                             <span className={clsx(
