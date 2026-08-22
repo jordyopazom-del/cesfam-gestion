@@ -50,7 +50,7 @@ export async function getActiveBlocks() {
     });
 
 
-    const parseDateStr = (dateStr) => {
+    const parseDateStr = (dateStr: string | null) => {
       if (!dateStr) return new Date(0);
       const parts = dateStr.split(" ")[0].split("/"); // 15/09/2026
       if (parts.length === 3) {
