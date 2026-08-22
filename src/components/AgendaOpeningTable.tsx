@@ -200,7 +200,7 @@ export default function AgendaOpeningTable({ refreshTrigger, isAdmin }: { refres
                                             >
                                                 <option value="Pending" disabled={req.status === 'Realizado' || req.status === 'No Corresponde'}>...</option>
                                                 <option value="Realizado">OK</option>
-                                                <option value="No Corresponde">Err</option>
+                                                <option value="No Corresponde">No corresponde</option>
                                             </select>
                                         ) : (
                                             <span className={clsx(
