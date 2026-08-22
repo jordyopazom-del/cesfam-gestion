@@ -149,7 +149,11 @@ export async function checkBlockingOverlap(
     const activeBlocks = await prisma.agendaBlockRequest.findMany({
         where: {
             professional_name: professionalName,
-            status: { notIn: ['Rejected', 'Rechazado'] }
+            status: { notIn: ['Rejected', 'Rechazado'] },
+            OR: [
+                { agenda_blocked_status: null },
+                { agenda_blocked_status: { notIn: ['No Corresponde', 'Sin Agenda', 'Desbloqueado'] } }
+            ]
         }
     });
 
