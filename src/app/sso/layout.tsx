@@ -11,7 +11,7 @@ export default async function SSOLayout({ children }: { children: React.ReactNod
     <div className="flex h-full">
       <SSOSidebar userName={user.name} userRole={user.role} />
       <main className="flex-1 ml-64 p-8 min-h-screen bg-slate-50">
-        <div className="max-w-7xl mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto">
           {children}
         </div>
       </main>
