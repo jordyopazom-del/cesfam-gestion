@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Upload, FileSpreadsheet, Search, RefreshCw, CalendarDays, Filter, UserCheck, Stethoscope, EyeOff, Activity, Percent } from 'lucide-react';
+import { Upload, FileSpreadsheet, Search, RefreshCw, CalendarDays, Filter, UserCheck, Stethoscope, EyeOff, Activity, Percent, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function DemandaDashboard() {
@@ -14,15 +14,18 @@ export default function DemandaDashboard() {
   const [searchName, setSearchName] = useState("");
   const [selectedPoli, setSelectedPoli] = useState("TODOS");
   const [hideZeroSlots, setHideZeroSlots] = useState(true);
+  const [selectedPeriodId, setSelectedPeriodId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [selectedPeriodId]);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/demanda/data');
+      const url = selectedPeriodId ? `/api/demanda/data?uploadId=${selectedPeriodId}` : '/api/demanda/data';
+      const res = await fetch(url);
       if (res.ok) {
         const json = await res.json();
         setData(json);
@@ -33,6 +36,28 @@ export default function DemandaDashboard() {
       toast.error("Error de conexión");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeletePeriod = async () => {
+    if (!data?.uploadMeta?.id) return;
+    if (!confirm('¿Estás seguro de que deseas eliminar este reporte?')) return;
+    
+    setIsDeleting(true);
+    const toastId = toast.loading("Eliminando reporte...");
+    try {
+      const res = await fetch(`/api/demanda/upload/${data.uploadMeta.id}`, { method: 'DELETE' });
+      if (res.ok) {
+        toast.success("Reporte eliminado", { id: toastId });
+        setSelectedPeriodId(null); 
+        fetchData();
+      } else {
+        toast.error("Error al eliminar", { id: toastId });
+      }
+    } catch (error) {
+      toast.error("Error de conexión", { id: toastId });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -172,16 +197,40 @@ export default function DemandaDashboard() {
         </div>
       ) : (
         <>
-          {/* INFO BADGE */}
-          <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded-xl border border-blue-100 flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-blue-600" />
-            <span>
-              Mostrando el reporte correspondiente al periodo: 
-              <strong className="ml-1">
-                {new Date(data.uploadMeta.startDate).toLocaleDateString('es-CL', { timeZone: 'UTC' })} 
-                {data.uploadMeta.startDate !== data.uploadMeta.endDate && ` al ${new Date(data.uploadMeta.endDate).toLocaleDateString('es-CL', { timeZone: 'UTC' })}`}
-              </strong>
-            </span>
+          {/* INFO BADGE & SELECTOR */}
+          <div className="bg-blue-50 p-3 rounded-xl border border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-blue-800 text-sm font-medium">
+              <CalendarDays className="h-5 w-5 text-blue-600" />
+              <span>Seleccionar periodo del reporte:</span>
+              
+              <select 
+                value={data.uploadMeta.id}
+                onChange={(e) => setSelectedPeriodId(e.target.value)}
+                disabled={loading}
+                className="ml-2 bg-white border border-blue-200 text-blue-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-1.5 font-bold cursor-pointer hover:bg-blue-50 transition-colors shadow-sm outline-none"
+              >
+                {data.availablePeriods?.map((period: any) => {
+                  const start = new Date(period.startDate).toLocaleDateString('es-CL', { timeZone: 'UTC' });
+                  const end = new Date(period.endDate).toLocaleDateString('es-CL', { timeZone: 'UTC' });
+                  const label = start === end ? start : `${start} al ${end}`;
+                  return (
+                    <option key={period.id} value={period.id}>
+                      {label}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+            
+            <button
+              onClick={handleDeletePeriod}
+              disabled={isDeleting || loading}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-600 bg-white border border-rose-200 hover:bg-rose-50 hover:border-rose-300 px-3 py-1.5 rounded-lg transition-colors shadow-sm disabled:opacity-50 outline-none"
+              title="Eliminar este reporte de la base de datos"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              {isDeleting ? 'Borrando...' : 'Borrar Reporte'}
+            </button>
           </div>
 
           {/* KPIs ROW */}

@@ -9,22 +9,40 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Fetch ONLY the most recent report to serve as the "current free slots" (cupos libres actuales)
-    const latestUpload = await prisma.reportUpload.findFirst({
+    const { searchParams } = new URL(request.url);
+    const uploadId = searchParams.get('uploadId');
+
+    // Fetch all available uploads for the dropdown
+    const availableUploads = await prisma.reportUpload.findMany({
       where: { reportType: 'DISTRIBUCION_OFERTA' },
-      include: {
-        distribuciones: true
-      },
-      orderBy: {
-        startDate: 'desc' // Get the most recent date
+      orderBy: { startDate: 'desc' },
+      select: {
+        id: true,
+        startDate: true,
+        endDate: true,
+        uploadedAt: true
       }
     });
 
-    if (!latestUpload) {
+    if (availableUploads.length === 0) {
       return NextResponse.json({
         hasData: false,
         message: 'No hay reportes de demanda subidos.'
       });
+    }
+
+    // Determine which upload to fetch data for
+    const targetUploadId = uploadId || availableUploads[0].id;
+
+    const selectedUpload = await prisma.reportUpload.findUnique({
+      where: { id: targetUploadId },
+      include: {
+        distribuciones: true
+      }
+    });
+
+    if (!selectedUpload) {
+      return NextResponse.json({ error: 'Reporte no encontrado' }, { status: 404 });
     }
 
     // Extract all unique 'Tipos de Atención' across all distributions
@@ -32,7 +50,7 @@ export async function GET(request: Request) {
     const uniqueTiposAtencion = new Set<string>();
     const uniquePoliclinicos = new Set<string>();
 
-    latestUpload.distribuciones.forEach(dist => {
+    selectedUpload.distribuciones.forEach(dist => {
       uniquePoliclinicos.add(dist.policlinico);
       const desglose = dist.desglose as Record<string, number>;
       Object.keys(desglose).forEach(key => {
@@ -44,17 +62,18 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       hasData: true,
+      availablePeriods: availableUploads,
       uploadMeta: {
-        id: latestUpload.id,
-        startDate: latestUpload.startDate,
-        endDate: latestUpload.endDate,
-        uploadedAt: latestUpload.uploadedAt
+        id: selectedUpload.id,
+        startDate: selectedUpload.startDate,
+        endDate: selectedUpload.endDate,
+        uploadedAt: selectedUpload.uploadedAt
       },
       filtros: {
         policlinicos: Array.from(uniquePoliclinicos).sort(),
         tiposAtencion: Array.from(uniqueTiposAtencion).sort()
       },
-      distribuciones: latestUpload.distribuciones
+      distribuciones: selectedUpload.distribuciones
     });
 
   } catch (error: any) {
