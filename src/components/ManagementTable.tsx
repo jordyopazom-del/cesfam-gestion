@@ -57,11 +57,6 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
         try {
             const body: any = { agendaBlockedStatus: newStatus };
             
-            // If the admin is unblocking, also update unblockStatus to 'Approved'
-            if (newStatus === 'Desbloqueado') {
-                body.unblockStatus = 'Approved';
-            }
-
             const res = await fetch(`/api/requests/${id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -209,7 +204,6 @@ export default function ManagementTable({ refreshTrigger, isAdmin }: { refreshTr
                                                 <option value="Realizado">OK</option>
                                                 <option value="Sin Agenda">Sin agenda</option>
                                                 <option value="No Corresponde">No corresponde</option>
-                                                <option value="Desbloqueado">Desbloquear</option>
                                             </select>
                                         ) : (
                                             <span className={clsx(
