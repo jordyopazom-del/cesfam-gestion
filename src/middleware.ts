@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { decrypt } from './lib/session-crypto';
 
 // 1. Rutas que requieren sesión activa
-const protectedRoutes = ['/', '/dashboard', '/calendar', '/logistica', '/reservas', '/solicitudes', '/sso', '/change-password'];
+const protectedRoutes = ['/', '/dashboard', '/calendar', '/logistica', '/reservas', '/sso', '/change-password'];
 const publicRoutes = ['/login', '/register', '/forgot-password'];
 
 export default async function middleware(req: NextRequest) {
