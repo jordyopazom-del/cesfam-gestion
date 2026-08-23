@@ -74,8 +74,36 @@ export async function updateDemandNotes(id: number, notes: string) {
       where: { id },
       data: { notes },
     });
+    try {
+      const user = await getSSOUser();
+      await prisma.demandAuditLog.create({
+        data: { demandRequestId: id, newValue: `📝 Nota: ${notes}`, changedBy: user?.name || "Sistema" },
+      });
+    } catch { /* audit log opcional */ }
     revalidatePath("/sso/rechazos");
     revalidatePath("/sso/derivaciones");
+    revalidatePath("/sso/telesalud");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function updateDemandObservation(id: number, observation: string) {
+  try {
+    await prisma.demandRequest.update({
+      where: { id },
+      data: { observation },
+    });
+    try {
+      const user = await getSSOUser();
+      await prisma.demandAuditLog.create({
+        data: { demandRequestId: id, newValue: `📞 Teléfono: ${observation}`, changedBy: user?.name || "Sistema" },
+      });
+    } catch { /* audit log opcional */ }
+    revalidatePath("/sso/rechazos");
+    revalidatePath("/sso/derivaciones");
+    revalidatePath("/sso/telesalud");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };

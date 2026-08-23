@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useMemo } from "react";
-import { updateDemandStatus, updateDemandNotes } from "@/app/sso/demand/actions";
+import { updateDemandStatus, updateDemandNotes, updateDemandObservation } from "@/app/sso/demand/actions";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 import {
@@ -165,7 +165,7 @@ export default function TelesaludClient({ data }: { data: any[] }) {
                 <th className="py-4 px-4 w-48">Paciente</th>
                 <th className="py-4 px-4 w-32">Ingreso / Plazo</th>
                 <th className="py-4 px-4 w-40">Atención / Policlínico</th>
-                <th className="py-4 px-4">Teléfono / Observaciones</th>
+                <th className="py-4 px-4">Teléfono</th>
                 <th className="py-4 px-4 w-48">Notas</th>
                 <th className="py-4 px-4 w-12"></th>
               </tr>
@@ -217,6 +217,12 @@ function TelesaludRow({ row }: { row: any }) {
     else toast.success("Notas guardadas");
   };
 
+  const handleUpdateObservation = async (observation: string) => {
+    const res = await updateDemandObservation(row.id, observation);
+    if (!res.success) toast.error("Error al actualizar teléfono");
+    else toast.success("Teléfono guardado");
+  };
+
   const dynamicPriority = calculateDynamicPriority(row.requestDate);
   const badge = getPriorityBadge(dynamicPriority);
 
@@ -228,7 +234,6 @@ function TelesaludRow({ row }: { row: any }) {
     } catch { /**/ }
   }
 
-  // Si el estado ya cambió y no es Telesalud, no mostrar la fila (ya fue cerrada)
   if (status !== "💻 Telesalud") return null;
 
   return (
@@ -276,12 +281,24 @@ function TelesaludRow({ row }: { row: any }) {
             <span className="text-[11px] text-slate-500 font-medium">{normalizePoli(row.policlinic)}</span>
           </div>
         </td>
+        {/* Columna Teléfono — editable */}
         <td className="py-4 px-4">
-          <div className="flex items-start gap-1.5 font-bold text-slate-700 max-w-[250px]">
-            <Phone className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
-            <span className="text-[11px] leading-tight break-words">{row.observation || "Sin observaciones"}</span>
+          <div className="flex items-start gap-1.5 max-w-[220px]">
+            <Phone className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-1.5" />
+            <textarea
+              defaultValue={row.observation || ""}
+              onBlur={(e) => {
+                if (e.target.value !== (row.observation || "")) {
+                  handleUpdateObservation(e.target.value);
+                }
+              }}
+              rows={2}
+              className="w-full px-2 py-1 text-[11px] text-slate-800 font-semibold border border-slate-200 rounded-lg hover:border-emerald-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 bg-white hover:bg-slate-50 focus:bg-white transition-all shadow-sm resize-y"
+              placeholder="Ingresar teléfono..."
+            />
           </div>
         </td>
+        {/* Columna Notas — 2 filas */}
         <td className="py-4 px-4">
           <textarea
             defaultValue={row.notes || ""}
@@ -290,7 +307,7 @@ function TelesaludRow({ row }: { row: any }) {
                 handleUpdateNotes(e.target.value);
               }
             }}
-            rows={1}
+            rows={2}
             className="w-full min-w-[120px] px-2 py-1.5 text-[12px] text-slate-800 font-extrabold border border-slate-300 rounded-lg hover:border-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 bg-white hover:bg-slate-50 focus:bg-white transition-all shadow-sm resize-y"
             placeholder="Añadir nota..."
           />
@@ -310,7 +327,7 @@ function TelesaludRow({ row }: { row: any }) {
             <div className="flex flex-col gap-2 max-w-2xl ml-8">
               <h4 className="text-xs font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-wider">
                 <History className="h-3.5 w-3.5 text-slate-500" />
-                Historial de Cambios de Estado
+                Historial de actividad
               </h4>
               {row.auditLogs && row.auditLogs.length > 0 ? (
                 <div className="space-y-1.5 mt-1 border-l-2 border-purple-200 pl-4 py-1">
@@ -321,16 +338,16 @@ function TelesaludRow({ row }: { row: any }) {
                       formattedDate = `${String(logDate.getDate()).padStart(2, "0")}-${String(logDate.getMonth() + 1).padStart(2, "0")}-${logDate.getFullYear()} a las ${String(logDate.getHours()).padStart(2, "0")}:${String(logDate.getMinutes()).padStart(2, "0")}`;
                     } catch { /**/ }
                     return (
-                      <div key={idx} className="flex items-center gap-2 text-xs font-semibold text-slate-600">
-                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
-                        <span className="text-slate-500">{formattedDate}:</span>
-                        <span>Cambió a <strong className="text-slate-800">{log.newValue}</strong> por <strong className="text-slate-800">{log.changedBy || "Sistema"}</strong></span>
+                      <div key={idx} className="flex items-start gap-2 text-xs font-semibold text-slate-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-purple-400 mt-1 shrink-0" />
+                        <span className="text-slate-500 shrink-0">{formattedDate}:</span>
+                        <span>{log.newValue} — por <strong className="text-slate-800">{log.changedBy || "Sistema"}</strong></span>
                       </div>
                     );
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-slate-500 italic">No hay registros de cambios para este paciente.</p>
+                <p className="text-xs text-slate-500 italic">No hay registros de actividad para este paciente.</p>
               )}
             </div>
           </td>
