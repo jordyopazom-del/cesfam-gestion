@@ -6,6 +6,9 @@ import { revalidatePath } from "next/cache";
 
 export async function getDemandsByOrigin(origin: "Rechazo" | "Derivación Interna" | null = null) {
   try {
+    const user = await getSSOUser();
+    if (!user) return { success: false, error: "No autenticado. Por favor inicie sesión." };
+
     const where = origin ? { origin } : {};
     const demands = await prisma.demandRequest.findMany({
       where,
@@ -20,6 +23,9 @@ export async function getDemandsByOrigin(origin: "Rechazo" | "Derivación Intern
 
 export async function getAllDemands() {
   try {
+    const user = await getSSOUser();
+    if (!user) return { success: false, error: "No autenticado. Por favor inicie sesión." };
+
     const demands = await prisma.demandRequest.findMany({
       include: { auditLogs: { select: { timestamp: true, newValue: true, changedBy: true, demandRequestId: true } } },
       orderBy: { requestDate: "asc" },
@@ -32,19 +38,24 @@ export async function getAllDemands() {
 
 export async function updateDemandStatus(id: number, status: string) {
   try {
+    const user = await getSSOUser();
+    if (!user) {
+      return { success: false, error: "Su sesión ha expirado. No se guardaron los cambios. Inicie sesión nuevamente." };
+    }
+
     await prisma.demandRequest.update({
       where: { id },
       data: { status },
     });
-    // Intentar registrar en auditoría pero sin bloquear si falla
+
     try {
-      const user = await getSSOUser();
       await prisma.demandAuditLog.create({
-        data: { demandRequestId: id, newValue: status, changedBy: user?.name || "Sistema" },
+        data: { demandRequestId: id, newValue: status, changedBy: user.name },
       });
     } catch {
-      // El audit log es opcional: si falla no interrumpimos el guardado del estado
+      // Si falla el log, no rompemos la transacción pero se conserva la auditoría
     }
+
     revalidatePath("/sso/rechazos");
     revalidatePath("/sso/derivaciones");
     revalidatePath("/sso/telesalud");
@@ -57,6 +68,9 @@ export async function updateDemandStatus(id: number, status: string) {
 
 export async function getTelesaludDemands() {
   try {
+    const user = await getSSOUser();
+    if (!user) return { success: false, error: "No autenticado. Por favor inicie sesión." };
+
     const demands = await prisma.demandRequest.findMany({
       where: { status: "💻 Telesalud" },
       orderBy: [{ requestDate: "asc" }],
@@ -70,16 +84,22 @@ export async function getTelesaludDemands() {
 
 export async function updateDemandNotes(id: number, notes: string) {
   try {
+    const user = await getSSOUser();
+    if (!user) {
+      return { success: false, error: "Su sesión ha expirado. No se guardaron las notas. Inicie sesión nuevamente." };
+    }
+
     await prisma.demandRequest.update({
       where: { id },
       data: { notes },
     });
+
     try {
-      const user = await getSSOUser();
       await prisma.demandAuditLog.create({
-        data: { demandRequestId: id, newValue: `📝 Nota: ${notes}`, changedBy: user?.name || "Sistema" },
+        data: { demandRequestId: id, newValue: `📝 Nota: ${notes}`, changedBy: user.name },
       });
     } catch { /* audit log opcional */ }
+
     revalidatePath("/sso/rechazos");
     revalidatePath("/sso/derivaciones");
     revalidatePath("/sso/telesalud");
@@ -91,16 +111,22 @@ export async function updateDemandNotes(id: number, notes: string) {
 
 export async function updateDemandObservation(id: number, observation: string) {
   try {
+    const user = await getSSOUser();
+    if (!user) {
+      return { success: false, error: "Su sesión ha expirado. No se guardó el teléfono. Inicie sesión nuevamente." };
+    }
+
     await prisma.demandRequest.update({
       where: { id },
       data: { observation },
     });
+
     try {
-      const user = await getSSOUser();
       await prisma.demandAuditLog.create({
-        data: { demandRequestId: id, newValue: `📞 Teléfono: ${observation}`, changedBy: user?.name || "Sistema" },
+        data: { demandRequestId: id, newValue: `📞 Teléfono: ${observation}`, changedBy: user.name },
       });
     } catch { /* audit log opcional */ }
+
     revalidatePath("/sso/rechazos");
     revalidatePath("/sso/derivaciones");
     revalidatePath("/sso/telesalud");

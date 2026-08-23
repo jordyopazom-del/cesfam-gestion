@@ -99,14 +99,33 @@ export async function requestPasswordReset(prevState: any, formData: FormData) {
     }
 }
 
+async function requireAdmin() {
+    const session = await getSession();
+    if (!session?.email) {
+        throw new Error('No autenticado: Inicie sesión nuevamente.');
+    }
+    const { getUserByEmail } = await import('@/lib/auth-db');
+    const user = await getUserByEmail(session.email);
+    if (!user || user.role !== 'ADMIN' || user.status !== 'active') {
+        throw new Error('No autorizado: Requiere privilegios de administrador.');
+    }
+    return user;
+}
+
 export async function adminResetPassword(email: string) {
+    await requireAdmin();
     const { adminResetUserPassword } = await import('@/lib/auth-db');
     const success = await adminResetUserPassword(email);
     return success;
 }
 
 export async function fetchUsers() {
-    const { getUsers } = await import('@/lib/auth-db');
+    const session = await getSession();
+    if (!session?.email) return [];
+    const { getUserByEmail, getUsers } = await import('@/lib/auth-db');
+    const currentUser = await getUserByEmail(session.email);
+    if (!currentUser || currentUser.role !== 'ADMIN') return [];
+
     const users = await getUsers();
     // Sanitize users (remove password)
     return users.map(u => ({
@@ -174,18 +193,21 @@ export async function adminUpdateUser(
     newName?: string,
     newEmail?: string
 ) {
+    await requireAdmin();
     const { updateUserStatusAndRole } = await import('@/lib/auth-db');
     const success = await updateUserStatusAndRole(email, status, role, permissions, newName, newEmail);
     return success;
 }
 
 export async function adminDeleteUser(email: string) {
+    await requireAdmin();
     const { deleteUser } = await import('@/lib/auth-db');
     const success = await deleteUser(email);
     return { success };
 }
 
 export async function adminCreateUser(name: string, email: string, role: string, pass: string) {
+    await requireAdmin();
     const { registerUser, updateUserStatusAndRole, getUserByEmail } = await import('@/lib/auth-db');
     const existing = await getUserByEmail(email);
     if (existing) {

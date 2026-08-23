@@ -8,28 +8,37 @@ import { Loader2, Mail, Lock, ShieldCheck, HeartPulse } from 'lucide-react';
 function SsoErrorAlert() {
     const searchParams = useSearchParams();
     const errorParam = searchParams.get('error');
+    const reasonParam = searchParams.get('reason');
 
-    if (!errorParam) return null;
+    if (!errorParam && !reasonParam) return null;
 
     let message = '';
     let colorClass = 'bg-red-500/10 border-red-500/20 text-red-400';
 
-    switch (errorParam) {
-        case 'user_not_registered':
-            message = 'Tu usuario de la Intranet no tiene acceso a esta plataforma. Solicita acceso al administrador.';
-            colorClass = 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400';
-            break;
-        case 'invalid_token':
-            message = 'El enlace es inválido o ya fue utilizado. Intenta nuevamente desde la Intranet.';
-            break;
-        case 'token_expired':
-            message = 'El enlace expiró (60 segundos). Intenta nuevamente desde la Intranet.';
-            break;
-        case 'sso_failed':
-            message = 'Error al procesar el acceso automático. Usa tu contraseña.';
-            break;
-        default:
-            return null;
+    if (reasonParam === 'inactivity') {
+        message = '⏳ Su sesión se cerró automáticamente por inactividad (30 min) para proteger los datos de salud.';
+        colorClass = 'bg-amber-500/10 border-amber-500/30 text-amber-300';
+    } else if (reasonParam === 'expired') {
+        message = '🔒 Su sesión ha expirado. Por favor ingrese nuevamente.';
+        colorClass = 'bg-amber-500/10 border-amber-500/30 text-amber-300';
+    } else {
+        switch (errorParam) {
+            case 'user_not_registered':
+                message = 'Tu usuario de la Intranet no tiene acceso a esta plataforma. Solicita acceso al administrador.';
+                colorClass = 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400';
+                break;
+            case 'invalid_token':
+                message = 'El enlace es inválido o ya fue utilizado. Intenta nuevamente desde la Intranet.';
+                break;
+            case 'token_expired':
+                message = 'El enlace expiró (60 segundos). Intenta nuevamente desde la Intranet.';
+                break;
+            case 'sso_failed':
+                message = 'Error al procesar el acceso automático. Usa tu contraseña.';
+                break;
+            default:
+                return null;
+        }
     }
 
     return (
