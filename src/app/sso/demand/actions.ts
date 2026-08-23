@@ -47,8 +47,22 @@ export async function updateDemandStatus(id: number, status: string) {
     }
     revalidatePath("/sso/rechazos");
     revalidatePath("/sso/derivaciones");
+    revalidatePath("/sso/telesalud");
     revalidatePath("/sso/dashboard");
     return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function getTelesaludDemands() {
+  try {
+    const demands = await prisma.demandRequest.findMany({
+      where: { status: "💻 Telesalud" },
+      orderBy: [{ requestDate: "asc" }],
+      include: { auditLogs: { select: { timestamp: true, newValue: true, changedBy: true, demandRequestId: true } } },
+    });
+    return { success: true, data: demands };
   } catch (err: any) {
     return { success: false, error: err.message };
   }

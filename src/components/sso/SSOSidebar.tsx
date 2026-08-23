@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, XCircle, ArrowRightLeft, Clock,
-  Calendar, UploadCloud, Settings, LogOut, ArrowLeft,
+  Calendar, UploadCloud, Settings, LogOut, ArrowLeft, Monitor,
 } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 
@@ -16,6 +16,7 @@ const navigation = [
   { name: "Panel Analítico", href: "/sso/dashboard", icon: LayoutDashboard },
   { name: "Gestión Rechazos", href: "/sso/rechazos", icon: XCircle },
   { name: "Gestión Derivaciones", href: "/sso/derivaciones", icon: ArrowRightLeft },
+  { name: "Gestión Telesalud", href: "/sso/telesalud", icon: Monitor },
   { name: "Estado de Horas", href: "/sso/horas", icon: Clock },
 ];
 
