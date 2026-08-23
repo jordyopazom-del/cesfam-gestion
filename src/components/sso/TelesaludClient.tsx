@@ -7,6 +7,7 @@ import * as XLSX from "xlsx";
 import {
   ChevronDown, ChevronUp, History, Phone, Calendar,
   Stethoscope, Search, Filter, FileEdit, Download, Eye, EyeOff,
+  Pencil, Check,
 } from "lucide-react";
 
 // En Telesalud los estados de cierre son los mismos que en el resto del módulo
@@ -195,6 +196,8 @@ function TelesaludRow({ row }: { row: any }) {
   const [status, setStatus] = useState(row.status);
   const [isPending, startTransition] = useTransition();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [phoneValue, setPhoneValue] = useState(row.observation || "");
 
   const handleUpdate = (newStatus: string) => {
     setStatus(newStatus);
@@ -202,7 +205,7 @@ function TelesaludRow({ row }: { row: any }) {
       const res = await updateDemandStatus(row.id, newStatus);
       if (!res.success) {
         toast.error("Error al actualizar");
-        setStatus(row.status); // revert
+        setStatus(row.status);
       } else {
         if (newStatus !== "💻 Telesalud") {
           toast.success(`Paciente cerrado como: ${newStatus}. Ya no aparecerá en esta bandeja.`);
@@ -217,8 +220,10 @@ function TelesaludRow({ row }: { row: any }) {
     else toast.success("Notas guardadas");
   };
 
-  const handleUpdateObservation = async (observation: string) => {
-    const res = await updateDemandObservation(row.id, observation);
+  const handleSavePhone = async () => {
+    setEditingPhone(false);
+    if (phoneValue === (row.observation || "")) return;
+    const res = await updateDemandObservation(row.id, phoneValue);
     if (!res.success) toast.error("Error al actualizar teléfono");
     else toast.success("Teléfono guardado");
   };
@@ -281,24 +286,40 @@ function TelesaludRow({ row }: { row: any }) {
             <span className="text-[11px] text-slate-500 font-medium">{normalizePoli(row.policlinic)}</span>
           </div>
         </td>
-        {/* Columna Teléfono — editable */}
+        {/* Columna Teléfono — clic para editar */}
         <td className="py-4 px-4">
-          <div className="flex items-start gap-1.5 max-w-[220px]">
-            <Phone className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-1.5" />
-            <textarea
-              defaultValue={row.observation || ""}
-              onBlur={(e) => {
-                if (e.target.value !== (row.observation || "")) {
-                  handleUpdateObservation(e.target.value);
-                }
-              }}
-              rows={2}
-              className="w-full px-2 py-1 text-[11px] text-slate-800 font-semibold border border-slate-200 rounded-lg hover:border-emerald-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-200 bg-white hover:bg-slate-50 focus:bg-white transition-all shadow-sm resize-y"
-              placeholder="Ingresar teléfono..."
-            />
-          </div>
+          {editingPhone ? (
+            <div className="flex items-center gap-1 max-w-[200px]">
+              <Phone className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                value={phoneValue}
+                onChange={(e) => setPhoneValue(e.target.value)}
+                onBlur={handleSavePhone}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSavePhone(); if (e.key === "Escape") setEditingPhone(false); }}
+                className="flex-1 px-2 py-0.5 text-[11px] font-semibold border border-emerald-400 rounded focus:outline-none focus:ring-1 focus:ring-emerald-300 bg-white"
+                placeholder="Ej: 984231XXX"
+              />
+              <button onClick={handleSavePhone} className="p-0.5 text-emerald-600 hover:text-emerald-800">
+                <Check className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div
+              className="flex items-start gap-1.5 group cursor-pointer max-w-[220px]"
+              onClick={() => setEditingPhone(true)}
+              title="Clic para editar teléfono"
+            >
+              <Phone className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+              <span className="text-[11px] font-semibold text-slate-700 leading-tight break-words">
+                {phoneValue || <span className="text-slate-400 italic">Sin teléfono</span>}
+              </span>
+              <Pencil className="h-2.5 w-2.5 text-slate-300 group-hover:text-slate-500 shrink-0 mt-0.5 transition-colors" />
+            </div>
+          )}
         </td>
-        {/* Columna Notas — 2 filas */}
+        {/* Columna Notas */}
         <td className="py-4 px-4">
           <textarea
             defaultValue={row.notes || ""}
@@ -307,7 +328,7 @@ function TelesaludRow({ row }: { row: any }) {
                 handleUpdateNotes(e.target.value);
               }
             }}
-            rows={2}
+            rows={1}
             className="w-full min-w-[120px] px-2 py-1.5 text-[12px] text-slate-800 font-extrabold border border-slate-300 rounded-lg hover:border-slate-400 focus:border-purple-500 focus:ring-1 focus:ring-purple-200 bg-white hover:bg-slate-50 focus:bg-white transition-all shadow-sm resize-y"
             placeholder="Añadir nota..."
           />
