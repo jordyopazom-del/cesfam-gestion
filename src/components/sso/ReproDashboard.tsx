@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { getReproStats, getPatientRecurrenceList } from "@/app/reprogramacion/actions";
 import { BarChart3, Users, Clock, AlertTriangle, XCircle, Search, Calendar, FileWarning } from "lucide-react";
 
-export default function ReproDashboard() {
+export default function ReproDashboard({ onJumpToTab }: { onJumpToTab?: (id: number) => void }) {
   const [stats, setStats] = useState<any>(null);
   const [recurrenceList, setRecurrenceList] = useState<any[]>([]);
   const [searchRUT, setSearchRUT] = useState("");
@@ -106,9 +106,13 @@ export default function ReproDashboard() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-orange-100 shadow-sm shadow-orange-50">
+        <div 
+          onClick={() => onJumpToTab && onJumpToTab(3)}
+          className="bg-white p-5 rounded-2xl border border-orange-100 shadow-sm shadow-orange-50 cursor-pointer hover:ring-2 hover:ring-orange-400 hover:shadow-md transition-all group"
+          title="Ver pacientes en espera de cupo"
+        >
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 bg-orange-50 text-orange-600 rounded-xl"><AlertTriangle size={20} /></div>
+            <div className="p-2.5 bg-orange-50 text-orange-600 rounded-xl group-hover:bg-orange-100 transition-colors"><AlertTriangle size={20} /></div>
             <h3 className="text-sm font-bold text-orange-700">Avisado - Sin Cupo</h3>
           </div>
           <div className="flex items-end gap-2">

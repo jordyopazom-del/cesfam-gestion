@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
 import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw, Upload, X, AlertTriangle } from "lucide-react";
-import { getPatientsByBlock, getPatientSearch, updatePatientStatus, getReprogramadores, assignBlock } from "@/app/reprogramacion/actions";
+import { getPatientsByBlock, getPatientSearch, updatePatientStatus, getReprogramadores, assignBlock, getPacientesSinCupo } from "@/app/reprogramacion/actions";
 import ReproDashboard from "./ReproDashboard";
 
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -31,6 +31,8 @@ export default function ReproClient({
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [showResolved, setShowResolved] = useState(false);
   const [reprogramadores, setReprogramadores] = useState<{email: string, name: string | null}[]>([]);
+  const [sinCupoPatients, setSinCupoPatients] = useState<any[]>([]);
+  const [loadingSinCupo, setLoadingSinCupo] = useState(false);
 
   const isAdmin = userRole === "admin" || userRole === "ADMIN" || userRole === "COORDINADOR";
 
@@ -58,6 +60,14 @@ export default function ReproClient({
     }
   };
 
+  const loadSinCupoPatients = async () => {
+    setLoadingSinCupo(true);
+    const res = await getPacientesSinCupo();
+    if (res.success && res.data) setSinCupoPatients(res.data);
+    else toast.error("Error al cargar pacientes sin cupo");
+    setLoadingSinCupo(false);
+  };
+
   const loadPatients = async (blockId: number) => {
     setSelectedBlockId(blockId);
     setLoadingPatients(true);
@@ -71,6 +81,9 @@ export default function ReproClient({
     const oldPatient = patients.find((p) => p.id === patientId);
     
     // Actualización optimista SIEMPRE primero para no interrumpir el tipeo
+    setSinCupoPatients((prev) => 
+      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p).filter(p => p.Estado === "Avisado - Sin Cupo")
+    );
     setPatients((prev) => 
       prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
     );
@@ -120,8 +133,15 @@ export default function ReproClient({
     }
   };
 
+  useEffect(() => {
+    if (activeTab === 3) {
+      loadSinCupoPatients();
+    }
+  }, [activeTab]);
+
   const tabs = [
     { name: isAdmin ? "Gestión Operativa" : "Bandeja de Entrada", id: 0 },
+    { name: "Avisados Sin Cupo", id: 3 },
     { name: "Historial de Auditoría", id: 1 },
   ];
 
@@ -148,6 +168,104 @@ export default function ReproClient({
       </div>
 
       <div className="p-6 bg-slate-50/50 min-h-[calc(70vh-60px)]">
+        
+        {activeTab === 3 && (
+          <div className="space-y-4 animate-in fade-in duration-500">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Pacientes Avisados - Sin Cupo</h2>
+                <p className="text-slate-500 text-sm">Lista de espera de pacientes que necesitan ser reagendados cuando se abran nuevas agendas.</p>
+              </div>
+              <button onClick={loadSinCupoPatients} className="flex items-center gap-2 px-3 py-1.5 text-sm bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-lg transition-colors">
+                <RefreshCcw className={cn("h-4 w-4", loadingSinCupo && "animate-spin")} />
+                Actualizar
+              </button>
+            </div>
+            
+            {loadingSinCupo ? (
+              <div className="py-12 text-center text-blue-600 animate-pulse font-medium">Cargando lista de pacientes...</div>
+            ) : sinCupoPatients.length === 0 ? (
+              <div className="py-12 text-center bg-white rounded-xl border border-slate-200">
+                <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-slate-800">No hay pacientes en espera</h3>
+                <p className="text-slate-500 text-sm">Todos los pacientes han sido resueltos o reagendados.</p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm whitespace-nowrap">
+                    <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-3">RUT</th>
+                        <th className="px-4 py-3">Paciente</th>
+                        <th className="px-4 py-3">Profesional (Origen)</th>
+                        <th className="px-4 py-3">Teléfonos</th>
+                        <th className="px-4 py-3">Estado</th>
+                        <th className="px-4 py-3 min-w-[200px]">Solución / Nota</th>
+                        <th className="px-4 py-3">Reprogramar Para</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {sinCupoPatients.map((p: any) => (
+                        <tr key={p.id} className="hover:bg-slate-50/50">
+                          <td className="px-4 py-3 font-mono font-semibold text-slate-700">{p.RUT}</td>
+                          <td className="px-4 py-3 font-bold text-slate-800">{p.Nombre}</td>
+                          <td className="px-4 py-3 text-slate-600">
+                            <span className="block">{p.Profesional_Bloqueo}</span>
+                            <span className="text-xs text-slate-400">Citado: {p.Fecha_Citacion}</span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-600 font-mono text-xs">{p.Telefonos || "-"}</td>
+                          <td className="px-4 py-3">
+                            <select
+                              value={p.Estado}
+                              onChange={(e) => handlePatientUpdate(p.id, e.target.value, p.Solucion, p.Fecha_Reprogramacion)}
+                              className={cn(
+                                "text-xs font-bold rounded-md px-2 py-1 outline-none cursor-pointer border border-transparent hover:border-slate-300 transition-colors",
+                                p.Estado === "Reprogramado" ? "bg-emerald-100 text-emerald-800" :
+                                p.Estado === "Avisado - Sin Cupo" ? "bg-amber-100 text-amber-800" :
+                                p.Estado === "No ubicable" ? "bg-rose-100 text-rose-800" : "bg-slate-100 text-slate-600"
+                              )}
+                            >
+                              <option value="Pendiente">Pendiente</option>
+                              <option value="Reprogramado">Reprogramado</option>
+                              <option value="Avisado - Sin Cupo">Avisado - Sin Cupo</option>
+                              <option value="No ubicable">No ubicable</option>
+                            </select>
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="text"
+                              value={p.Solucion || ""}
+                              onChange={(e) => {
+                                setSinCupoPatients(prev => prev.map(x => x.id === p.id ? { ...x, Solucion: e.target.value } : x));
+                              }}
+                              onBlur={(e) => handlePatientUpdate(p.id, p.Estado, e.target.value, p.Fecha_Reprogramacion)}
+                              placeholder="Nota..."
+                              className="w-full text-xs px-2 py-1.5 border border-slate-200 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="date"
+                              value={p.Fecha_Reprogramacion || ""}
+                              onChange={(e) => {
+                                setSinCupoPatients(prev => prev.map(x => x.id === p.id ? { ...x, Fecha_Reprogramacion: e.target.value } : x));
+                              }}
+                              onBlur={(e) => handlePatientUpdate(p.id, p.Estado, p.Solucion, e.target.value)}
+                              className="text-xs px-2 py-1.5 border border-slate-200 rounded-md outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+
         {activeTab === 0 && (
           <GestionTab
             blocks={activeBlocks.filter((b: any) => {
@@ -173,7 +291,7 @@ export default function ReproClient({
           />
         )}
         {activeTab === 1 && <HistoryTab blocks={historyBlocks} />}
-        {activeTab === 2 && isAdmin && <ReproDashboard />}
+        {activeTab === 2 && isAdmin && <ReproDashboard onJumpToTab={setActiveTab} />}
       </div>
     </div>
   );

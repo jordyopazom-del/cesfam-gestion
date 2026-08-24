@@ -367,3 +367,38 @@ export async function getPatientRecurrenceList() {
     return { success: false, error: err.message };
   }
 }
+
+export async function getPacientesSinCupo() {
+  try {
+    const patients = await prisma.blockedPatient.findMany({
+      where: {
+        status: "Avisado - Sin Cupo"
+      },
+      include: { 
+        block: { 
+          select: { professionalName: true, startDate: true } 
+        } 
+      },
+      orderBy: { updatedAt: "desc" },
+    });
+    return {
+      success: true,
+      data: patients.map((p) => ({
+        id: p.id,
+        RUT: p.rut,
+        Nombre: p.fullName,
+        Telefonos: p.contactPhones || "",
+        Profesional_Bloqueo: p.block?.professionalName || "Desconocido",
+        Fecha_Citacion: p.attentionDate || "",
+        Estado: p.status,
+        Solucion: p.solution || "",
+        Ultimo_Gestor: p.updatedBy || "Sistema",
+        Fecha_Reprogramacion: p.reprogrammedDate || "",
+        Fecha_Actualizacion: p.updatedAt.toISOString().split("T")[0],
+      })),
+    };
+  } catch (error: any) {
+    console.error("Error fetching pacientes sin cupo:", error);
+    return { success: false, error: error.message };
+  }
+}
