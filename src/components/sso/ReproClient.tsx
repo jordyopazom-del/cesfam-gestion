@@ -78,30 +78,10 @@ export default function ReproClient({
   };
 
   const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
-    // 1. Validar fecha de reprogramación ANTES de tocar el estado o enviar a BD
-    if (status === "Reprogramado" && !reprogrammedDate) {
-      toast.error("Seleccione la fecha de reprogramación para guardar");
-      return;
-    }
-
-    // Validación a prueba de errores en la fecha
-    if (reprogrammedDate) {
-      const year = parseInt(reprogrammedDate.split("-")[0], 10);
-      if (isNaN(year) || year < 2024 || year > 2035) {
-        return; 
-      }
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const selected = new Date(reprogrammedDate + "T00:00:00");
-      if (selected < today) {
-        toast.error("⚠️ No puede reprogramar para una fecha pasada. Seleccione una fecha de hoy o posterior.");
-        return;
-      }
-    }
-
     const oldPatient = patients.find((p) => p.id === patientId);
 
-    // 2. Actualización optimista del estado local
+    // 1. Actualización optimista del estado local SIEMPRE primero
+    // Así cuando el usuario elige "Reprogramado", la fila actualiza y el campo fecha se habilita
     setSinCupoPatients((prev) => 
       prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p).filter(p => p.Estado === "Avisado - Sin Cupo")
     );
@@ -109,7 +89,7 @@ export default function ReproClient({
       prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
     );
 
-    // 3. Actualizar contador de resueltos en activeBlocks
+    // 2. Actualizar contador de resueltos en activeBlocks
     if (oldPatient) {
       const resolvedStates = ["Reprogramado", "Avisado - Sin Cupo", "No ubicable"];
       const wasResolved = resolvedStates.includes(oldPatient.Estado);
@@ -125,6 +105,27 @@ export default function ReproClient({
       }
     }
 
+    // 3. Si marcaron "Reprogramado" pero aún no seleccionan fecha, avisar y NO guardar en BD todavía
+    // La UI ya muestra el estado correcto y la fecha quedó habilitada para que la puedan escoger
+    if (status === "Reprogramado" && !reprogrammedDate) {
+      toast("📅 Ahora seleccione la fecha de reprogramación", { icon: "⚠️" });
+      return;
+    }
+
+    // 4. Validar que la fecha no sea inválida ni pasada antes de enviar a BD
+    if (reprogrammedDate) {
+      const year = parseInt(reprogrammedDate.split("-")[0], 10);
+      if (isNaN(year) || year < 2024 || year > 2035) return;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selected = new Date(reprogrammedDate + "T00:00:00");
+      if (selected < today) {
+        toast.error("⚠️ No puede reprogramar para una fecha pasada. Seleccione una fecha de hoy o posterior.");
+        return;
+      }
+    }
+
+    // 5. Guardar en BD
     const res = await updatePatientStatus(patientId, status, solution, reprogrammedDate);
     if (!res.success) {
       toast.error(res.error || "Error al actualizar");
