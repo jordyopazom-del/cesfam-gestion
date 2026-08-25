@@ -79,17 +79,6 @@ export default function ReproClient({
 
   const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
     const oldPatient = patients.find((p) => p.id === patientId);
-    
-    // GUARD: Si nada cambió respecto al estado actual, no hacer absolutamente nada.
-    // Esto previene escrituras fantasma cuando React re-renderiza filas.
-    if (oldPatient) {
-      const sameStatus = oldPatient.Estado === status;
-      const sameSolution = (oldPatient.Solucion || "") === (solution || "");
-      const sameDate = (oldPatient.Fecha_Reprogramacion || "") === (reprogrammedDate || "");
-      if (sameStatus && sameSolution && sameDate) {
-        return; // Nada cambió, salir silenciosamente
-      }
-    }
 
     // Actualización optimista del estado local
     setSinCupoPatients((prev) => 
