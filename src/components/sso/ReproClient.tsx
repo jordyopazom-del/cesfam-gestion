@@ -80,7 +80,18 @@ export default function ReproClient({
   const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
     const oldPatient = patients.find((p) => p.id === patientId);
     
-    // Actualización optimista SIEMPRE primero para no interrumpir el tipeo
+    // GUARD: Si nada cambió respecto al estado actual, no hacer absolutamente nada.
+    // Esto previene escrituras fantasma cuando React re-renderiza filas.
+    if (oldPatient) {
+      const sameStatus = oldPatient.Estado === status;
+      const sameSolution = (oldPatient.Solucion || "") === (solution || "");
+      const sameDate = (oldPatient.Fecha_Reprogramacion || "") === (reprogrammedDate || "");
+      if (sameStatus && sameSolution && sameDate) {
+        return; // Nada cambió, salir silenciosamente
+      }
+    }
+
+    // Actualización optimista del estado local
     setSinCupoPatients((prev) => 
       prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p).filter(p => p.Estado === "Avisado - Sin Cupo")
     );
@@ -88,7 +99,7 @@ export default function ReproClient({
       prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
     );
 
-    // Actualizar activeBlocks para que desaparezca automáticamente el bloque cuando se completa
+    // Actualizar contador de resueltos en activeBlocks
     if (oldPatient) {
       const resolvedStates = ["Reprogramado", "Avisado - Sin Cupo", "No ubicable"];
       const wasResolved = resolvedStates.includes(oldPatient.Estado);
@@ -113,7 +124,6 @@ export default function ReproClient({
     // Validación a prueba de errores en la fecha
     if (reprogrammedDate) {
       const year = parseInt(reprogrammedDate.split("-")[0], 10);
-      // Si están tipeando el año (ej: 2 o 20) no guardamos aún en BD, ni tiramos error para dejarlos terminar
       if (isNaN(year) || year < 2024 || year > 2035) {
         return; 
       }
@@ -280,6 +290,7 @@ export default function ReproClient({
             onSelectBlock={loadPatients}
             onBack={() => setSelectedBlockId(null)}
             patients={patients}
+            setPatients={setPatients}
             loading={loadingPatients}
             onUpdatePatient={handlePatientUpdate}
             showResolved={showResolved}
@@ -297,7 +308,7 @@ export default function ReproClient({
   );
 }
 
-function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, loading, onUpdatePatient, showResolved, setShowResolved, isAdmin, isJefeSome, handleAssign, reprogramadores }: any) {
+function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, setPatients, loading, onUpdatePatient, showResolved, setShowResolved, isAdmin, isJefeSome, handleAssign, reprogramadores }: any) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [subFilter, setSubFilter] = useState<"unassigned" | "assigned">("unassigned");
@@ -428,15 +439,16 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {patients.filter((p: any) => showResolved || !["Reprogramado", "Avisado - Sin Cupo", "No ubicable"].includes(p.Estado) || (p.Estado === "Reprogramado" && !p.Fecha_Reprogramacion)).map((p: any) => {
+                  {patients.map((p: any) => {
                     const dateParts = (p.Fecha_Atencion || "").split(' a las ');
                     const date = dateParts[0];
                     const time = dateParts[1] ? dateParts[1].replace(' Hrs', '') : '';
+                    const isResolved = ["Reprogramado", "Avisado - Sin Cupo", "No ubicable"].includes(p.Estado);
 
                     return (
-                    <tr key={p.id} className="hover:bg-white">
-                      <td className="px-4 py-3 font-mono text-slate-600">{p.RUT}</td>
-                      <td className="px-4 py-3 font-medium text-slate-800">
+                    <tr key={p.id} className={cn("transition-colors", isResolved ? "bg-emerald-50/40 opacity-60" : "hover:bg-white")}>
+                      <td className={cn("px-4 py-3 font-mono text-slate-600", isResolved && "line-through")}>{p.RUT}</td>
+                      <td className={cn("px-4 py-3 font-medium text-slate-800", isResolved && "line-through")}>
                         <div className="flex flex-col gap-1">
                           <span>{p.Nombre}</span>
                           {p.Recurrencia >= 3 && (
@@ -451,9 +463,13 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                       <td className="px-4 py-3 text-slate-600">{p.Telefonos}</td>
                       <td className="px-4 py-3">
                         <textarea
-                          defaultValue={p.Solucion || ""}
+                          value={p.Solucion || ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPatients((prev: any[]) => prev.map((x: any) => x.id === p.id ? { ...x, Solucion: val } : x));
+                          }}
                           onBlur={(e) => {
-                            if (e.target.value !== (p.Solucion || "")) onUpdatePatient(p.id, p.Estado, e.target.value, p.Fecha_Reprogramacion);
+                            onUpdatePatient(p.id, p.Estado, e.target.value, p.Fecha_Reprogramacion);
                           }}
                           rows={1}
                           className="w-full px-2 py-1 text-xs text-slate-800 font-semibold border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-200 bg-white rounded-lg resize-y shadow-sm"
