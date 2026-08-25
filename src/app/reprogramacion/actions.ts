@@ -19,6 +19,7 @@ export async function uploadRASPdf(formData: FormData) {
     const res = await processRASPdfBuffer(buffer, user.name || "Admin");
     
     if (res.success) {
+      revalidatePath("/reprogramacion");
       revalidatePath("/sso/reprogramacion");
     }
     return res;
@@ -49,14 +50,22 @@ export async function getActiveBlocks() {
       orderBy: { startDate: "asc" },
     });
 
-
     const parseDateStr = (dateStr: string | null) => {
       if (!dateStr) return new Date(0);
-      const parts = dateStr.split(" ")[0].split("/"); // 15/09/2026
-      if (parts.length === 3) {
-        return new Date(`${parts[2]}-${parts[1]}-${parts[0]}T00:00:00`);
+      const firstPart = dateStr.split(" ")[0]; // "15/09/2026" or "2026-08-24"
+      if (firstPart.includes("/")) {
+        const parts = firstPart.split("/");
+        if (parts.length === 3) {
+          return new Date(`${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}T00:00:00`);
+        }
+      } else if (firstPart.includes("-")) {
+        const parts = firstPart.split("-");
+        if (parts.length === 3) {
+          return new Date(`${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}T00:00:00`);
+        }
       }
-      return new Date(0);
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? new Date(0) : d;
     };
 
     blocks.sort((a, b) => parseDateStr(a.startDate).getTime() - parseDateStr(b.startDate).getTime());
@@ -67,7 +76,7 @@ export async function getActiveBlocks() {
         id: b.id,
         Profesional: b.professionalName,
         "Fecha Bloqueo": b.startDate || "",
-        "Fecha Subida": b.uploadDate.toLocaleDateString("es-CL"),
+        "Fecha Subida": b.uploadDate.toLocaleDateString("es-CL", { timeZone: "America/Santiago" }),
         Motivo: b.reason || "",
         "Total Afectados": b.patients.length,
         Resueltos: b.patients.filter((p) => ["Reprogramado", "Avisado - Sin Cupo", "No ubicable"].includes(p.status)).length,

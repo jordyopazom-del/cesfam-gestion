@@ -78,33 +78,7 @@ export default function ReproClient({
   };
 
   const handlePatientUpdate = async (patientId: number, status: string, solution: string, reprogrammedDate?: string) => {
-    const oldPatient = patients.find((p) => p.id === patientId);
-
-    // Actualización optimista del estado local
-    setSinCupoPatients((prev) => 
-      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p).filter(p => p.Estado === "Avisado - Sin Cupo")
-    );
-    setPatients((prev) => 
-      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
-    );
-
-    // Actualizar contador de resueltos en activeBlocks
-    if (oldPatient) {
-      const resolvedStates = ["Reprogramado", "Avisado - Sin Cupo", "No ubicable"];
-      const wasResolved = resolvedStates.includes(oldPatient.Estado);
-      const isResolved = resolvedStates.includes(status);
-      
-      if (wasResolved !== isResolved && selectedBlockId) {
-        setActiveBlocks((prev) => prev.map((b) => {
-          if (b.id === selectedBlockId) {
-            return { ...b, Resueltos: b.Resueltos + (isResolved ? 1 : -1) };
-          }
-          return b;
-        }));
-      }
-    }
-
-    // Validar fecha de reprogramación cuando corresponda
+    // 1. Validar fecha de reprogramación ANTES de tocar el estado o enviar a BD
     if (status === "Reprogramado" && !reprogrammedDate) {
       toast.error("Seleccione la fecha de reprogramación para guardar");
       return;
@@ -122,6 +96,32 @@ export default function ReproClient({
       if (selected < today) {
         toast.error("⚠️ No puede reprogramar para una fecha pasada. Seleccione una fecha de hoy o posterior.");
         return;
+      }
+    }
+
+    const oldPatient = patients.find((p) => p.id === patientId);
+
+    // 2. Actualización optimista del estado local
+    setSinCupoPatients((prev) => 
+      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p).filter(p => p.Estado === "Avisado - Sin Cupo")
+    );
+    setPatients((prev) => 
+      prev.map((p) => p.id === patientId ? { ...p, Estado: status, Solucion: solution, Fecha_Reprogramacion: reprogrammedDate } : p)
+    );
+
+    // 3. Actualizar contador de resueltos en activeBlocks
+    if (oldPatient) {
+      const resolvedStates = ["Reprogramado", "Avisado - Sin Cupo", "No ubicable"];
+      const wasResolved = resolvedStates.includes(oldPatient.Estado);
+      const isResolved = resolvedStates.includes(status);
+      
+      if (wasResolved !== isResolved && selectedBlockId) {
+        setActiveBlocks((prev) => prev.map((b) => {
+          if (b.id === selectedBlockId) {
+            return { ...b, Resueltos: b.Resueltos + (isResolved ? 1 : -1) };
+          }
+          return b;
+        }));
       }
     }
 

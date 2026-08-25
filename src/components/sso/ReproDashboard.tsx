@@ -167,7 +167,7 @@ export default function ReproDashboard({ onJumpToTab }: { onJumpToTab?: (id: num
                   <td colSpan={6} className="px-6 py-8 text-center text-gray-400 font-semibold">No hay datos para el periodo seleccionado</td>
                 </tr>
               ) : (
-                officials.sort((a: any, b: any) => b.totalPatients - a.totalPatients).map((off: any) => {
+                [...officials].sort((a: any, b: any) => b.totalPatients - a.totalPatients).map((off: any) => {
                   const resolvedTotal = off.reprogrammed + off.noUbicable + off.sinCupo;
                   const progress = getPercent(resolvedTotal, off.totalPatients);
                   return (
