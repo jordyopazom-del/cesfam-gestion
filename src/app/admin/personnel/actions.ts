@@ -110,7 +110,7 @@ export async function getPersonnel(): Promise<Official[]> {
     }
 }
 
-export async function addOfficial(official: Official): Promise<void> {
+export async function addOfficial(official: Official): Promise<{success: boolean, error?: string}> {
     try {
         const fullName = official.name.trim();
         const cleanCargo = official.profession.trim();
@@ -147,10 +147,14 @@ export async function addOfficial(official: Official): Promise<void> {
             await syncPersonnelToUser(fullName, cleanEmail);
         }
 
-        revalidatePath('/admin/personnel');
-    } catch (error) {
+        revalidatePath('/');
+        return { success: true };
+    } catch (error: any) {
         console.error('Error adding official:', error);
-        throw error;
+        if (error.code === 'P2002') {
+            return { success: false, error: 'Ya existe un funcionario con este nombre.' };
+        }
+        return { success: false, error: 'Error al agregar funcionario' };
     }
 }
 
@@ -209,7 +213,7 @@ export async function updateOfficial(id: number, updatedOfficial: Official): Pro
             await syncPersonnelToUser(fullName, cleanEmail);
         }
 
-        revalidatePath('/admin/personnel');
+        revalidatePath('/');
     } catch (error) {
         console.error('Error updating official:', error);
         throw error;
@@ -225,7 +229,7 @@ export async function deleteOfficial(id: number): Promise<void> {
 
         if (!official) {
             console.log(`Official with ID ${id} already deleted.`);
-            revalidatePath('/admin/personnel');
+            revalidatePath('/');
             return;
         }
 
@@ -269,7 +273,7 @@ export async function deleteOfficial(id: number): Promise<void> {
             }
         }
 
-        revalidatePath('/admin/personnel');
+        revalidatePath('/');
     } catch (error) {
         console.error('Error deleting official:', error);
         throw error;
@@ -392,7 +396,7 @@ export async function importCsvAction(csvText: string, separator: string = ';'):
             count++;
         }
         
-        revalidatePath('/admin/personnel');
+        revalidatePath('/');
         return { success: true, count };
     } catch (error: any) {
         console.error('Error during CSV import:', error);

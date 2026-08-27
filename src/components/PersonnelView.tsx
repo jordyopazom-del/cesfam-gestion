@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Official, addOfficial, deleteOfficial, updateOfficial, importCsvAction } from '@/app/admin/personnel/actions';
 import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield, History, Filter, Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
+import toast from 'react-hot-toast';
 import PersonnelAuditModal from './PersonnelAuditModal';
 
 interface PersonnelViewProps {
@@ -70,12 +71,18 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
     const handleAdd = async () => {
         if (!newOfficial.name || !newOfficial.profession) return;
         try {
-            await addOfficial({ ...newOfficial, type: subTab });
-            setNewOfficial({ name: '', profession: '', type: subTab, email: '', birthDate: '' });
-            setIsAdding(false);
-            refreshPersonnel();
+            const res = await addOfficial({ ...newOfficial, type: subTab });
+            if (res.success) {
+                toast.success('Funcionario agregado exitosamente');
+                setNewOfficial({ name: '', profession: '', type: subTab, email: '', birthDate: '' });
+                setIsAdding(false);
+                refreshPersonnel();
+            } else {
+                toast.error(res.error || 'Error al agregar funcionario');
+            }
         } catch (error) {
             console.error(error);
+            toast.error('Ocurrió un error inesperado');
         }
     };
 
@@ -85,8 +92,10 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
             try {
                 await deleteOfficial(p.id);
                 refreshPersonnel();
+                toast.success('Funcionario eliminado');
             } catch (error) {
                 console.error(error);
+                toast.error('Error al eliminar funcionario');
             }
         }
     };
@@ -102,8 +111,10 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
             await updateOfficial(editingId, editForm);
             setEditingId(null);
             refreshPersonnel();
+            toast.success('Funcionario actualizado');
         } catch (error) {
             console.error(error);
+            toast.error('Error al actualizar funcionario');
         }
     };
 
