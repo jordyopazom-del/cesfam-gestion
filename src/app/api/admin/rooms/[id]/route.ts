@@ -23,6 +23,22 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     const resolvedParams = await params;
     const id = resolvedParams.id;
 
+    const roomWithReservations = await prisma.room.findUnique({
+      where: { id },
+      include: {
+        _count: {
+          select: { reservations: true }
+        }
+      }
+    });
+
+    if (roomWithReservations && roomWithReservations._count.reservations > 0) {
+      return NextResponse.json(
+        { message: "No puedes eliminar esta sala porque tiene reservas en su historial. Por favor, edítala y márcala como 'Inactiva' para proteger el historial." },
+        { status: 400 }
+      );
+    }
+
     await prisma.room.delete({
       where: { id }
     });
@@ -54,7 +70,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const id = resolvedParams.id;
 
     const body = await req.json();
-    const { name, description, schedules, assetIds } = body;
+    const { name, description, isActive = true, schedules, assetIds } = body;
 
     if (!name || !schedules || !Array.isArray(schedules)) {
       return NextResponse.json({ message: "Datos inválidos" }, { status: 400 });
@@ -71,6 +87,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
       data: {
         name,
         description,
+        isActive,
         schedules: {
           create: schedules.map((s: any) => ({
             dayOfWeek: s.dayOfWeek,

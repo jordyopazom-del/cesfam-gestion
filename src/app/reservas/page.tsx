@@ -30,7 +30,10 @@ export default async function ReservasPage() {
 
   // Fetch initial data in parallel
   const [rooms, assets, reservations] = await Promise.all([
-    prisma.room.findMany({ include: { schedules: true, assets: true } }),
+    prisma.room.findMany({ 
+      where: { isActive: true },
+      include: { schedules: true, assets: true } 
+    }),
     prisma.asset.findMany(),
     prisma.reservation.findMany({
       where: {

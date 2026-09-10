@@ -15,6 +15,7 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
   const [rooms, setRooms] = useState(initialRooms);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [schedules, setSchedules] = useState<{dayOfWeek: number, startTime: string, endTime: string}[]>([
     { dayOfWeek: 1, startTime: "08:00", endTime: "18:00" }
   ]);
@@ -49,6 +50,7 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
     setEditingRoomId(room.id);
     setName(room.name);
     setDescription(room.description || "");
+    setIsActive(room.isActive ?? true);
     setSchedules(room.schedules.map((s: any) => ({
       dayOfWeek: s.dayOfWeek,
       startTime: s.startTime,
@@ -61,6 +63,7 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
     setEditingRoomId(null);
     setName("");
     setDescription("");
+    setIsActive(true);
     setSchedules([{ dayOfWeek: 1, startTime: "08:00", endTime: "18:00" }]);
     setSelectedAssetIds([]);
   };
@@ -77,7 +80,7 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, schedules, assetIds: selectedAssetIds })
+        body: JSON.stringify({ name, description, isActive, schedules, assetIds: selectedAssetIds })
       });
 
       if (res.ok) {
@@ -100,9 +103,12 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
       const res = await fetch(`/api/admin/rooms/${id}`, { method: "DELETE" });
       if (res.ok) {
         setRooms(rooms.filter(r => r.id !== id));
+      } else {
+        const data = await res.json().catch(() => ({}));
+        alert(data.message || "Error al eliminar la sala");
       }
     } catch (e) {
-      alert("Error al eliminar");
+      alert("Error de conexión");
     }
   };
 
@@ -137,6 +143,20 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
               placeholder="Ej. Equipado con proyector y aire acondicionado"
               rows={2}
             />
+          </div>
+
+          <div className="flex items-center gap-3 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
+            <input 
+              type="checkbox"
+              id="room-active"
+              checked={isActive}
+              onChange={e => setIsActive(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
+            />
+            <label htmlFor="room-active" className="text-sm font-bold text-gray-700 cursor-pointer select-none">
+              Sala Activa
+              <span className="block text-xs font-normal text-gray-400 mt-0.5">Si desactivas la sala, no se podrán hacer nuevas reservas pero se mantendrá su historial.</span>
+            </label>
           </div>
 
           <div>
@@ -253,7 +273,12 @@ export function RoomsClient({ initialRooms }: RoomsClientProps) {
           <div key={room.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-base font-bold text-gray-800">{room.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-bold text-gray-800">{room.name}</h3>
+                  <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full border ${room.isActive !== false ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-red-50 text-red-600 border-red-100'}`}>
+                    {room.isActive !== false ? 'Activa' : 'Inactiva'}
+                  </span>
+                </div>
                 {room.description && (
                   <p className="text-xs text-gray-400 mt-1 font-semibold">{room.description}</p>
                 )}

@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { name, description, schedules, assetIds } = body;
+    const { name, description, isActive = true, schedules, assetIds } = body;
 
     if (!name || !schedules || !Array.isArray(schedules)) {
       return NextResponse.json({ message: "Datos inválidos" }, { status: 400 });
@@ -58,6 +58,7 @@ export async function POST(req: Request) {
       data: {
         name,
         description,
+        isActive,
         schedules: {
           create: schedules.map((s: any) => ({
             dayOfWeek: s.dayOfWeek,
