@@ -112,15 +112,11 @@ export default function ReproClient({
       return;
     }
 
-    // 4. Validar que la fecha no sea inválida ni pasada antes de enviar a BD
+    // 4. Validar que la fecha sea lógica (año razonable)
     if (reprogrammedDate) {
       const year = parseInt(reprogrammedDate.split("-")[0], 10);
-      if (isNaN(year) || year < 2024 || year > 2035) return;
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const selected = new Date(reprogrammedDate + "T00:00:00");
-      if (selected < today) {
-        toast.error("⚠️ No puede reprogramar para una fecha pasada. Seleccione una fecha de hoy o posterior.");
+      if (isNaN(year) || year < 2024 || year > 2035) {
+        toast.error("⚠️ Ingrese un año válido para la reprogramación.");
         return;
       }
     }
@@ -488,7 +484,6 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                          <input 
                            type="date"
                            value={p.Fecha_Reprogramacion || ""}
-                           min={new Date().toISOString().split("T")[0]}
                            max="2035-12-31"
                            onChange={(e) => {
                               onUpdatePatient(p.id, p.Estado, p.Solucion || "", e.target.value);
