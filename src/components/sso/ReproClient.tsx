@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { toast } from "react-hot-toast";
-import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw, Upload, X, AlertTriangle } from "lucide-react";
-import { getPatientsByBlock, getPatientSearch, updatePatientStatus, getReprogramadores, assignBlock, getPacientesSinCupo } from "@/app/reprogramacion/actions";
+import { Search, ChevronRight, CheckCircle2, Clock, Calendar, RefreshCcw, Upload, X, AlertTriangle, Trash2 } from "lucide-react";
+import { getPatientsByBlock, getPatientSearch, updatePatientStatus, getReprogramadores, assignBlock, getPacientesSinCupo, deleteAgendaBlock, deleteBlockedPatient } from "@/app/reprogramacion/actions";
 import ReproDashboard from "./ReproDashboard";
 
 function cn(...classes: (string | boolean | undefined)[]) {
@@ -57,6 +57,59 @@ export default function ReproClient({
       }
     } catch {
       toast.error("Error de conexión", { id: t });
+    }
+  };
+
+  const handleDeleteBlock = async (e: React.MouseEvent, blockId: number, professionalName?: string, totalAfectados?: number) => {
+    e.stopPropagation();
+    const countText = totalAfectados !== undefined ? ` (${totalAfectados} paciente${totalAfectados === 1 ? '' : 's'})` : '';
+    const confirmMsg = `¿Estás seguro de eliminar el bloqueo de ${professionalName || "este profesional"}${countText}? Esta acción eliminará permanentemente el bloqueo y todos los pacientes cargados en él por error.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    const t = toast.loading("Eliminando bloqueo...");
+    try {
+      const res = await deleteAgendaBlock(blockId);
+      if (res.success) {
+        toast.success("Bloqueo y pacientes eliminados exitosamente", { id: t });
+        setActiveBlocks((prev) => prev.filter((b) => b.id !== blockId));
+        setHistoryBlocks((prev) => prev.filter((b) => b.id !== blockId));
+        if (selectedBlockId === blockId) {
+          setSelectedBlockId(null);
+          setPatients([]);
+        }
+      } else {
+        toast.error(res.error || "Error al eliminar bloqueo", { id: t });
+      }
+    } catch {
+      toast.error("Error de conexión al eliminar", { id: t });
+    }
+  };
+
+  const handleDeletePatient = async (patientId: number, patientName: string) => {
+    if (!window.confirm(`¿Estás seguro de eliminar al paciente ${patientName} de este bloqueo?`)) return;
+
+    const t = toast.loading("Eliminando paciente...");
+    try {
+      const res = await deleteBlockedPatient(patientId);
+      if (res.success) {
+        toast.success("Paciente eliminado", { id: t });
+        setPatients((prev) => prev.filter((p) => p.id !== patientId));
+        if (selectedBlockId) {
+          setActiveBlocks((prev) => prev.map((b) => {
+            if (b.id === selectedBlockId) {
+              return {
+                ...b,
+                "Total Afectados": Math.max(0, b["Total Afectados"] - 1),
+              };
+            }
+            return b;
+          }));
+        }
+      } else {
+        toast.error(res.error || "Error al eliminar paciente", { id: t });
+      }
+    } catch {
+      toast.error("Error de conexión al eliminar", { id: t });
     }
   };
 
@@ -285,16 +338,41 @@ export default function ReproClient({
             isJefeSome={userEmail === "some.cesfam@munifutrono.cl"}
             handleAssign={handleAssign}
             reprogramadores={reprogramadores}
+            onDeleteBlock={handleDeleteBlock}
+            onDeletePatient={handleDeletePatient}
           />
         )}
-        {activeTab === 1 && <HistoryTab blocks={historyBlocks} />}
+        {activeTab === 1 && (
+          <HistoryTab
+            blocks={historyBlocks}
+            isAdmin={isAdmin}
+            onDeleteBlock={handleDeleteBlock}
+          />
+        )}
         {activeTab === 2 && isAdmin && <ReproDashboard onJumpToTab={setActiveTab} />}
       </div>
     </div>
   );
 }
 
-function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, setPatients, loading, onUpdatePatient, showResolved, setShowResolved, isAdmin, isJefeSome, handleAssign, reprogramadores }: any) {
+function GestionTab({
+  blocks,
+  selectedBlockId,
+  onSelectBlock,
+  onBack,
+  patients,
+  setPatients,
+  loading,
+  onUpdatePatient,
+  showResolved,
+  setShowResolved,
+  isAdmin,
+  isJefeSome,
+  handleAssign,
+  reprogramadores,
+  onDeleteBlock,
+  onDeletePatient
+}: any) {
   const [globalSearch, setGlobalSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [subFilter, setSubFilter] = useState<"unassigned" | "assigned">("unassigned");
@@ -378,9 +456,22 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
             ← Volver a la lista
           </button>
           {currentBlock && (
-            <div className="text-right">
-              <span className="text-xs font-bold text-slate-500 block uppercase">Profesional Afectado</span>
-              <span className="text-sm font-bold text-slate-800">{currentBlock.Profesional}</span>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <span className="text-xs font-bold text-slate-500 block uppercase">Profesional Afectado</span>
+                <span className="text-sm font-bold text-slate-800">{currentBlock.Profesional}</span>
+              </div>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={(e) => onDeleteBlock(e, currentBlock.id, currentBlock.Profesional, currentBlock["Total Afectados"])}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 rounded-lg text-xs font-bold border border-rose-200 transition-all shadow-sm"
+                  title="Eliminar este bloqueo por error"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Eliminar Bloqueo
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -422,6 +513,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                     <th className="px-4 py-3 min-w-[150px]">Solución / Obs.</th>
                     <th className="px-4 py-3 w-40 text-center">Estado</th>
                     <th className="px-4 py-3 w-40 text-center">F. Reprogramada</th>
+                    {isAdmin && <th className="px-4 py-3 w-16 text-center">Acción</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -497,6 +589,18 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                            )}
                          />
                       </td>
+                      {isAdmin && (
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            type="button"
+                            title="Eliminar paciente de este bloqueo"
+                            onClick={() => onDeletePatient(p.id, p.Nombre)}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   )})}
                 </tbody>
@@ -727,6 +831,16 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
                       handleAssign={handleAssign}
                     />
                   )}
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      title="Eliminar bloqueo por error"
+                      onClick={(e) => onDeleteBlock(e, b.id, b.Profesional, b["Total Afectados"])}
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
                   <ChevronRight className="h-5 w-5 text-slate-300 group-hover:text-blue-500 transition-colors" />
                 </div>
               </div>
@@ -739,7 +853,7 @@ function GestionTab({ blocks, selectedBlockId, onSelectBlock, onBack, patients, 
 }
 
 
-function HistoryTab({ blocks }: { blocks: any[] }) {
+function HistoryTab({ blocks, isAdmin, onDeleteBlock }: { blocks: any[]; isAdmin?: boolean; onDeleteBlock?: any }) {
   const [expandedBlockId, setExpandedBlockId] = useState<number | null>(null);
   const [blockPatients, setBlockPatients] = useState<Record<number, any[]>>({});
   const [loadingPatients, setLoadingPatients] = useState<Record<number, boolean>>({});
@@ -891,6 +1005,7 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                 <th className="px-4 py-3">Motivo</th>
                 <th className="px-4 py-3">Avance</th>
                 <th className="px-4 py-3">Estado</th>
+                {isAdmin && <th className="px-4 py-3 w-12 text-center">Acción</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -929,11 +1044,23 @@ function HistoryTab({ blocks }: { blocks: any[] }) {
                           {isDone ? "Completado" : `Pendiente (${b.Resueltos}/${b["Total Afectados"]})`}
                         </span>
                       </td>
+                      {isAdmin && (
+                        <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            title="Eliminar bloqueo por error"
+                            onClick={(e) => onDeleteBlock(e, b.id, b.Profesional, b["Total Afectados"])}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
 
                     {isExpanded && (
                       <tr className="bg-white border-y border-slate-200">
-                        <td colSpan={9} className="p-4 pl-12">
+                        <td colSpan={isAdmin ? 10 : 9} className="p-4 pl-12">
                           <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
                             <div className="flex items-center justify-between">
                               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">

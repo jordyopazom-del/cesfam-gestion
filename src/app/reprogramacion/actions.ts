@@ -411,3 +411,52 @@ export async function getPacientesSinCupo() {
     return { success: false, error: error.message };
   }
 }
+
+export async function deleteAgendaBlock(blockId: number) {
+  try {
+    const user = await getSSOUser();
+    if (!user) return { success: false, error: "Sin sesión activa" };
+
+    const isBoss = user.role === "ADMIN" || user.role === "admin" || user.role === "COORDINADOR" || user.email === "some.cesfam@munifutrono.cl" || user.email === "kkoandres@gmail.com";
+    if (!isBoss) {
+      return { success: false, error: "No tienes permisos para eliminar este bloqueo" };
+    }
+
+    await prisma.agendaBlock.delete({
+      where: { id: blockId },
+    });
+
+    revalidatePath("/reprogramacion");
+    revalidatePath("/sso/reprogramacion");
+    revalidatePath("/");
+    return { success: true };
+  } catch (err: any) {
+    console.error("deleteAgendaBlock error:", err);
+    return { success: false, error: err.message || "Error al eliminar bloqueo" };
+  }
+}
+
+export async function deleteBlockedPatient(patientId: number) {
+  try {
+    const user = await getSSOUser();
+    if (!user) return { success: false, error: "Sin sesión activa" };
+
+    const isBoss = user.role === "ADMIN" || user.role === "admin" || user.role === "COORDINADOR" || user.email === "some.cesfam@munifutrono.cl" || user.email === "kkoandres@gmail.com";
+    if (!isBoss) {
+      return { success: false, error: "No tienes permisos para eliminar este paciente" };
+    }
+
+    await prisma.blockedPatient.delete({
+      where: { id: patientId },
+    });
+
+    revalidatePath("/reprogramacion");
+    revalidatePath("/sso/reprogramacion");
+    revalidatePath("/");
+    return { success: true };
+  } catch (err: any) {
+    console.error("deleteBlockedPatient error:", err);
+    return { success: false, error: err.message || "Error al eliminar paciente" };
+  }
+}
+
