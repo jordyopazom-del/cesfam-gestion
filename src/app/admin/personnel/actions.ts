@@ -5,6 +5,7 @@ import { revalidatePath, unstable_noStore as noStore } from 'next/cache';
 import { SignJWT } from 'jose';
 import { getSession } from '@/lib/session';
 import { formatToTitleCase } from '@/lib/utils';
+import { normalizeProfession, getAreaType } from '@/lib/estamentos';
 
 const SSO_SECRET_KEY = process.env.SSO_SECRET_KEY || 'someagendas';
 const ssoKey = new TextEncoder().encode(SSO_SECRET_KEY);
@@ -112,16 +113,17 @@ export async function getPersonnel(): Promise<Official[]> {
 
 export async function addOfficial(official: Official): Promise<{success: boolean, error?: string}> {
     try {
-        const fullName = official.name.trim();
-        const cleanCargo = official.profession.trim();
+        const fullName = official.name.trim().replace(/\s+/g, ' ').toUpperCase();
+        const cleanCargo = normalizeProfession(official.profession);
+        const areaType = official.type || getAreaType(cleanCargo);
         const cleanEmail = (official.email || '').trim().toLowerCase();
 
         // 1. Create in master Personnel
         await prisma.personnel.create({
             data: {
                 name: fullName,
-                profession: cleanCargo.toUpperCase(),
-                type: official.type || 'CLINICO',
+                profession: cleanCargo,
+                type: areaType,
                 email: cleanEmail,
                 birthDate: official.birthDate || ''
             }
@@ -167,8 +169,9 @@ export async function addOfficial(official: Official): Promise<{success: boolean
 
 export async function updateOfficial(id: number, updatedOfficial: Official): Promise<void> {
     try {
-        const fullName = updatedOfficial.name.trim();
-        const cleanCargo = updatedOfficial.profession.trim();
+        const fullName = updatedOfficial.name.trim().replace(/\s+/g, ' ').toUpperCase();
+        const cleanCargo = normalizeProfession(updatedOfficial.profession);
+        const areaType = updatedOfficial.type || getAreaType(cleanCargo);
         const cleanEmail = (updatedOfficial.email || '').trim().toLowerCase();
 
         // 1. Get old official record to find them in Logística by their old name
@@ -181,8 +184,8 @@ export async function updateOfficial(id: number, updatedOfficial: Official): Pro
             where: { id },
             data: {
                 name: fullName,
-                profession: cleanCargo.toUpperCase(),
-                type: updatedOfficial.type,
+                profession: cleanCargo,
+                type: areaType,
                 email: cleanEmail,
                 birthDate: updatedOfficial.birthDate || ''
             }
@@ -410,3 +413,51 @@ export async function importCsvAction(csvText: string, separator: string = ';'):
         return { success: false, count: 0, error: error?.message || 'Error desconocido' };
     }
 }
+
+/**
+ * Homologa automáticamente todos los cargos y estamentos del personal existente
+ * en Personnel y PersonalLogistica según el estándar oficial de GIA-CESFAM.
+ */
+export async function standardizeAllPersonnelAction(): Promise<{ success: boolean; updatedPersonnel: number; updatedLogistica: number; error?: string }> {
+    try {
+        const allPersonnel = await prisma.personnel.findMany();
+        let updatedPersonnel = 0;
+
+        for (const p of allPersonnel) {
+            const normalized = normalizeProfession(p.profession);
+            const calculatedArea = getAreaType(normalized);
+
+            if (p.profession !== normalized || p.type !== calculatedArea) {
+                await prisma.personnel.update({
+                    where: { id: p.id },
+                    data: {
+                        profession: normalized,
+                        type: calculatedArea
+                    }
+                });
+                updatedPersonnel++;
+            }
+        }
+
+        const allLogistica = await prisma.personalLogistica.findMany();
+        let updatedLogistica = 0;
+
+        for (const l of allLogistica) {
+            const normalized = normalizeProfession(l.especialidad);
+            if (l.especialidad !== normalized) {
+                await prisma.personalLogistica.update({
+                    where: { id: l.id },
+                    data: { especialidad: normalized }
+                });
+                updatedLogistica++;
+            }
+        }
+
+        revalidatePath('/');
+        return { success: true, updatedPersonnel, updatedLogistica };
+    } catch (error: any) {
+        console.error('Error standardizing personnel:', error);
+        return { success: false, updatedPersonnel: 0, updatedLogistica: 0, error: error.message };
+    }
+}
+

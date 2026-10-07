@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Official, addOfficial, deleteOfficial, updateOfficial, importCsvAction } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield, History, Filter, Upload, FileSpreadsheet, Loader2 } from 'lucide-react';
+import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
+import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield, History, Filter, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import PersonnelAuditModal from './PersonnelAuditModal';
@@ -36,31 +36,6 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
     useEffect(() => {
         setSelectedProfession('ALL');
     }, [areaFilter]);
-
-    // Carga masiva state
-    const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
-    const [csvInput, setCsvInput] = useState('');
-    const [csvDelimiter, setCsvDelimiter] = useState(';');
-    const [importResult, setImportResult] = useState<{ success: boolean; count: number; error?: string } | null>(null);
-    const [isImporting, setIsImporting] = useState(false);
-
-    const handleCsvImport = async () => {
-        if (!csvInput.trim()) return;
-        setIsImporting(true);
-        setImportResult(null);
-        try {
-            const res = await importCsvAction(csvInput, csvDelimiter);
-            setImportResult(res);
-            if (res.success) {
-                setCsvInput('');
-                refreshPersonnel();
-            }
-        } catch (error: any) {
-            setImportResult({ success: false, count: 0, error: error?.message || 'Error al conectar con el servidor' });
-        } finally {
-            setIsImporting(false);
-        }
-    };
 
     const countClinico = personnel.filter(p => p.type === 'CLINICO').length;
     const countAdmin = personnel.filter(p => p.type === 'ADMINISTRATIVO').length;
@@ -195,18 +170,6 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <button
-                        onClick={() => {
-                            setIsBulkImportOpen(true);
-                            setImportResult(null);
-                            setCsvInput('');
-                        }}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white p-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-4"
-                        title="Carga masiva desde Excel/CSV"
-                    >
-                        <FileSpreadsheet size={18} />
-                        <span className="hidden md:inline">Carga Masiva</span>
-                    </button>
 
                     <button
                         onClick={() => setIsAdding(!isAdding)}
@@ -476,131 +439,7 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
                     onClose={() => setAuditingName(null)} 
                 />
             )}
-
-            {/* Modal de Carga Masiva */}
-            {isBulkImportOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-                        
-                        {/* Header */}
-                        <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
-                                    <FileSpreadsheet size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-900">Carga Masiva de Funcionarios</h3>
-                                    <p className="text-xs text-gray-500 mt-0.5">Sincroniza tu planilla Excel en ambos sistemas a la vez</p>
-                                </div>
-                            </div>
-                            <button 
-                                onClick={() => setIsBulkImportOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1.5 rounded-lg transition-colors"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-
-                        {/* Body */}
-                        <div className="p-6 space-y-6 flex-1 overflow-y-auto">
-                            
-                            {/* Instrucciones */}
-                            <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-4 text-sm text-blue-800 space-y-2">
-                                <p className="font-semibold flex items-center gap-1.5">
-                                    💡 Instrucciones para tu Excel:
-                                </p>
-                                <ol className="list-decimal list-inside space-y-1 text-xs text-blue-900 ml-1">
-                                    <li>En Excel, asegúrate de tener las columnas en este orden exacto:
-                                        <div className="mt-1 font-mono bg-blue-100/50 p-1.5 rounded text-[10px] text-blue-950 font-semibold border border-blue-200/50 overflow-x-auto whitespace-nowrap">
-                                            Apellido Paterno | Apellido Materno | Nombres | Rut | Nacimiento | Email | Cargo
-                                        </div>
-                                    </li>
-                                    <li>Guarda el archivo como **CSV (delimitado por comas o punto y coma)**, o simplemente **copia el rango de celdas** directamente de Excel y pégalo abajo.</li>
-                                    <li>El sistema registrará automáticamente a los funcionarios en **Agendas** y en **Logística**.</li>
-                                </ol>
-                            </div>
-
-                            {/* Selector delimitador */}
-                            <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-xl border border-gray-100">
-                                <label className="text-xs font-bold text-gray-600 uppercase">Separador del archivo:</label>
-                                <select 
-                                    value={csvDelimiter}
-                                    onChange={(e) => setCsvDelimiter(e.target.value)}
-                                    className="bg-white border border-gray-200 rounded-lg text-xs font-semibold px-3 py-1.5 outline-none focus:ring-2 focus:ring-emerald-500"
-                                >
-                                    <option value=";">Punto y Coma (;) — Común en Excel Latino</option>
-                                    <option value=",">Coma (,) — CSV Estándar</option>
-                                    <option value="&#9;">Tabulación (\t) — Copiado directo de Excel</option>
-                                </select>
-                            </div>
-
-                            {/* Textarea */}
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Pega aquí el contenido CSV o celdas de Excel:</label>
-                                <textarea
-                                    className="w-full h-48 px-4 py-3 bg-white border border-gray-200 rounded-xl text-xs font-mono focus:ring-2 focus:ring-emerald-500 outline-none resize-none transition-all"
-                                    placeholder="Acuña;Arao;Patricio Alejandro;12262734-9;25-10-72;palejandro.a@gmail.com;Conductor&#10;Rodriguez;Hernandez;Aimee;24939507-2;27-08-66;aimee.r1966@gmail.com;Medico"
-                                    value={csvInput}
-                                    onChange={(e) => setCsvInput(e.target.value)}
-                                    disabled={isImporting}
-                                />
-                            </div>
-
-                            {/* Resultados */}
-                            {importResult && (
-                                <div className={clsx(
-                                    "p-4 rounded-xl text-sm flex items-start gap-3 border animate-in slide-in-from-bottom-2 duration-300",
-                                    importResult.success ? "bg-emerald-50 border-emerald-100 text-emerald-800" : "bg-red-50 border-red-100 text-red-800"
-                                )}>
-                                    <div className="mt-0.5">
-                                        {importResult.success ? <Check className="text-emerald-600 font-bold" size={18} /> : <X className="text-red-600 font-bold" size={18} />}
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold">
-                                            {importResult.success ? '¡Procesamiento masivo exitoso!' : 'Hubo un inconveniente al procesar'}
-                                        </p>
-                                        <p className="text-xs mt-1 text-gray-600">
-                                            {importResult.success 
-                                                ? `Se han importado/actualizado con éxito ${importResult.count} funcionarios en ambas bases de datos simultáneamente.` 
-                                                : importResult.error || 'Error desconocido de procesamiento.'
-                                            }</p>
-                                    </div>
-                                </div>
-                            )}
-
-                        </div>
-
-                        {/* Footer */}
-                        <div className="p-6 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
-                            <button
-                                onClick={() => setIsBulkImportOpen(false)}
-                                className="px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
-                                disabled={isImporting}
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={handleCsvImport}
-                                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-semibold flex items-center gap-2 transition-all shadow-md shadow-emerald-600/10 hover:shadow-emerald-600/20 disabled:bg-emerald-400"
-                                disabled={isImporting || !csvInput.trim()}
-                            >
-                                {isImporting ? (
-                                    <>
-                                        <Loader2 size={16} className="animate-spin" />
-                                        Procesando...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Upload size={16} />
-                                        Procesar e Importar
-                                    </>
-                                )}
-                            </button>
-                        </div>
-
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
+

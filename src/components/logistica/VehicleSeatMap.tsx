@@ -32,19 +32,20 @@ const VehicleSeatMap: React.FC<Props> = ({
 
     const getAppEspecialidadAbbr = (especialidad: string): string => {
         const map: Record<string, string> = {
-            'Médico': 'MED', 'MEDICO': 'MED',
-            'Enfermero/a': 'ENF', 'ENFERMERA/O': 'ENF',
+            'Médico': 'MED', 'MEDICO': 'MED', 'MÉDICO': 'MED',
+            'Enfermero/a': 'ENF', 'ENFERMERA/O': 'ENF', 'ENFERMERO (A)': 'ENF',
             'TENS': 'TENS',
             'Terapeuta': 'TER', 'TERAPEUTA OCUPACIONAL': 'TER',
-            'Kinesiólogo': 'KINE', 'KINESIOLOGA/O': 'KINE',
-            'Matrona': 'MAT', 'MATRONA/ÓN': 'MAT',
-            'Odontólogo': 'ODON', 'ODONTOLOGO': 'ODON',
+            'Kinesiólogo': 'KINE', 'KINESIOLOGA/O': 'KINE', 'KINESIÓLOGO (A)': 'KINE',
+            'Matrona': 'MAT', 'MATRONA/ÓN': 'MAT', 'MATRÓN (A)': 'MAT',
+            'Odontólogo': 'ODON', 'ODONTOLOGO': 'ODON', 'ODONTÓLOGO (A)': 'ODON',
             'Nutricionista': 'NUT', 'NUTRICIONISTA': 'NUT',
-            'Asistente Social': 'ASIS', 'TRABAJADORA/O SOCIAL': 'ASIS',
-            'Psicólogo': 'PSI', 'PSICOLOGA/O': 'PSI',
-            'FONOAUDIÓLOGA/O': 'FONO',
+            'Asistente Social': 'ASIS', 'TRABAJADORA/O SOCIAL': 'ASIS', 'TRABAJADOR SOCIAL': 'ASIS',
+            'Psicólogo': 'PSI', 'PSICOLOGA/O': 'PSI', 'PSICÓLOGO (A)': 'PSI',
+            'FONOAUDIÓLOGA/O': 'FONO', 'FONOAUDIÓLOGO (A)': 'FONO',
             'PODÓLOGA/O': 'PODO',
-            'Conductor': 'COND'
+            'Conductor': 'COND', 'CONDUCTOR': 'COND',
+            'ADMINISTRATIVO (A)': 'ADM', 'ADMINISTRATIVO': 'ADM'
         };
         return map[especialidad] || especialidad.substring(0, 4).toUpperCase();
     };
