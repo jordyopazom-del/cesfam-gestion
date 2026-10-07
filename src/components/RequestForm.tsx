@@ -42,8 +42,7 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
             norm.includes('INFORMÁTIC') ||
             norm.includes('COORDINADOR') ||
             norm.includes('ARCHIVO') ||
-            norm.includes('SERVICIO') ||
-            norm.includes('PARVULAR');
+            norm.includes('SERVICIO');
         return area === 'CLINICO' && !isNonClinical;
     });
 
