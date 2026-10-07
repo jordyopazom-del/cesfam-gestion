@@ -64,7 +64,7 @@ export default function HomeClient({
     const isDemandaEnabled = isAdminUser || accessDemanda;
     const isReprogramacionEnabled = isAdminUser || accessReprogramacion;
     const canRequestAgendas = isAdmin || userRole === 'SOLICITANTE' || userRole === 'COORDINADOR' || userRole === 'USUARIO';
-    const [activeSubTab, setActiveSubTab] = useState<'CLINICO' | 'ADMINISTRATIVO' | 'COORDINADOR'>('CLINICO');
+    const [activeSubTab, setActiveSubTab] = useState<'PERSONAL' | 'COORDINADOR'>('PERSONAL');
     const [managementView, setManagementView] = useState<'blockings' | 'openings'>('blockings');
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isAgendasDropdownOpen, setIsAgendasDropdownOpen] = useState(false);
@@ -787,24 +787,14 @@ export default function HomeClient({
                             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
                                 <div className="flex bg-gray-50/50 p-1 rounded-xl inline-flex flex-wrap gap-1">
                                     <button
-                                        onClick={() => setActiveSubTab('CLINICO')}
+                                        onClick={() => setActiveSubTab('PERSONAL')}
                                         className={clsx(
                                             "flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all",
-                                            activeSubTab === 'CLINICO' ? "bg-white text-emerald-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                                            activeSubTab === 'PERSONAL' ? "bg-white text-emerald-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
                                         )}
                                     >
                                         <User size={16} />
-                                        Personal Clínico
-                                    </button>
-                                    <button
-                                        onClick={() => setActiveSubTab('ADMINISTRATIVO')}
-                                        className={clsx(
-                                            "flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all",
-                                            activeSubTab === 'ADMINISTRATIVO' ? "bg-white text-amber-600 shadow-sm" : "text-gray-400 hover:text-gray-600"
-                                        )}
-                                    >
-                                        <Briefcase size={16} />
-                                        Personal Administrativo
+                                        Directorio de Personal
                                     </button>
                                     <button
                                         onClick={() => setActiveSubTab('COORDINADOR')}
@@ -814,14 +804,13 @@ export default function HomeClient({
                                         )}
                                     >
                                         <Shield size={16} />
-                                        Solicitantes
+                                        Cuentas y Accesos
                                     </button>
                                 </div>
                             </div>
 
-                            {activeSubTab !== 'COORDINADOR' ? (
+                            {activeSubTab === 'PERSONAL' ? (
                                 <PersonnelView 
-                                    subTab={activeSubTab} 
                                     personnel={personnel} 
                                     refreshPersonnel={() => setRefreshTrigger(prev => prev + 1)} 
                                 />

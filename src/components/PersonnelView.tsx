@@ -7,18 +7,22 @@ import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import PersonnelAuditModal from './PersonnelAuditModal';
 
+type AreaFilter = 'ALL' | 'CLINICO' | 'ADMINISTRATIVO';
+
 interface PersonnelViewProps {
-    subTab: 'CLINICO' | 'ADMINISTRATIVO';
     personnel: Official[];
     refreshPersonnel: () => void;
 }
 
-export default function PersonnelView({ subTab, personnel, refreshPersonnel }: PersonnelViewProps) {
+const emptyOfficial = (): Official => ({ name: '', profession: '', type: 'CLINICO', email: '', birthDate: '' });
+
+export default function PersonnelView({ personnel, refreshPersonnel }: PersonnelViewProps) {
     const [searchTerm, setSearchTerm] = useState('');
+    const [areaFilter, setAreaFilter] = useState<AreaFilter>('ALL');
     const [isAdding, setIsAdding] = useState(false);
-    const [newOfficial, setNewOfficial] = useState<Official>({ name: '', profession: '', type: subTab, email: '', birthDate: '' });
+    const [newOfficial, setNewOfficial] = useState<Official>(emptyOfficial());
     const [editingId, setEditingId] = useState<number | null>(null);
-    const [editForm, setEditForm] = useState<Official>({ name: '', profession: '', type: subTab, email: '', birthDate: '' });
+    const [editForm, setEditForm] = useState<Official>(emptyOfficial());
     const [auditingName, setAuditingName] = useState<string | null>(null);
     const [selectedProfession, setSelectedProfession] = useState('ALL');
     const [currentPage, setCurrentPage] = useState(1);
@@ -26,7 +30,12 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, selectedProfession, subTab]);
+    }, [searchTerm, selectedProfession, areaFilter]);
+
+    // Si cambia el área y la profesión elegida ya no existe en ella, se resetea
+    useEffect(() => {
+        setSelectedProfession('ALL');
+    }, [areaFilter]);
 
     // Carga masiva state
     const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
@@ -53,10 +62,14 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
         }
     };
 
-    const uniqueProfessions = Array.from(new Set(personnel.filter(p => p.type === subTab).map(p => p.profession))).sort();
+    const countClinico = personnel.filter(p => p.type === 'CLINICO').length;
+    const countAdmin = personnel.filter(p => p.type === 'ADMINISTRATIVO').length;
 
-    const filteredPersonnel = personnel
-        .filter(p => p.type === subTab)
+    const byArea = personnel.filter(p => areaFilter === 'ALL' || p.type === areaFilter);
+
+    const uniqueProfessions = Array.from(new Set(byArea.map(p => p.profession))).sort();
+
+    const filteredPersonnel = byArea
         .filter(p => selectedProfession === 'ALL' || p.profession === selectedProfession)
         .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                      p.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -71,10 +84,10 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
     const handleAdd = async () => {
         if (!newOfficial.name || !newOfficial.profession) return;
         try {
-            const res = await addOfficial({ ...newOfficial, type: subTab });
+            const res = await addOfficial({ ...newOfficial });
             if (res.success) {
                 toast.success('Funcionario agregado exitosamente');
-                setNewOfficial({ name: '', profession: '', type: subTab, email: '', birthDate: '' });
+                setNewOfficial(emptyOfficial());
                 setIsAdding(false);
                 refreshPersonnel();
             } else {
@@ -121,15 +134,34 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
     return (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="p-8 border-b border-gray-100 bg-white flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div className="flex items-center gap-4">
-                    <div className="p-3 bg-gray-50 rounded-xl">
-                        {subTab === 'CLINICO' ? <User className="text-emerald-600" size={28} /> : <Briefcase className="text-amber-600" size={28} />}
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-gray-50 rounded-xl">
+                            <User className="text-emerald-600" size={28} />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Directorio de Personal</h2>
+                            <p className="text-gray-500 mt-0.5">Dotación completa del CESFAM</p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">
-                            {subTab === 'CLINICO' ? 'Personal Clínico' : 'Personal Administrativo'}
-                        </h2>
-                        <p className="text-gray-500 mt-0.5">Gestión de activos del área {subTab.toLowerCase()}</p>
+                    <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-100 w-fit text-xs font-bold">
+                        {([
+                            { key: 'ALL', label: 'Todos', count: personnel.length, active: 'text-gray-900' },
+                            { key: 'CLINICO', label: 'Clínicos', count: countClinico, active: 'text-emerald-700' },
+                            { key: 'ADMINISTRATIVO', label: 'Administrativos', count: countAdmin, active: 'text-amber-700' },
+                        ] as const).map(opt => (
+                            <button
+                                key={opt.key}
+                                type="button"
+                                onClick={() => setAreaFilter(opt.key)}
+                                className={clsx(
+                                    "px-3 py-1.5 rounded-lg transition-all",
+                                    areaFilter === opt.key ? `bg-white shadow-sm ${opt.active}` : "text-gray-400 hover:text-gray-600"
+                                )}
+                            >
+                                {opt.label} ({opt.count})
+                            </button>
+                        ))}
                     </div>
                 </div>
 
@@ -213,15 +245,16 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                             />
                         </div>
                         <div className="space-y-1">
-                            <label htmlFor="view-add-birthdate" className="text-xs font-semibold text-gray-500 uppercase ml-1">Fecha Nacimiento</label>
-                            <input
-                                id="view-add-birthdate"
-                                type="text"
-                                placeholder="Eje: 25-10-1972"
+                            <label htmlFor="view-add-area" className="text-xs font-semibold text-gray-500 uppercase ml-1">Área</label>
+                            <select
+                                id="view-add-area"
                                 className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={newOfficial.birthDate || ''}
-                                onChange={(e) => setNewOfficial({ ...newOfficial, birthDate: e.target.value })}
-                            />
+                                value={newOfficial.type || 'CLINICO'}
+                                onChange={(e) => setNewOfficial({ ...newOfficial, type: e.target.value as Official['type'] })}
+                            >
+                                <option value="CLINICO">Clínico</option>
+                                <option value="ADMINISTRATIVO">Administrativo</option>
+                            </select>
                         </div>
                         <div className="space-y-1">
                             <label htmlFor="view-add-email" className="text-xs font-semibold text-gray-500 uppercase ml-1">Correo Electrónico</label>
@@ -271,36 +304,21 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                             <tr key={p.id || p.name} className="hover:bg-gray-50/80 transition-colors group">
                                 <td className="pl-8 pr-4 py-4">
                                     {editingId === p.id ? (
-                                        <div className="flex flex-col gap-1.5">
-                                            <input
-                                                id={`edit-p-name-input-${p.name}`}
-                                                type="text"
-                                                placeholder="Nombre completo"
-                                                title="Editar nombre completo"
-                                                className="w-full px-3 py-1.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase text-xs"
-                                                value={editForm.name}
-                                                onChange={(e) => setEditForm({ ...editForm, name: e.target.value.toUpperCase() })}
-                                             />
-                                            <input
-                                                type="text"
-                                                placeholder="Fecha nacimiento (Eje: 25-10-1972)"
-                                                title="Editar fecha de nacimiento"
-                                                className="w-full px-3 py-1.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs"
-                                                value={editForm.birthDate || ''}
-                                                onChange={(e) => setEditForm({ ...editForm, birthDate: e.target.value })}
-                                            />
-                                        </div>
+                                        <input
+                                            id={`edit-p-name-input-${p.name}`}
+                                            type="text"
+                                            placeholder="Nombre completo"
+                                            title="Editar nombre completo"
+                                            className="w-full px-3 py-1.5 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase text-xs"
+                                            value={editForm.name}
+                                            onChange={(e) => setEditForm({ ...editForm, name: e.target.value.toUpperCase() })}
+                                        />
                                     ) : (
                                         <div className="flex items-center gap-3">
                                             <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold border border-blue-100 text-xs sm:text-sm shrink-0">
                                                 {p.name.charAt(0)}
                                             </div>
-                                            <div className="flex flex-col">
-                                                <span className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight">{p.name}</span>
-                                                {p.birthDate && (
-                                                    <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">🎂 {p.birthDate}</span>
-                                                )}
-                                            </div>
+                                            <span className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight">{p.name}</span>
                                         </div>
                                     )}
                                 </td>
@@ -343,13 +361,25 @@ export default function PersonnelView({ subTab, personnel, refreshPersonnel }: P
                                     )}
                                 </td>
                                 <td className="px-4 md:px-6 py-4">
-                                    <span className={clsx(
-                                        "px-2 py-0.5 rounded-full text-[10px] font-bold tracking-tight uppercase whitespace-nowrap",
-                                        p.type === 'CLINICO' ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
-                                             "bg-amber-50 text-amber-700 border border-amber-100"
-                                    )}>
-                                        {p.type}
-                                    </span>
+                                    {editingId === p.id ? (
+                                        <select
+                                            title="Editar área"
+                                            className="w-full px-2 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs"
+                                            value={editForm.type || 'CLINICO'}
+                                            onChange={(e) => setEditForm({ ...editForm, type: e.target.value as Official['type'] })}
+                                        >
+                                            <option value="CLINICO">Clínico</option>
+                                            <option value="ADMINISTRATIVO">Administrativo</option>
+                                        </select>
+                                    ) : (
+                                        <span className={clsx(
+                                            "px-2 py-0.5 rounded-full text-[10px] font-bold tracking-tight uppercase whitespace-nowrap",
+                                            p.type === 'CLINICO' ? "bg-emerald-50 text-emerald-700 border border-emerald-100" :
+                                                 "bg-amber-50 text-amber-700 border border-amber-100"
+                                        )}>
+                                            {p.type}
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="pl-4 pr-8 md:pr-12 py-4 text-right w-[13%]">
                                     <div className="flex items-center justify-end gap-1.5 sm:gap-2">

@@ -155,8 +155,8 @@ export async function addOfficial(official: Official): Promise<{success: boolean
             try {
                 const existing = await prisma.personnel.findUnique({ where: { name: official.name.trim() } });
                 if (existing) {
-                    const tabName = existing.type === 'ADMINISTRATIVO' ? 'Personal Administrativo' : existing.type === 'COORDINADOR' ? 'Solicitantes' : 'Personal Clínico';
-                    return { success: false, error: `Ya existe en la pestaña: ${tabName}` };
+                    const areaName = existing.type === 'ADMINISTRATIVO' ? 'Administrativo' : 'Clínico';
+                    return { success: false, error: `Ya existe en el directorio: ${existing.name} (${existing.profession}, área ${areaName})` };
                 }
             } catch (e) {}
             return { success: false, error: 'Ya existe un funcionario con este nombre.' };
