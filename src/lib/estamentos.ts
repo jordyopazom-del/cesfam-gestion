@@ -76,8 +76,19 @@ export function normalizeProfession(raw: string | null | undefined): string {
     if (trimmed.includes('QUIMIC') || trimmed.includes('QUÍMIC') || trimmed.includes('FARMACEUT')) {
         return 'QUÍMICO FARMACÉUTICO';
     }
-    if (trimmed === 'TENS' || trimmed.includes('TECNICO EN ENFERMERIA') || trimmed.includes('TÉCNICO EN ENFERMERÍA')) {
+    if (
+        trimmed === 'TENS' || 
+        trimmed.includes('TECNICO EN ENFERMERIA') || 
+        trimmed.includes('TÉCNICO EN ENFERMERÍA') ||
+        trimmed.includes('TECNICO DE NIVEL SUPERIOR') ||
+        trimmed.includes('TÉCNICO DE NIVEL SUPERIOR') ||
+        trimmed.includes('TECNICO NIVEL SUPERIOR') ||
+        trimmed.includes('TÉCNICO NIVEL SUPERIOR')
+    ) {
         return 'TENS';
+    }
+    if (trimmed === 'TANS' || trimmed.includes('TECNICO ADMINISTRATIVO') || trimmed.includes('TÉCNICO ADMINISTRATIVO')) {
+        return 'ADMINISTRATIVO (A)';
     }
     if (trimmed.includes('CONDUCTOR') || trimmed.includes('CHOFER')) {
         return 'CONDUCTOR';
@@ -117,11 +128,13 @@ export function getAreaType(profession: string): 'CLINICO' | 'ADMINISTRATIVO' {
     const norm = normalizeProfession(profession).toUpperCase();
     if (
         norm.includes('ADMINISTRATIVO') ||
+        norm.includes('TANS') ||
         norm.includes('CONDUCTOR') ||
         norm.includes('INFORMÁTICO') ||
         norm.includes('AUXILIAR') ||
         norm.includes('ARCHIVO') ||
-        norm.includes('SERVICIO')
+        norm.includes('SERVICIO') ||
+        norm.includes('COORDINADOR')
     ) {
         return 'ADMINISTRATIVO';
     }

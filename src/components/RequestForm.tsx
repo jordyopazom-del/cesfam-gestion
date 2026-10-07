@@ -8,6 +8,7 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSam
 import { es } from 'date-fns/locale';
 import clsx from 'clsx';
 import { Official } from '@/app/admin/personnel/actions';
+import { normalizeProfession, getAreaType } from '@/lib/estamentos';
 
 export default function RequestForm({ onSuccess, personnel }: { onSuccess: () => void, personnel: Official[] }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -29,19 +30,33 @@ export default function RequestForm({ onSuccess, personnel }: { onSuccess: () =>
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDays, setSelectedDays] = useState<Date[]>([]);
 
-    const EXCLUDED_PROFESSIONS = [
-        'administrativo',
-        'auxiliar de servicio',
-        'conductor',
-        'coordinador',
-        'informatico',
-        'informático',
-        'tecnico administrativo nivel superior',
-        'técnico administrativo nivel superior'
-    ];
-    const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)))
-        .filter(p => !EXCLUDED_PROFESSIONS.includes(p.toLowerCase().trim()));
-    const filteredNames = personnel.filter(p => p.profession === formData.profession);
+    // Filtrar estrictamente solo funcionarios con rol CLÍNICO (excluyendo administrativos, tans, auxiliares, conductores, etc.)
+    const clinicalPersonnel = personnel.filter(p => {
+        const area = p.type || getAreaType(p.profession);
+        const norm = (p.profession || '').toUpperCase().trim();
+        const isNonClinical = 
+            norm.includes('ADMINISTRATIV') ||
+            norm.includes('TANS') ||
+            norm.includes('AUXILIAR') ||
+            norm.includes('CONDUCTOR') ||
+            norm.includes('INFORMÁTIC') ||
+            norm.includes('COORDINADOR') ||
+            norm.includes('ARCHIVO') ||
+            norm.includes('SERVICIO') ||
+            norm.includes('PARVULAR');
+        return area === 'CLINICO' && !isNonClinical;
+    });
+
+    // Unificar profesiones (ej. Técnico de Nivel Superior -> TENS) y listar únicas
+    const PROFESSIONS = Array.from(new Set(
+        clinicalPersonnel.map(p => normalizeProfession(p.profession))
+    )).sort();
+
+    // Filtrar nombres para la profesión seleccionada unificada
+    const filteredNames = clinicalPersonnel.filter(p => {
+        const norm = normalizeProfession(p.profession);
+        return norm === formData.profession || p.profession === formData.profession;
+    });
 
     const toggleDay = (day: Date) => {
         const exists = selectedDays.find(d => isSameDay(d, day));
