@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Official, addOfficial, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
-import { Trash2, UserPlus, Search, Briefcase, User, Edit2, Check, X, Shield, History, Filter, Loader2 } from 'lucide-react';
+import { Official, deleteOfficial, updateOfficial } from '@/app/admin/personnel/actions';
+import { Trash2, Search, Briefcase, User, Edit2, Check, X, Shield, History, Filter, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import PersonnelAuditModal from './PersonnelAuditModal';
@@ -19,8 +19,6 @@ const emptyOfficial = (): Official => ({ name: '', profession: '', type: 'CLINIC
 export default function PersonnelView({ personnel, refreshPersonnel }: PersonnelViewProps) {
     const [searchTerm, setSearchTerm] = useState('');
     const [areaFilter, setAreaFilter] = useState<AreaFilter>('ALL');
-    const [isAdding, setIsAdding] = useState(false);
-    const [newOfficial, setNewOfficial] = useState<Official>(emptyOfficial());
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editForm, setEditForm] = useState<Official>(emptyOfficial());
     const [auditingName, setAuditingName] = useState<string | null>(null);
@@ -55,24 +53,6 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
     const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const paginatedPersonnel = filteredPersonnel.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-    const handleAdd = async () => {
-        if (!newOfficial.name || !newOfficial.profession) return;
-        try {
-            const res = await addOfficial({ ...newOfficial });
-            if (res.success) {
-                toast.success('Funcionario agregado exitosamente');
-                setNewOfficial(emptyOfficial());
-                setIsAdding(false);
-                refreshPersonnel();
-            } else {
-                toast.error(res.error || 'Error al agregar funcionario');
-            }
-        } catch (error) {
-            console.error(error);
-            toast.error('Ocurrió un error inesperado');
-        }
-    };
 
     const handleDelete = async (p: Official) => {
         if (!p.id) return;
@@ -170,86 +150,8 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-
-                    <button
-                        onClick={() => setIsAdding(!isAdding)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium px-4"
-                        title="Agregar nuevo registro"
-                    >
-                        <UserPlus size={18} />
-                        <span className="hidden md:inline">Agregar</span>
-                    </button>
                 </div>
             </div>
-
-            {isAdding && (
-                <div className="p-6 bg-blue-50/50 border-b border-blue-100 animate-in slide-in-from-top-4 duration-300">
-                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                        <div className="space-y-1">
-                            <label htmlFor="view-add-name" className="text-xs font-semibold text-gray-500 uppercase ml-1">Nombre Completo</label>
-                            <input
-                                id="view-add-name"
-                                type="text"
-                                placeholder="Eje: JUAN PEREZ"
-                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={newOfficial.name}
-                                onChange={(e) => setNewOfficial({ ...newOfficial, name: e.target.value.toUpperCase() })}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label htmlFor="view-add-profession" className="text-xs font-semibold text-gray-500 uppercase ml-1">Profesión / Cargo</label>
-                            <input
-                                id="view-add-profession"
-                                type="text"
-                                placeholder="Eje: MEDICO"
-                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={newOfficial.profession}
-                                onChange={(e) => setNewOfficial({ ...newOfficial, profession: e.target.value.toUpperCase() })}
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label htmlFor="view-add-area" className="text-xs font-semibold text-gray-500 uppercase ml-1">Área</label>
-                            <select
-                                id="view-add-area"
-                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={newOfficial.type || 'CLINICO'}
-                                onChange={(e) => setNewOfficial({ ...newOfficial, type: e.target.value as Official['type'] })}
-                            >
-                                <option value="CLINICO">Clínico</option>
-                                <option value="ADMINISTRATIVO">Administrativo</option>
-                            </select>
-                        </div>
-                        <div className="space-y-1">
-                            <label htmlFor="view-add-email" className="text-xs font-semibold text-gray-500 uppercase ml-1">Correo Electrónico</label>
-                            <input
-                                id="view-add-email"
-                                type="email"
-                                placeholder="Eje: juan@cesfam.cl"
-                                title="Correo electrónico del funcionario"
-                                className="w-full px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                                value={newOfficial.email}
-                                onChange={(e) => setNewOfficial({ ...newOfficial, email: e.target.value.toLowerCase() })}
-                            />
-                        </div>
-                        <div className="flex items-end gap-2">
-                            <button
-                                onClick={handleAdd}
-                                disabled={!newOfficial.name || !newOfficial.profession}
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg transition-all disabled:opacity-50"
-                            >
-                                Guardar
-                            </button>
-                            <button
-                                onClick={() => setIsAdding(false)}
-                                className="p-2 bg-gray-200 hover:bg-gray-300 text-gray-600 rounded-lg transition-all"
-                                title="Cerrar formulario"
-                            >
-                                <X size={20} />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <div className="overflow-x-auto min-h-[400px]">
                 <table className="w-full text-left border-collapse">
