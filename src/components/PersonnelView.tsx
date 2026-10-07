@@ -6,6 +6,7 @@ import { Trash2, Search, Briefcase, User, Edit2, Check, X, Shield, History, Filt
 import clsx from 'clsx';
 import toast from 'react-hot-toast';
 import PersonnelAuditModal from './PersonnelAuditModal';
+import { ESTAMENTOS_OFICIALES, normalizeProfession, getAreaType } from '@/lib/estamentos';
 
 type AreaFilter = 'ALL' | 'CLINICO' | 'ADMINISTRATIVO';
 
@@ -70,7 +71,10 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
 
     const startEdit = (p: Official) => {
         setEditingId(p.id || null);
-        setEditForm(p);
+        setEditForm({
+            ...p,
+            profession: normalizeProfession(p.profession)
+        });
     };
 
     const handleUpdate = async () => {
@@ -189,15 +193,25 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
                                 </td>
                                 <td className="px-4 md:px-6 py-4">
                                     {editingId === p.id ? (
-                                        <input
+                                        <select
                                             id={`edit-p-profession-${p.name}`}
-                                            type="text"
-                                            placeholder="Profesión o cargo"
-                                            title="Editar profesión o cargo"
-                                            className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none uppercase text-xs sm:text-sm"
+                                            title="Seleccionar profesión o cargo oficial"
+                                            className="w-full px-3 py-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-xs sm:text-sm bg-white font-medium cursor-pointer"
                                             value={editForm.profession}
-                                            onChange={(e) => setEditForm({ ...editForm, profession: e.target.value.toUpperCase() })}
-                                        />
+                                            onChange={(e) => {
+                                                const prof = e.target.value;
+                                                const autoArea = getAreaType(prof);
+                                                setEditForm({ ...editForm, profession: prof, type: autoArea });
+                                            }}
+                                        >
+                                            <option value="" disabled>Seleccione profesión...</option>
+                                            {ESTAMENTOS_OFICIALES.map((est) => (
+                                                <option key={est} value={est}>{est}</option>
+                                            ))}
+                                            {editForm.profession && !ESTAMENTOS_OFICIALES.includes(editForm.profession as any) && (
+                                                <option value={editForm.profession}>{editForm.profession}</option>
+                                            )}
+                                        </select>
                                     ) : (
                                         <div className="flex items-center gap-2 text-gray-600 whitespace-nowrap">
                                             <div className="p-1 bg-gray-100 rounded">
