@@ -41,10 +41,10 @@ export default function PersonnelView({ personnel, refreshPersonnel }: Personnel
 
     const byArea = personnel.filter(p => areaFilter === 'ALL' || p.type === areaFilter);
 
-    const uniqueProfessions = Array.from(new Set(byArea.map(p => p.profession))).sort();
+    const uniqueProfessions = Array.from(new Set(byArea.map(p => normalizeProfession(p.profession)))).sort();
 
     const filteredPersonnel = byArea
-        .filter(p => selectedProfession === 'ALL' || p.profession === selectedProfession)
+        .filter(p => selectedProfession === 'ALL' || normalizeProfession(p.profession) === normalizeProfession(selectedProfession))
         .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                      p.profession.toLowerCase().includes(searchTerm.toLowerCase()) ||
                      (p.email && p.email.toLowerCase().includes(searchTerm.toLowerCase())))

@@ -10,6 +10,7 @@ import { Official } from '@/app/admin/personnel/actions';
 import { formatToTitleCase } from '@/lib/utils';
 import ProcessingModal from './ProcessingModal';
 import { handleSendEmail as sendEmailUtil } from '@/lib/mailUtils';
+import { normalizeProfession } from '@/lib/estamentos';
 
 const MONTHS = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -51,7 +52,11 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
         setCurrentPage(1);
     }, [reportType, selectedMonth, selectedYear, selectedProfession, selectedProfessional]);
 
-    const PROFESSIONS = Array.from(new Set(personnel.map(p => p.profession)));
+    const PROFESSIONS = Array.from(new Set([
+        ...personnel.filter(p => p.type === 'CLINICO').map(p => normalizeProfession(p.profession)),
+        ...requests.map(r => normalizeProfession(r.profession)),
+        ...openings.map(o => normalizeProfession(o.profession))
+    ])).filter(Boolean).sort();
 
     const fetchData = async () => {
         setLoading(true);
@@ -128,7 +133,7 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
             if (itemDate.getFullYear() !== selectedYear) return false;
 
             // Profession Filter
-            if (selectedProfession && normalize(item.profession) !== normalize(selectedProfession)) return false;
+            if (selectedProfession && normalizeProfession(item.profession) !== normalizeProfession(selectedProfession)) return false;
 
             // Professional Filter
             if (selectedProfessional && normalize(item.professionalName) !== normalize(selectedProfessional)) return false;
@@ -164,7 +169,12 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
         (reportType === 'blockings' ? sortedRequests.length : sortedOpenings.length) / ITEMS_PER_PAGE
     );
 
-    const filteredProfessionals = personnel.filter(p => p.profession === selectedProfession);
+    const filteredProfessionals = Array.from(new Set([
+        ...personnel.filter(p => normalizeProfession(p.profession) === normalizeProfession(selectedProfession)).map(p => p.name),
+        ...(reportType === 'blockings' ? requests : openings)
+            .filter(item => normalizeProfession(item.profession) === normalizeProfession(selectedProfession))
+            .map(item => item.professionalName)
+    ])).filter(Boolean).sort();
 
     // Export Logic
     const handleExport = () => {
@@ -404,8 +414,8 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
                                     className="w-full p-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-400"
                                 >
                                     <option value="">Todos</option>
-                                    {filteredProfessionals.map(p => (
-                                        <option key={p.id || p.name} value={p.name}>{p.name}</option>
+                                    {filteredProfessionals.map(name => (
+                                        <option key={name} value={name}>{name}</option>
                                     ))}
                                 </select>
                             </div>
