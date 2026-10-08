@@ -52,11 +52,22 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
         setCurrentPage(1);
     }, [reportType, selectedMonth, selectedYear, selectedProfession, selectedProfessional]);
 
+    const NON_CLINICAL = [
+        'ADMINISTRATIVO', 'TANS', 'AUXILIAR', 'CONDUCTOR', 'INFORMÁTICO', 'COORDINADOR', 'ARCHIVO', 'SERVICIO'
+    ];
+    const isClinicalProfession = (prof: string) => {
+        const norm = (prof || '').toUpperCase();
+        return !NON_CLINICAL.some(nc => norm.includes(nc));
+    };
+
     const PROFESSIONS = Array.from(new Set([
         ...personnel.filter(p => p.type === 'CLINICO').map(p => normalizeProfession(p.profession)),
         ...requests.map(r => normalizeProfession(r.profession)),
         ...openings.map(o => normalizeProfession(o.profession))
-    ])).filter(Boolean).sort();
+    ]))
+    .map(p => normalizeProfession(p))
+    .filter(p => p && isClinicalProfession(p))
+    .sort();
 
     const fetchData = async () => {
         setLoading(true);
@@ -169,12 +180,31 @@ export default function ReportsView({ personnel, isAdmin }: { personnel: Officia
         (reportType === 'blockings' ? sortedRequests.length : sortedOpenings.length) / ITEMS_PER_PAGE
     );
 
-    const filteredProfessionals = Array.from(new Set([
-        ...personnel.filter(p => normalizeProfession(p.profession) === normalizeProfession(selectedProfession)).map(p => p.name),
-        ...(reportType === 'blockings' ? requests : openings)
-            .filter(item => normalizeProfession(item.profession) === normalizeProfession(selectedProfession))
-            .map(item => item.professionalName)
-    ])).filter(Boolean).sort();
+    // Agrupar nombres únicos normalizados (evitando duplicados por mayúsculas/minúsculas)
+    const nameMap = new Map<string, string>();
+    
+    // 1. Prioridad: nombres de la dotación (formato oficial)
+    personnel
+        .filter(p => normalizeProfession(p.profession) === normalizeProfession(selectedProfession))
+        .forEach(p => {
+            const key = p.name.trim().toLowerCase();
+            if (!nameMap.has(key)) nameMap.set(key, p.name.trim());
+        });
+
+    // 2. Nombres presentes en solicitudes y aperturas
+    const activeItems = reportType === 'blockings' ? requests : openings;
+    activeItems
+        .filter(item => normalizeProfession(item.profession) === normalizeProfession(selectedProfession))
+        .forEach(item => {
+            const rawName = (item.professionalName || '').trim();
+            if (!rawName) return;
+            const key = rawName.toLowerCase();
+            if (!nameMap.has(key)) {
+                nameMap.set(key, rawName);
+            }
+        });
+
+    const filteredProfessionals = Array.from(nameMap.values()).sort((a, b) => a.localeCompare(b));
 
     // Export Logic
     const handleExport = () => {

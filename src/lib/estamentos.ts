@@ -18,10 +18,13 @@ export const ESTAMENTOS_OFICIALES = [
     "MÉDICO",
     "NUTRICIONISTA",
     "ODONTÓLOGO (A)",
+    "PODÓLOGO (A)",
+    "PROFESOR DE EDUCACIÓN FÍSICA",
     "PSICÓLOGO (A)",
     "QUÍMICO FARMACÉUTICO",
     "TEC. ED. PARVULARIA",
     "TECNICO SOCIAL",
+    "TECNÓLOGO MÉDICO",
     "TED. ED. ESPECIAL",
     "TENS",
     "TERAPEUTA OCUPACIONAL",
@@ -36,6 +39,9 @@ export function normalizeProfession(raw: string | null | undefined): string {
     const trimmed = raw.trim().toUpperCase();
 
     // Reglas de mapeo específicas
+    if (trimmed.includes('TECNOLOG') || trimmed.includes('TECNÓLOG')) {
+        return 'TECNÓLOGO MÉDICO';
+    }
     if (trimmed.includes('MEDIC') || trimmed === 'MEDICO' || trimmed === 'MÉDICO') {
         return 'MÉDICO';
     }
@@ -60,11 +66,17 @@ export function normalizeProfession(raw: string | null | undefined): string {
     if (trimmed.includes('NUTRICION')) {
         return 'NUTRICIONISTA';
     }
-    if (trimmed.includes('ODONTOL') || trimmed.includes('ODONTÓL') || trimmed.includes('DENTIST') || trimmed.includes('ORTODONC')) {
+    if (trimmed.includes('ODONTOL') || trimmed.includes('ODONTÓL') || trimmed.includes('DENTIST') || trimmed.includes('ORTODON') || trimmed.includes('ORTON')) {
         return 'ODONTÓLOGO (A)';
     }
     if (trimmed.includes('FONOAUD')) {
         return 'FONOAUDIÓLOGO (A)';
+    }
+    if (trimmed.includes('PODOLOG') || trimmed.includes('PODÓLOG')) {
+        return 'PODÓLOGO (A)';
+    }
+    if (trimmed.includes('EDUCACION FISICA') || trimmed.includes('EDUCACIÓN FÍSICA')) {
+        return 'PROFESOR DE EDUCACIÓN FÍSICA';
     }
     if (trimmed.includes('PARVUL') || trimmed.includes('PÁRVUL')) {
         if (trimmed.includes('TEC')) return 'TEC. ED. PARVULARIA';
